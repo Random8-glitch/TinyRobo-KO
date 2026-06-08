@@ -4,11 +4,11 @@ using System.Collections;
 public class RoboMovPlayer : MonoBehaviour
 {
   
-    [SerializeField] private float velocidad = 5f;
-    [SerializeField] private float tiempoDeGiro = 1f;
-    [SerializeField] private float velocidadGiroManual = 30f;
-    [SerializeField] private float distanciaRebote = 0.5f;
-    [SerializeField] private float distanciaReboteEnemigo = 1f;
+    [SerializeField] public float velocidad = 5f;
+    [SerializeField] public float tiempoDeGiro = 1f;
+    [SerializeField] public float velocidadGiroManual = 30f;
+    [SerializeField] public float distanciaRebote = 0.5f;
+    [SerializeField] public float distanciaReboteEnemigo = 1f;
 
     private Rigidbody rb;
     private bool girando = false;
@@ -55,7 +55,7 @@ public class RoboMovPlayer : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Choqué con: " + collision.gameObject.name);
+        //Debug.Log("Choqué con: " + collision.gameObject.name);
 
         if (girando)
             return;
@@ -89,7 +89,7 @@ public class RoboMovPlayer : MonoBehaviour
         // CHOQUE CON ENEMIGO
         else if (collision.gameObject.layer == enemyLayer)
         {
-            Debug.Log("CHOQUE CON ENEMIGO");
+            //Debug.Log("CHOQUE CON ENEMIGO");
 
             Vector3 normalEnemigo = collision.contacts[0].normal;
 

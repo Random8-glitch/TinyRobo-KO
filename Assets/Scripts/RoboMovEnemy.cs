@@ -3,19 +3,13 @@ using System.Collections;
 
 public class RoboMovEnemy : MonoBehaviour
 {
-    [Header("Movimiento")]
-    [SerializeField] private float velocidad = 5f;
-
-    [Header("Giro")]
-    [SerializeField] private float tiempoDeGiro = 1f;
-
-    [Header("Seguimiento")]
-    [SerializeField] private float velocidadGiroMinima = 10f;
-    [SerializeField] private float velocidadGiroMaxima = 30f;
-
-    [Header("Rebotes")]
-    [SerializeField] private float distanciaRebote = 0.5f;
-    [SerializeField] private float distanciaRebotePlayer = 1f;
+    
+    [SerializeField] public float velocidad = 5f;
+    [SerializeField] public float tiempoDeGiro = 1f;
+    [SerializeField] public float velocidadGiroMinima = 10f;
+    [SerializeField] public float velocidadGiroMaxima = 30f;
+    [SerializeField] public float distanciaRebote = 0.5f;
+    [SerializeField] public float distanciaRebotePlayer = 1f;
 
     private Rigidbody rb;
     private bool girando = false;
@@ -97,10 +91,7 @@ public class RoboMovEnemy : MonoBehaviour
                 velocidadGiroMaxima
             );
 
-            Debug.Log(
-                "Nueva velocidad de giro: " +
-                velocidadGiroActual
-            );
+            //Debug.Log("Nueva velocidad de giro: " + velocidadGiroActual);
 
             if (player == null)
                 return;
@@ -124,7 +115,7 @@ public class RoboMovEnemy : MonoBehaviour
         // CHOQUE CON PLAYER
         else if (collision.gameObject.layer == playerLayer)
         {
-            Debug.Log("CHOQUE CON PLAYER");
+            //Debug.Log("CHOQUE CON PLAYER");
 
             Vector3 normalPlayer = collision.contacts[0].normal;
 
