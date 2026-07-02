@@ -2,24 +2,78 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField] private GameObject panelInicio;
+    public static GameManager Instance;
 
-    private void Start()
+    [Header("Lugar donde aparecerá el arma")]
+    public Transform weaponHolder;
+
+    [Header("Lista de armas")]
+    public GameObject[] weaponPrefabs;
+
+    private GameObject currentWeapon;
+
+    private int equippedWeapon = -1;
+
+    private void Awake()
     {
-        // Pausar el juego al iniciar
-        Time.timeScale = 0f;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    public void IniciarJuego()
+    private void Update()
     {
-        // Reanudar el juego
-        Time.timeScale = 1f;
-
-        // Ocultar el panel
-        if (panelInicio != null)
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            panelInicio.SetActive(false);
+            EquipWeapon(0);
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            EquipWeapon(1);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            EquipWeapon(2);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            EquipWeapon(3);
+        }
+    }
+
+    public void EquipWeapon(int weaponID)
+    {
+        // Comprobar que exista
+        if (weaponID < 0 || weaponID >= weaponPrefabs.Length)
+            return;
+
+        // Eliminar la anterior
+        if (currentWeapon != null)
+        {
+            Destroy(currentWeapon);
+        }
+
+        // Crear la nueva
+        currentWeapon = Instantiate(
+            weaponPrefabs[weaponID],
+            weaponHolder.position,
+            weaponHolder.rotation,
+            weaponHolder
+        );
+
+        equippedWeapon = weaponID;
+    }
+
+    public int GetEquippedWeapon()
+    {
+        return equippedWeapon;
     }
 }
