@@ -4,6 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Menu Inicio.unity
+    guid: c4fb937e273847c4cab290315948fb0b
+  - enabled: 1
+    path: Assets/Scenes/RoboTeam.unity
+    guid: 5aaca2c382289904288213f13a7bdf7e
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
