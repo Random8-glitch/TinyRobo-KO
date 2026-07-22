@@ -406,6 +406,7 @@ GameObject:
   - component: {fileID: 523536408}
   - component: {fileID: 523536407}
   - component: {fileID: 523536410}
+  - component: {fileID: 523536411}
   m_Layer: 5
   m_Name: Boton Salir
   m_TagString: Untagged
@@ -539,6 +540,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86301c0c08ecd134f86167932c84e192, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MenuDeInicio
+--- !u!114 &523536411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 523536405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b48a0517ba629bc4b8aad09d72bef8d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BotonMover
+  distancia: 150
+  moverDerecha: 1
+  velocidad: 10
 --- !u!1 &555923321
 GameObject:
   m_ObjectHideFlags: 0
@@ -869,6 +885,7 @@ GameObject:
   - component: {fileID: 884461054}
   - component: {fileID: 884461053}
   - component: {fileID: 884461052}
+  - component: {fileID: 884461055}
   m_Layer: 5
   m_Name: Boton Continuar
   m_TagString: Untagged
@@ -978,6 +995,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 884461050}
   m_CullTransparentMesh: 1
+--- !u!114 &884461055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 884461050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b48a0517ba629bc4b8aad09d72bef8d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BotonMover
+  distancia: 150
+  moverDerecha: 1
+  velocidad: 10
 --- !u!1 &903756862
 GameObject:
   m_ObjectHideFlags: 0
@@ -1082,6 +1114,7 @@ GameObject:
   - component: {fileID: 1118159049}
   - component: {fileID: 1118159048}
   - component: {fileID: 1118159047}
+  - component: {fileID: 1118159050}
   m_Layer: 5
   m_Name: Boton Ajustes
   m_TagString: Untagged
@@ -1191,6 +1224,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1118159045}
   m_CullTransparentMesh: 1
+--- !u!114 &1118159050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1118159045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b48a0517ba629bc4b8aad09d72bef8d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BotonMover
+  distancia: 150
+  moverDerecha: 1
+  velocidad: 10
 --- !u!1 &1201296670
 GameObject:
   m_ObjectHideFlags: 0
@@ -1301,6 +1349,7 @@ GameObject:
   - component: {fileID: 1817540183}
   - component: {fileID: 1817540182}
   - component: {fileID: 1817540185}
+  - component: {fileID: 1817540186}
   m_Layer: 5
   m_Name: Boton Comenzar
   m_TagString: Untagged
@@ -1434,6 +1483,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86301c0c08ecd134f86167932c84e192, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MenuDeInicio
+--- !u!114 &1817540186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817540180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b48a0517ba629bc4b8aad09d72bef8d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BotonMover
+  distancia: 150
+  moverDerecha: 1
+  velocidad: 10
 --- !u!1 &2010601697
 GameObject:
   m_ObjectHideFlags: 0
