@@ -12,6 +12,9 @@ public class ManagerWeapon : MonoBehaviour
     [SerializeField]
     private Transform[] weaponHolders =
         new Transform[MaxWeaponSlots];
+    [SerializeField]
+    private Transform[] weaponHoldersEnemy =
+        new Transform[MaxWeaponSlots];
 
     [Header("Armas disponibles")]
     [Tooltip("El índice del prefab funciona como ID del arma.")]
@@ -26,6 +29,9 @@ public class ManagerWeapon : MonoBehaviour
     [SerializeField]
     private Image[] weaponSlotImages =
         new Image[MaxWeaponSlots];
+    [SerializeField]
+    private Image[] weaponSlotImagesEnemy =
+        new Image[MaxWeaponSlots];
 
     // ID del arma almacenada en cada puesto.
     // -1 significa que el puesto está vacío.
@@ -38,6 +44,9 @@ public class ManagerWeapon : MonoBehaviour
 
     [Header("UI de pausa")]
     [SerializeField] private GameObject pauseUI;
+
+    [SerializeField] private GameObject playerUI;
+    [SerializeField] private GameObject enemyUI;
 
     public int WeaponSlotCount => MaxWeaponSlots;
 
@@ -396,6 +405,26 @@ public class ManagerWeapon : MonoBehaviour
         if (pauseUI != null)
         {
             pauseUI.SetActive(false);
+        }
+    }
+
+    public void AbrirPlayerMenu()
+    {
+        
+        if (playerUI != null)
+        {
+            playerUI.SetActive(true);
+            enemyUI.SetActive(false);
+        }
+    }
+
+    public void AbrirEnemyMenu()
+    {
+
+        if (playerUI != null)
+        {
+            playerUI.SetActive(false);
+            enemyUI.SetActive(true);
         }
     }
 }
