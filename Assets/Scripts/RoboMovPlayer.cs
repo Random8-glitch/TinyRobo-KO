@@ -16,6 +16,13 @@ public class RoboMovPlayer : MonoBehaviour
     private int wallLayer;
     private int enemyLayer;
 
+    private bool empujado = false;
+    private bool golpeoParedDuranteEmpuje = false;
+    private bool aturdido = false;
+    private bool cancelarEmpuje = false;
+
+    [SerializeField] private float tiempoAturdido = 1f;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -26,7 +33,7 @@ public class RoboMovPlayer : MonoBehaviour
 
     private void Update()
     {
-        if (girando)
+        if (girando || empujado || aturdido)
             return;
 
         float giro = 0f;
@@ -155,5 +162,96 @@ public class RoboMovPlayer : MonoBehaviour
 
         transform.rotation = rotacionObjetivo;
         girando = false;
+    }
+
+    public void Empujar(
+        Vector3 direccion,
+        float distancia,
+        float duracion
+    )
+    {
+        if (!gameObject.activeInHierarchy)
+            return;
+
+        if (empujado || aturdido)
+            return;
+
+        StartCoroutine(
+            EmpujeCoroutine(
+                direccion.normalized,
+                distancia,
+                duracion
+            )
+        );
+    }
+
+    private IEnumerator EmpujeCoroutine(
+       Vector3 direccion,
+       float distancia,
+       float duracion
+   )
+    {
+        empujado = true;
+        golpeoParedDuranteEmpuje = false;
+        cancelarEmpuje = false;
+
+        Vector3 inicio =
+            transform.position;
+
+        Vector3 destino =
+            inicio +
+            direccion * distancia;
+
+        float tiempo = 0f;
+
+        while (tiempo < duracion)
+        {
+            if (cancelarEmpuje)
+                break;
+
+            tiempo += Time.deltaTime;
+
+            float t =
+                tiempo / duracion;
+
+            rb.MovePosition(
+                Vector3.Lerp(
+                    inicio,
+                    destino,
+                    t
+                )
+            );
+
+            yield return null;
+        }
+
+        empujado = false;
+
+        if (golpeoParedDuranteEmpuje)
+        {
+            PlayerStats stats =
+                GetComponent<PlayerStats>();
+
+            if (stats != null)
+            {
+                stats.RecibirDanio(5f);
+            }
+
+            StartCoroutine(
+                Aturdir()
+            );
+        }
+    }
+
+    private IEnumerator Aturdir()
+    {
+        aturdido = true;
+        girando = false;
+
+        yield return new WaitForSeconds(
+            tiempoAturdido
+        );
+
+        aturdido = false;
     }
 }
