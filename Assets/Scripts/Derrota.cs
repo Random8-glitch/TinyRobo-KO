@@ -69,11 +69,11 @@ public class Derrota : MonoBehaviour
             // Al agotarse el tiempo, comparar vida del jugador vs vida total de enemigos
             if (EvaluarDerrotaPorTiempo())
             {
-                ActivarDerrota("El tiempo se agotó y la vida del jugador es inferior a la de los enemigos.");
+                ActivarDerrota("El tiempo se agotó y la vida del jugador es inferior o igual a la de los enemigos.");
             }
             else
             {
-                Debug.Log("Tiempo agotado, pero el jugador tiene igual o más vida que los enemigos. No se ejecuta la derrota.");
+                Debug.Log("Tiempo agotado, pero el jugador tiene más vida que los enemigos. No se ejecuta la derrota.");
             }
             return;
         }
@@ -96,7 +96,7 @@ public class Derrota : MonoBehaviour
 
         Debug.Log($"EvaluarDerrotaPorTiempo -> Vida jugador: {vidaJugador} | Vida enemigos total: {vidaEnemigosTotal}");
 
-        return vidaJugador < vidaEnemigosTotal;
+        return vidaJugador <= vidaEnemigosTotal;
     }
 
     private void ActivarDerrota(string razon)
