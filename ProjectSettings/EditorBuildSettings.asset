@@ -11,5 +11,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/RoboTeam.unity
     guid: 5aaca2c382289904288213f13a7bdf7e
+  - enabled: 1
+    path: Assets/Scenes/EscenaDerrota.unity
+    guid: 5966bfefe491f3140812e99b3d9eab4e
+  - enabled: 1
+    path: Assets/Scenes/victoryScene.unity
+    guid: 7ea2205b0222f614dbb0965e335767d9
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
