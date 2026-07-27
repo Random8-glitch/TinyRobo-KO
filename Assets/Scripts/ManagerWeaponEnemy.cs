@@ -1,40 +1,31 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ManagerWeapon : MonoBehaviour
+public class ManagerWeaponEnemy : MonoBehaviour
 {
-    public static ManagerWeapon Instance { get; private set; }
+    public static ManagerWeaponEnemy Instance { get; private set; }
 
     private const int MaxWeaponSlots = 3;
 
     [Header("Lista de armas")]
-    [Tooltip("Lista compartida de prefabs e iconos.")]
+    [Tooltip("La misma WeaponList utilizada por el jugador.")]
     [SerializeField] private WeaponList weaponList;
 
-    [Header("Weapon Holders del jugador")]
-    [Tooltip("Los 3 lugares donde aparecerán las armas del jugador.")]
+    [Header("Weapon Holders del enemigo")]
+    [Tooltip("Los 3 lugares donde aparecerán las armas del enemigo.")]
     [SerializeField]
     private Transform[] weaponHolders =
         new Transform[MaxWeaponSlots];
 
-    [Header("Ranuras visuales del jugador")]
+    [Header("Ranuras visuales del enemigo")]
     [Tooltip("Las 3 imágenes donde aparecerán los iconos.")]
     [SerializeField]
     private Image[] weaponSlotImages =
         new Image[MaxWeaponSlots];
 
-    [Header("UI de pausa")]
-    [SerializeField] private GameObject pauseUI;
-
-    [Header("Menús de selección")]
-    [SerializeField] private GameObject playerUI;
-    [SerializeField] private GameObject enemyUI;
-
-    // -1 significa que la ranura está vacía.
     private readonly int[] equippedWeaponIDs =
         new int[MaxWeaponSlots];
 
-    // Instancias físicas de las armas.
     private readonly GameObject[] weaponInstances =
         new GameObject[MaxWeaponSlots];
 
@@ -51,16 +42,6 @@ public class ManagerWeapon : MonoBehaviour
         Instance = this;
 
         InitializeWeaponSlots();
-    }
-
-    private void Start()
-    {
-        Time.timeScale = 0f;
-
-        if (pauseUI != null)
-        {
-            pauseUI.SetActive(true);
-        }
     }
 
     private void OnDestroy()
@@ -89,7 +70,7 @@ public class ManagerWeapon : MonoBehaviour
         if (weaponList == null)
         {
             Debug.LogError(
-                "ManagerWeapon necesita una WeaponList.",
+                "ManagerWeaponEnemy necesita una WeaponList.",
                 this
             );
         }
@@ -98,7 +79,7 @@ public class ManagerWeapon : MonoBehaviour
             weaponHolders.Length != MaxWeaponSlots)
         {
             Debug.LogError(
-                $"ManagerWeapon necesita exactamente " +
+                $"ManagerWeaponEnemy necesita exactamente " +
                 $"{MaxWeaponSlots} Weapon Holders.",
                 this
             );
@@ -108,7 +89,7 @@ public class ManagerWeapon : MonoBehaviour
             weaponSlotImages.Length != MaxWeaponSlots)
         {
             Debug.LogError(
-                $"ManagerWeapon necesita exactamente " +
+                $"ManagerWeaponEnemy necesita exactamente " +
                 $"{MaxWeaponSlots} imágenes de UI.",
                 this
             );
@@ -116,14 +97,14 @@ public class ManagerWeapon : MonoBehaviour
     }
 
     /// <summary>
-    /// Equipa o elimina un arma del jugador.
+    /// Equipa o elimina un arma del enemigo.
     /// </summary>
     public void ToggleWeapon(int weaponID)
     {
         if (!IsValidWeaponID(weaponID))
         {
             Debug.LogWarning(
-                $"El arma con ID {weaponID} no existe.",
+                $"El arma enemiga con ID {weaponID} no existe.",
                 this
             );
 
@@ -143,7 +124,7 @@ public class ManagerWeapon : MonoBehaviour
         if (emptySlot == -1)
         {
             Debug.Log(
-                "Los tres puestos de armas del jugador están ocupados.",
+                "Los tres puestos de armas del enemigo están ocupados.",
                 this
             );
 
@@ -167,7 +148,7 @@ public class ManagerWeapon : MonoBehaviour
         {
             Debug.LogError(
                 $"No hay un Weapon Holder asignado " +
-                $"a la ranura {slotIndex} del jugador.",
+                $"a la ranura {slotIndex} del enemigo.",
                 this
             );
 
@@ -180,7 +161,8 @@ public class ManagerWeapon : MonoBehaviour
         if (weaponPrefab == null)
         {
             Debug.LogError(
-                $"El arma {weaponID} no tiene un prefab asignado.",
+                $"El arma enemiga {weaponID} no tiene " +
+                "un prefab asignado.",
                 this
             );
 
@@ -237,7 +219,8 @@ public class ManagerWeapon : MonoBehaviour
         if (weaponIcon == null)
         {
             Debug.LogWarning(
-                $"El arma {weaponID} no tiene un icono válido.",
+                $"El arma enemiga {weaponID} " +
+                "no tiene un icono válido.",
                 this
             );
 
@@ -355,41 +338,5 @@ public class ManagerWeapon : MonoBehaviour
     {
         return slotIndex >= 0 &&
                slotIndex < MaxWeaponSlots;
-    }
-
-    public void ContinueGame()
-    {
-        Time.timeScale = 1f;
-
-        if (pauseUI != null)
-        {
-            pauseUI.SetActive(false);
-        }
-    }
-
-    public void AbrirPlayerMenu()
-    {
-        if (playerUI != null)
-        {
-            playerUI.SetActive(true);
-        }
-
-        if (enemyUI != null)
-        {
-            enemyUI.SetActive(false);
-        }
-    }
-
-    public void AbrirEnemyMenu()
-    {
-        if (playerUI != null)
-        {
-            playerUI.SetActive(false);
-        }
-
-        if (enemyUI != null)
-        {
-            enemyUI.SetActive(true);
-        }
     }
 }
