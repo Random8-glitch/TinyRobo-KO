@@ -5,7 +5,7 @@ public class MenuDeInicio : MonoBehaviour
 {
     public void Starter()
     {
-        SceneManager.LoadScene("RoboTeam");
+        SceneManager.LoadScene("HubPrincipal");
     }
 
     public void ExitGame()

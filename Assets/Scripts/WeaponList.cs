@@ -18,9 +18,14 @@ public class WeaponList : ScriptableObject
         [Tooltip("Icono mostrado en la interfaz.")]
         [SerializeField] private Sprite weaponIcon;
 
+        [Tooltip("Rango mínimo necesario para desbloquear el arma.")]
+        [Min(1)]
+        [SerializeField] private int rank = 1;
+
         public string WeaponName => weaponName;
         public GameObject WeaponPrefab => weaponPrefab;
         public Sprite WeaponIcon => weaponIcon;
+        public int Rank => rank;
     }
 
     [Header("Armas disponibles")]
@@ -28,8 +33,7 @@ public class WeaponList : ScriptableObject
         "La posición de cada arma dentro de esta lista funciona como su ID."
     )]
     [SerializeField]
-    private WeaponData[] weapons =
-        new WeaponData[0];
+    private WeaponData[] weapons = new WeaponData[0];
 
     public int WeaponCount
     {
@@ -88,6 +92,16 @@ public class WeaponList : ScriptableObject
         return weapon.WeaponName;
     }
 
+    public int GetWeaponRank(int weaponID)
+    {
+        WeaponData weapon = GetWeapon(weaponID);
+
+        if (weapon == null)
+            return 0;
+
+        return weapon.Rank;
+    }
+
     private void OnValidate()
     {
         if (weapons == null)
@@ -117,6 +131,14 @@ public class WeaponList : ScriptableObject
             {
                 Debug.LogWarning(
                     $"El arma con ID {i} no tiene un icono asignado.",
+                    this
+                );
+            }
+
+            if (weapons[i].Rank < 1)
+            {
+                Debug.LogWarning(
+                    $"El arma con ID {i} tiene un rango menor que 1.",
                     this
                 );
             }

@@ -10,30 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f313eb54793bfcb419892ae4a224aba9, type: 3}
-  m_Name: Armas Disponibles
+  m_Name: Armas Disponibles Jugador
   m_EditorClassIdentifier: Assembly-CSharp::WeaponList
   weapons:
   - weaponName: HachaJugador
     weaponPrefab: {fileID: 287451985267874266, guid: 4feaa005a75d1d4449bcd7982a987be9, type: 3}
     weaponIcon: {fileID: 21300000, guid: 6b110df1088f5154e8dce720ab7fb080, type: 3}
+    rank: 1
   - weaponName: MartilloJugador
     weaponPrefab: {fileID: 35430086431643633, guid: 287e0e2c12047064c96fb54e0038c7d0, type: 3}
     weaponIcon: {fileID: 21300000, guid: ae634d7ef96337749baab51c78f2ed4a, type: 3}
+    rank: 1
   - weaponName: BarredoraJugador
     weaponPrefab: {fileID: 2513625742004998545, guid: 2f3fd1756c0a58b489cb3e0d4f467e77, type: 3}
     weaponIcon: {fileID: 21300000, guid: c6829c93e26d81d45a882a8090e8ea9f, type: 3}
+    rank: 1
   - weaponName: SierraJugador
     weaponPrefab: {fileID: 5894913754969531725, guid: 002a90e6e34bb424b8c320eae4358efd, type: 3}
     weaponIcon: {fileID: 21300000, guid: 1c1068d3bf5fd824cbc1c124c1a485bf, type: 3}
-  - weaponName: HachaEnemigo
-    weaponPrefab: {fileID: 5625705151582763355, guid: ca7749d1f63c12443a8d1cdb4a7484bc, type: 3}
-    weaponIcon: {fileID: 21300000, guid: 6b110df1088f5154e8dce720ab7fb080, type: 3}
-  - weaponName: MartilloEnemigo
-    weaponPrefab: {fileID: 3025878478735922451, guid: da5cf0fce4ead9f4faf8a97edefee998, type: 3}
-    weaponIcon: {fileID: 21300000, guid: ae634d7ef96337749baab51c78f2ed4a, type: 3}
-  - weaponName: BarredoraEnemigo
-    weaponPrefab: {fileID: 8500527876239938379, guid: 1dba8504f02e5fb419740b5c3d7edd41, type: 3}
-    weaponIcon: {fileID: 21300000, guid: c6829c93e26d81d45a882a8090e8ea9f, type: 3}
-  - weaponName: SierraEnemigo
-    weaponPrefab: {fileID: 1239933845346055630, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
-    weaponIcon: {fileID: 21300000, guid: 1c1068d3bf5fd824cbc1c124c1a485bf, type: 3}
+    rank: 1
