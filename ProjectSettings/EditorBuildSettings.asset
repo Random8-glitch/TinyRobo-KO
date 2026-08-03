@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/Scenes/RoboTeam.unity
     guid: 5aaca2c382289904288213f13a7bdf7e
   - enabled: 1
+    path: Assets/Scenes/HubPrincipal.unity
+    guid: 07472c0716d575b47bc2d2050a2156bb
+  - enabled: 1
     path: Assets/Scenes/EscenaDerrota.unity
     guid: 5966bfefe491f3140812e99b3d9eab4e
   - enabled: 1
