@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +24,13 @@ public class ManagerWeaponEnemy : MonoBehaviour
     private Image[] weaponSlotImages =
         new Image[MaxWeaponSlots];
 
+    // Control de auto-equip
+    [Header("Auto equipamiento (enemigo)")]
+    [Tooltip("Si está activo, al iniciar el manager escogera aleatoriamente armas para el enemigo.")]
+    [SerializeField] private bool autoEquipOnAwake = true;
+    [Tooltip("Numero máximo de IDs a escanear si WeaponList no expone una lista directa.")]
+    [SerializeField] private int maxScanWeaponID = 64;
+
     private readonly int[] equippedWeaponIDs =
         new int[MaxWeaponSlots];
 
@@ -42,6 +50,11 @@ public class ManagerWeaponEnemy : MonoBehaviour
         Instance = this;
 
         InitializeWeaponSlots();
+
+        if (autoEquipOnAwake)
+        {
+            RandomizeAndEquipWeapons();
+        }
     }
 
     private void OnDestroy()
@@ -338,5 +351,82 @@ public class ManagerWeaponEnemy : MonoBehaviour
     {
         return slotIndex >= 0 &&
                slotIndex < MaxWeaponSlots;
+    }
+
+    // ------------------- Nuevo: auto-equip aleatorio -------------------
+
+    // Obtiene la lista de weaponIDs válidos a partir de la WeaponList.
+    // Si WeaponList expone un método público GetAllWeaponIDs lo usará;
+    // en caso contrario escaneará IDs desde 0 hasta maxScanWeaponID y recogerá
+    // aquellos para los que IsValidWeaponID devuelve true.
+    private List<int> GetAvailableWeaponIDs()
+    {
+        List<int> result = new List<int>();
+
+        if (weaponList == null)
+            return result;
+
+        // Intentar llamada directa si WeaponList tiene un método GetAllWeaponIDs()
+        var method = weaponList.GetType().GetMethod("GetAllWeaponIDs");
+        if (method != null)
+        {
+            var obj = method.Invoke(weaponList, null);
+            if (obj is IEnumerable<int> ids)
+            {
+                foreach (int id in ids) result.Add(id);
+                return result;
+            }
+        }
+
+        // Fallback: escaneo por rango configurable
+        for (int id = 0; id < maxScanWeaponID; id++)
+        {
+            if (IsValidWeaponID(id))
+                result.Add(id);
+        }
+
+        return result;
+    }
+
+    // Elige aleatoriamente cuántas armas (1..MaxWeaponSlots) y qué armas,
+    // y las equipa en ranuras aleatorias.
+    private void RandomizeAndEquipWeapons()
+    {
+        ClearAllWeapons();
+
+        List<int> available = GetAvailableWeaponIDs();
+
+        if (available.Count == 0)
+        {
+            Debug.LogWarning("ManagerWeaponEnemy: no hay armas disponibles en WeaponList.", this);
+            return;
+        }
+
+        // Numero de armas aleatorio entre 1 y MaxWeaponSlots
+        int n = Random.Range(1, MaxWeaponSlots + 1);
+
+        // Elegir n IDs sin repetición
+        List<int> chosenIDs = new List<int>();
+        List<int> pool = new List<int>(available);
+        for (int i = 0; i < n && pool.Count > 0; i++)
+        {
+            int idx = Random.Range(0, pool.Count);
+            chosenIDs.Add(pool[idx]);
+            pool.RemoveAt(idx);
+        }
+
+        // Elegir ranuras aleatorias para colocar las armas
+        List<int> slotPool = new List<int> { 0, 1, 2 };
+        for (int i = 0; i < chosenIDs.Count; i++)
+        {
+            if (slotPool.Count == 0) break;
+            int sidx = Random.Range(0, slotPool.Count);
+            int slot = slotPool[sidx];
+            slotPool.RemoveAt(sidx);
+
+            EquipWeaponInSlot(chosenIDs[i], slot);
+        }
+
+        Debug.Log($"ManagerWeaponEnemy: equipado aleatoriamente {chosenIDs.Count} arma(s).", this);
     }
 }

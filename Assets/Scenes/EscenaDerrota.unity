@@ -236,7 +236,7 @@ GameObject:
   - component: {fileID: 271896846}
   - component: {fileID: 271896845}
   - component: {fileID: 271896844}
-  - component: {fileID: 271896843}
+  - component: {fileID: 271896847}
   m_Layer: 5
   m_Name: Buton Derrota
   m_TagString: Untagged
@@ -264,18 +264,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &271896843
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 271896841}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86301c0c08ecd134f86167932c84e192, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuDeInicio
 --- !u!114 &271896844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,8 +308,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 271896843}
-        m_TargetAssemblyTypeName: MenuDeInicio, Assembly-CSharp
+      - m_Target: {fileID: 271896847}
+        m_TargetAssemblyTypeName: BotonSigPelea, Assembly-CSharp
         m_MethodName: Starter
         m_Mode: 1
         m_Arguments:
@@ -370,6 +358,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 271896841}
   m_CullTransparentMesh: 1
+--- !u!114 &271896847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 271896841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a48bd767666b83841bfbb5765f0ca612, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BotonSigPelea
 --- !u!1 &484170760
 GameObject:
   m_ObjectHideFlags: 0
@@ -1125,7 +1125,7 @@ GameObject:
   - component: {fileID: 1914403858}
   - component: {fileID: 1914403857}
   - component: {fileID: 1914403856}
-  - component: {fileID: 1914403855}
+  - component: {fileID: 1914403859}
   m_Layer: 5
   m_Name: BotonMenuInicio
   m_TagString: Untagged
@@ -1153,18 +1153,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -39.9}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1914403855
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1914403853}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19c1e98298712be4bb45d5fde6367611, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VolverAlMenuDeInicio
 --- !u!114 &1914403856
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1209,8 +1197,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1914403855}
-        m_TargetAssemblyTypeName: VolverAlMenuDeInicio, Assembly-CSharp
+      - m_Target: {fileID: 1914403859}
+        m_TargetAssemblyTypeName: MenuDePlaza, Assembly-CSharp
         m_MethodName: Starter
         m_Mode: 1
         m_Arguments:
@@ -1259,6 +1247,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1914403853}
   m_CullTransparentMesh: 1
+--- !u!114 &1914403859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914403853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86301c0c08ecd134f86167932c84e192, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuDePlaza
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

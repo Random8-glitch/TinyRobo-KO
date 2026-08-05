@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MenuDeInicio : MonoBehaviour
+public class MenuDePlaza : MonoBehaviour
 {
     public void Starter()
     {

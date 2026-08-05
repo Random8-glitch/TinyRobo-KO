@@ -3,7 +3,6 @@ using System.Collections;
 
 public class RoboMovPlayer : MonoBehaviour
 {
-  
     [SerializeField] public float velocidad = 5f;
     [SerializeField] public float tiempoDeGiro = 1f;
     [SerializeField] public float velocidadGiroManual = 30f;
@@ -86,9 +85,38 @@ public class RoboMovPlayer : MonoBehaviour
 
             if (direccion.sqrMagnitude > 0.01f)
             {
-                Quaternion rotacionObjetivo =
-                    Quaternion.LookRotation(direccion.normalized);
+                // Declarar una única vez la rotación objetivo para evitar sombras de variables
+                Quaternion rotacionObjetivo;
 
+                // Si hay una pared entre el jugador y el enemigo, buscar dirección alternativa
+                if (IsWallBetween(transform.position, enemigo.transform.position))
+                {
+                    Vector3 altDir = FindAlternateDirectionTowardsEnemy(direccion);
+                    if (altDir != Vector3.zero)
+                    {
+                        rotacionObjetivo = Quaternion.LookRotation(altDir.normalized);
+                        StartCoroutine(GirarGradualmente(rotacionObjetivo));
+                        return;
+                    }
+                    else
+                    {
+                        // Si no se encuentra alternativa, girar en ángulo aleatorio para intentar liberarse
+                        float anguloAleatorio = Random.Range(60f, 180f);
+                        Quaternion rotacionAleatoria = Quaternion.AngleAxis(anguloAleatorio, Vector3.up);
+                        Vector3 nuevaDireccion = rotacionAleatoria * transform.forward;
+                        nuevaDireccion.y = 0f;
+
+                        if (nuevaDireccion.sqrMagnitude > 0.01f)
+                        {
+                            rotacionObjetivo = Quaternion.LookRotation(nuevaDireccion.normalized);
+                            StartCoroutine(GirarGradualmente(rotacionObjetivo));
+                            return;
+                        }
+                    }
+                }
+
+                // Si no hay pared entre el jugador y el enemigo, girar directamente hacia el enemigo
+                rotacionObjetivo = Quaternion.LookRotation(direccion.normalized);
                 StartCoroutine(GirarGradualmente(rotacionObjetivo));
             }
         }
@@ -253,5 +281,61 @@ public class RoboMovPlayer : MonoBehaviour
         );
 
         aturdido = false;
+    }
+
+    // Comprueba si hay una pared (wall) entre dos posiciones usando raycast
+    private bool IsWallBetween(Vector3 from, Vector3 to)
+    {
+        Vector3 origin = from + Vector3.up * 0.5f;
+        Vector3 dir = (to - origin);
+        float dist = dir.magnitude;
+        if (dist <= 0.01f) return false;
+
+        int wallMask = 1 << wallLayer;
+        if (Physics.Raycast(origin, dir.normalized, out RaycastHit hit, dist, wallMask))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Busca una dirección alternativa que permita avanzar sin chocar inmediatamente con una pared.
+    // Intenta varios ángulos alrededor de la dirección hacia el enemigo y devuelve el primer candidato
+    // que tenga espacio libre hacia adelante durante una distancia de comprobación.
+    private Vector3 FindAlternateDirectionTowardsEnemy(Vector3 direccionHaciaEnemy)
+    {
+        if (direccionHaciaEnemy.sqrMagnitude < 0.01f)
+            return Vector3.zero;
+
+        Vector3 dir = direccionHaciaEnemy.normalized;
+        int wallMask = 1 << wallLayer;
+
+        float distToEnemy = Vector3.Distance(transform.position, BuscarEnemigo()?.transform.position ?? (transform.position + dir * 2f));
+        float checkDist = Mathf.Clamp(distToEnemy, 1.5f, 4f);
+
+        float[] angles = new float[] { 30f, -30f, 60f, -60f, 90f, -90f, 135f, -135f, 180f };
+
+        foreach (float angle in angles)
+        {
+            Vector3 candidate = Quaternion.Euler(0f, angle, 0f) * dir;
+            Vector3 origin = transform.position + Vector3.up * 0.5f;
+
+            // Comprobar si hay pared en dirección candidate en un rango corto (clearance check)
+            if (!Physics.Raycast(origin, candidate, checkDist, wallMask))
+            {
+                // Además comprobar si desde un pequeño desplazamiento lateral se puede ver al enemy
+                Vector3 probeOrigin = origin + candidate * 0.5f;
+                GameObject enemigo = BuscarEnemigo();
+                Vector3 toEnemy = (enemigo != null) ? (enemigo.transform.position - probeOrigin) : Vector3.zero;
+
+                if (enemigo == null || (toEnemy.magnitude > 0.01f && !Physics.Raycast(probeOrigin, toEnemy.normalized, toEnemy.magnitude, wallMask)))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        return Vector3.zero;
     }
 }
