@@ -32,13 +32,13 @@ public class PlayerDataManager : MonoBehaviour
         // Este objeto no será destruido al cargar otra escena.
         DontDestroyOnLoad(gameObject);
 
-        LoadData();
+        //LoadData();
     }
 
     public void SetRank(int newRank)
     {
         rank = Mathf.Max(1, newRank);
-        SaveData();
+        //SaveData();
         OnPlayerDataChanged?.Invoke();
     }
 
@@ -48,7 +48,7 @@ public class PlayerDataManager : MonoBehaviour
             return;
 
         money += amount;
-        SaveData();
+        //SaveData();
         OnPlayerDataChanged?.Invoke();
     }
 
@@ -58,7 +58,7 @@ public class PlayerDataManager : MonoBehaviour
             return false;
 
         money -= amount;
-        SaveData();
+        //SaveData();
         OnPlayerDataChanged?.Invoke();
 
         return true;
@@ -68,7 +68,7 @@ public class PlayerDataManager : MonoBehaviour
     {
         PlayerPrefs.SetInt(RankKey, rank);
         PlayerPrefs.SetInt(MoneyKey, money);
-        PlayerPrefs.Save();
+        //PlayerPrefs.Save();
     }
 
     public void LoadData()
@@ -86,19 +86,19 @@ public class PlayerDataManager : MonoBehaviour
 
         PlayerPrefs.DeleteKey(RankKey);
         PlayerPrefs.DeleteKey(MoneyKey);
-        PlayerPrefs.Save();
+        //PlayerPrefs.Save();
 
         OnPlayerDataChanged?.Invoke();
     }
 
     private void OnApplicationPause(bool isPaused)
     {
-        if (isPaused)
-            SaveData();
+        //if (isPaused)
+           //SaveData();
     }
 
     private void OnApplicationQuit()
     {
-        SaveData();
+        //SaveData();
     }
 }

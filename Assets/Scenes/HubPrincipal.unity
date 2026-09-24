@@ -2222,7 +2222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDataManager
   rank: 1
-  money: 0
+  money: 100
 --- !u!4 &1695382791
 Transform:
   m_ObjectHideFlags: 0

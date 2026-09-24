@@ -137,6 +137,17 @@ public class Victoria : MonoBehaviour
         yaVictoria = true;
         Debug.Log("¡VICTORIA! condición cumplida.");
 
+        // Dar recompensa por victoria
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.AddMoney(35);
+            Debug.Log($"Recompensa de victoria: +35 dinero. Total: {PlayerDataManager.Instance.Money}");
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró PlayerDataManager.Instance.");
+        }
+
         // Pausar juego
         Time.timeScale = 0f;
 
