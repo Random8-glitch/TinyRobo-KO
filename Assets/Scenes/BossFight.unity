@@ -136,7 +136,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &11128210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.8915094, g: 0.9047762, b: 1, a: 0.24705882}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2435,7 +2435,7 @@ RectTransform:
   m_GameObject: {fileID: 672621333}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.0419636, y: 1.0419636, z: 1.0419636}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 972033081}
@@ -6530,7 +6530,7 @@ RectTransform:
   m_GameObject: {fileID: 1390779606}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.69948, y: 0.69948, z: 0.69948}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1503851479}
@@ -6893,7 +6893,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -150.13194, y: -1.2388916, z: -113.83751, w: -1.8436279}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -7325,10 +7325,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1908.5, y: 600}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -7444,7 +7444,7 @@ RectTransform:
   m_GameObject: {fileID: 1549794169}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.6429889, y: 1, z: 1}
+  m_LocalScale: {x: 1.42, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1678708749}
@@ -9271,7 +9271,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -639.5, y: 0.000030517578}
+  m_AnchoredPosition: {x: -700, y: 20}
   m_SizeDelta: {x: 474.4291, y: 72.385}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1817223898
@@ -12071,6 +12071,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2794113455928875461, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2794113455928875461, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2794113455928875461, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
+      propertyPath: m_Color.g
+      value: 0.84927297
+      objectReference: {fileID: 0}
+    - target: {fileID: 2794113455928875461, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
+      propertyPath: m_Color.r
+      value: 0.7971698
+      objectReference: {fileID: 0}
     - target: {fileID: 6196466413826915792, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -12078,6 +12094,10 @@ PrefabInstance:
     - target: {fileID: 6277183536515531654, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
       propertyPath: m_Name
       value: Panel Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 6277183536515531654, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6847777318015749914, guid: 8f2bc7f851a7c664fb1b2d1540c8de10, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
