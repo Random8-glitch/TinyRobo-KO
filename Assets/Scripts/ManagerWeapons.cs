@@ -7,9 +7,8 @@ public class ManagerWeapon : MonoBehaviour
 
     private const int MaxWeaponSlots = 3;
 
-    [Header("Lista de armas")]
-    [Tooltip("Lista compartida de prefabs e iconos.")]
-    [SerializeField] private WeaponList weaponList;
+    [Header("Datos de armas")]
+    [SerializeField] private WeaponManager weaponManager;
 
     [Header("Weapon Holders del jugador")]
     [Tooltip("Los 3 lugares donde aparecerán las armas del jugador.")]
@@ -50,11 +49,23 @@ public class ManagerWeapon : MonoBehaviour
 
         Instance = this;
 
+        weaponManager = WeaponManager.Instance;
+
         InitializeWeaponSlots();
     }
 
     private void Start()
     {
+        weaponManager = WeaponManager.Instance;
+
+        if (weaponManager == null)
+        {
+            Debug.LogError(
+                "No existe un WeaponManager persistente.",
+                this
+            );
+        }
+
         Time.timeScale = 0f;
 
         if (pauseUI != null)
@@ -86,10 +97,10 @@ public class ManagerWeapon : MonoBehaviour
 
     private void ValidateConfiguration()
     {
-        if (weaponList == null)
+        if (weaponManager == null)
         {
             Debug.LogError(
-                "ManagerWeapon necesita una WeaponList.",
+                "ManagerWeapon necesita una referencia a WeaponManager.",
                 this
             );
         }
@@ -120,7 +131,20 @@ public class ManagerWeapon : MonoBehaviour
     /// </summary>
     public void ToggleWeapon(int weaponID)
     {
-        if (!IsValidWeaponID(weaponID))
+        if (weaponManager == null)
+        {
+            Debug.LogError(
+                "ManagerWeapon no tiene asignado un WeaponManager.",
+                this
+            );
+
+            return;
+        }
+
+        WeaponManager.WeaponRuntimeData weapon =
+            weaponManager.GetWeapon(weaponID);
+
+        if (weapon == null)
         {
             Debug.LogWarning(
                 $"El arma con ID {weaponID} no existe.",
@@ -130,8 +154,33 @@ public class ManagerWeapon : MonoBehaviour
             return;
         }
 
+        // Opcional, pero recomendable:
+        // no permitir equipar armas bloqueadas por rango.
+        if (!weapon.Activo)
+        {
+            Debug.LogWarning(
+                $"El arma {weapon.WeaponName} no está activa. " +
+                $"Requiere rango {weapon.Rank}.",
+                this
+            );
+
+            return;
+        }
+
+        // No permitir equipar armas que todavía no fueron compradas.
+        if (!weapon.Comprado)
+        {
+            Debug.LogWarning(
+                $"El arma {weapon.WeaponName} todavía no está comprada.",
+                this
+            );
+
+            return;
+        }
+
         int currentSlot = GetWeaponSlot(weaponID);
 
+        // Si ya está equipada, la quitamos.
         if (currentSlot != -1)
         {
             RemoveWeaponFromSlot(currentSlot);
@@ -150,14 +199,17 @@ public class ManagerWeapon : MonoBehaviour
             return;
         }
 
-        EquipWeaponInSlot(weaponID, emptySlot);
+        EquipWeaponInSlot(weapon, emptySlot);
     }
 
     private void EquipWeaponInSlot(
-        int weaponID,
-        int slotIndex
-    )
+    WeaponManager.WeaponRuntimeData weapon,
+    int slotIndex
+)
     {
+        if (weapon == null)
+            return;
+
         if (!IsValidSlot(slotIndex))
             return;
 
@@ -174,13 +226,13 @@ public class ManagerWeapon : MonoBehaviour
             return;
         }
 
-        GameObject weaponPrefab =
-            weaponList.GetWeaponPrefab(weaponID);
+        GameObject weaponPrefab = weapon.WeaponPrefab;
 
         if (weaponPrefab == null)
         {
             Debug.LogError(
-                $"El arma {weaponID} no tiene un prefab asignado.",
+                $"El arma {weapon.WeaponName} " +
+                $"con ID {weapon.WeaponID} no tiene prefab.",
                 this
             );
 
@@ -197,9 +249,12 @@ public class ManagerWeapon : MonoBehaviour
         newWeapon.transform.localRotation = Quaternion.identity;
 
         weaponInstances[slotIndex] = newWeapon;
-        equippedWeaponIDs[slotIndex] = weaponID;
+        equippedWeaponIDs[slotIndex] = weapon.WeaponID;
 
-        UpdateWeaponSlotUI(slotIndex, weaponID);
+        UpdateWeaponSlotUI(
+            slotIndex,
+            weapon.WeaponIcon
+        );
     }
 
     public void RemoveWeaponFromSlot(int slotIndex)
@@ -222,22 +277,19 @@ public class ManagerWeapon : MonoBehaviour
     }
 
     private void UpdateWeaponSlotUI(
-        int slotIndex,
-        int weaponID
-    )
+    int slotIndex,
+    Sprite weaponIcon
+)
     {
         Image slotImage = GetWeaponSlotImage(slotIndex);
 
         if (slotImage == null)
             return;
 
-        Sprite weaponIcon =
-            weaponList.GetWeaponIcon(weaponID);
-
         if (weaponIcon == null)
         {
             Debug.LogWarning(
-                $"El arma {weaponID} no tiene un icono válido.",
+                $"La ranura {slotIndex} recibió un arma sin icono.",
                 this
             );
 
@@ -344,13 +396,7 @@ public class ManagerWeapon : MonoBehaviour
 
         return weaponSlotImages[slotIndex];
     }
-
-    private bool IsValidWeaponID(int weaponID)
-    {
-        return weaponList != null &&
-               weaponList.IsValidWeaponID(weaponID);
-    }
-
+    
     private bool IsValidSlot(int slotIndex)
     {
         return slotIndex >= 0 &&

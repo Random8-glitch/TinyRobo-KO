@@ -56,6 +56,8 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
+    public static WeaponManager Instance { get; private set; }
+
     [Header("Lista original de armas")]
     [SerializeField] private WeaponList weaponList;
 
@@ -70,6 +72,15 @@ public class WeaponManager : MonoBehaviour
 
     private void Awake()
     {
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
         playerDataManager = GetComponent<PlayerDataManager>();
 
         if (playerDataManager == null)
@@ -100,6 +111,11 @@ public class WeaponManager : MonoBehaviour
         {
             playerDataManager.OnPlayerDataChanged -=
                 ActualizarArmasPorRango;
+        }
+
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 
