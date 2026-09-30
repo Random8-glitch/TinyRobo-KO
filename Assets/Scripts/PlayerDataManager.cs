@@ -69,27 +69,27 @@ public class PlayerDataManager : MonoBehaviour
 
     private void BuscarTextoDinero()
     {
-        GameObject objetoTexto = GameObject.Find(nombreTextoDinero);
+        TextMeshProUGUI[] textos =
+            Resources.FindObjectsOfTypeAll<TextMeshProUGUI>();
 
-        if (objetoTexto != null)
+        for (int i = 0; i < textos.Length; i++)
         {
-            textoDinero = objetoTexto.GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI texto = textos[i];
 
-            if (textoDinero == null)
+            if (texto.gameObject.name == nombreTextoDinero &&
+                texto.gameObject.scene.IsValid())
             {
-                Debug.LogWarning(
-                    $"El objeto '{nombreTextoDinero}' existe, pero no tiene TextMeshProUGUI."
-                );
+                textoDinero = texto;
+                return;
             }
         }
-        else
-        {
-            textoDinero = null;
 
-            Debug.LogWarning(
-                $"No se encontró el objeto UI '{nombreTextoDinero}' en la escena '{SceneManager.GetActiveScene().name}'."
-            );
-        }
+        textoDinero = null;
+
+        Debug.LogWarning(
+            $"No se encontró el objeto UI '{nombreTextoDinero}' " +
+            $"en la escena '{SceneManager.GetActiveScene().name}'."
+        );
     }
 
     private void ActualizarUIDinero()

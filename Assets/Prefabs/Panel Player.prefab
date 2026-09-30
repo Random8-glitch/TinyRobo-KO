@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6614962311090257420}
   - component: {fileID: 1296783771812631923}
   - component: {fileID: 8544780408307988866}
+  - component: {fileID: 296418561988699207}
   m_Layer: 5
   m_Name: BotonSierra
   m_TagString: Untagged
@@ -134,6 +135,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 1
+--- !u!114 &296418561988699207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217259296228370553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e07f89d7cbdb7f47a5eed1342bc5bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponToggle
+  weaponID: 3
+  button: {fileID: 8544780408307988866}
 --- !u!1 &1494696332040735647
 GameObject:
   m_ObjectHideFlags: 0
@@ -863,6 +878,7 @@ GameObject:
   - component: {fileID: 4974466243233689898}
   - component: {fileID: 2773132877734782297}
   - component: {fileID: 6847777318015749914}
+  - component: {fileID: 6106174276805994733}
   m_Layer: 5
   m_Name: BotonHacha
   m_TagString: Untagged
@@ -985,6 +1001,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 1
+--- !u!114 &6106174276805994733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4750407052647115942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e07f89d7cbdb7f47a5eed1342bc5bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponToggle
+  weaponID: 0
+  button: {fileID: 6847777318015749914}
 --- !u!1 &5268468058678665446
 GameObject:
   m_ObjectHideFlags: 0
@@ -1136,8 +1166,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1226,7 +1256,7 @@ RectTransform:
   m_GameObject: {fileID: 6277183536515531654}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.0419636, y: 1.0419636, z: 1.0419636}
+  m_LocalScale: {x: 0.4268526, y: 0.4268526, z: 0.4268526}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4369823741496198250}
@@ -1240,7 +1270,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.40594482, y: -91.27844}
+  m_AnchoredPosition: {x: 2.5770874, y: -31.994003}
   m_SizeDelta: {x: -76.546, y: -218.7008}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3644013933315996410
@@ -1264,7 +1294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1293,6 +1323,7 @@ GameObject:
   - component: {fileID: 2496692007677594033}
   - component: {fileID: 906601777012120249}
   - component: {fileID: 6196466413826915792}
+  - component: {fileID: 5199391230677895791}
   m_Layer: 5
   m_Name: BotonBarredora
   m_TagString: Untagged
@@ -1415,6 +1446,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 1
+--- !u!114 &5199391230677895791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6874451265255622874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e07f89d7cbdb7f47a5eed1342bc5bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponToggle
+  weaponID: 2
+  button: {fileID: 6196466413826915792}
 --- !u!1 &8108290790774485235
 GameObject:
   m_ObjectHideFlags: 0
@@ -1577,6 +1622,7 @@ GameObject:
   - component: {fileID: 4656956212304062717}
   - component: {fileID: 1256894630801230339}
   - component: {fileID: 2543983444014331554}
+  - component: {fileID: 2926936481690615117}
   m_Layer: 5
   m_Name: BotonMartillo
   m_TagString: Untagged
@@ -1699,3 +1745,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 1
+--- !u!114 &2926936481690615117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9046615117398117362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e07f89d7cbdb7f47a5eed1342bc5bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponToggle
+  weaponID: 1
+  button: {fileID: 2543983444014331554}

@@ -37,6 +37,8 @@ public class WeaponManager : MonoBehaviour
             set => activo = value;
         }
 
+        
+
         public WeaponRuntimeData(
             int weaponID,
             WeaponList.WeaponData weaponData,
@@ -209,6 +211,8 @@ public class WeaponManager : MonoBehaviour
         return null;
     }
 
+    public event Action OnWeaponsChanged;
+
     public bool ComprarArma(int weaponID)
     {
         WeaponRuntimeData weapon = GetWeapon(weaponID);
@@ -231,6 +235,9 @@ public class WeaponManager : MonoBehaviour
             return false;
 
         weapon.Comprado = true;
+
+        OnWeaponsChanged?.Invoke();
+
         return true;
     }
 
