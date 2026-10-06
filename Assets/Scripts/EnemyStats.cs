@@ -25,7 +25,7 @@ public class EnemyStats : MonoBehaviour
         }
     }
 
-    private void ActualizarTexto()
+    public void ActualizarTexto()
     {
         if (textoVida != null)
         {

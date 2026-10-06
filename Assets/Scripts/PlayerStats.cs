@@ -25,7 +25,7 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    private void ActualizarTexto()
+    public void ActualizarTexto()
     {
         if (textoVida != null)
         {

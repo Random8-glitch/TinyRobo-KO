@@ -22,12 +22,7 @@ public class ManagerWeapon : MonoBehaviour
     private Image[] weaponSlotImages =
         new Image[MaxWeaponSlots];
 
-    [Header("UI de pausa")]
-    [SerializeField] private GameObject pauseUI;
-
-    [Header("Menús de selección")]
-    [SerializeField] private GameObject playerUI;
-    [SerializeField] private GameObject enemyUI;
+    
 
     // -1 significa que la ranura está vacía.
     private readonly int[] equippedWeaponIDs =
@@ -66,12 +61,7 @@ public class ManagerWeapon : MonoBehaviour
             );
         }
 
-        Time.timeScale = 0f;
-
-        if (pauseUI != null)
-        {
-            pauseUI.SetActive(true);
-        }
+        
     }
 
     private void OnDestroy()
@@ -403,39 +393,5 @@ public class ManagerWeapon : MonoBehaviour
                slotIndex < MaxWeaponSlots;
     }
 
-    public void ContinueGame()
-    {
-        Time.timeScale = 1f;
-
-        if (pauseUI != null)
-        {
-            pauseUI.SetActive(false);
-        }
-    }
-
-    public void AbrirPlayerMenu()
-    {
-        if (playerUI != null)
-        {
-            playerUI.SetActive(true);
-        }
-
-        if (enemyUI != null)
-        {
-            enemyUI.SetActive(false);
-        }
-    }
-
-    public void AbrirEnemyMenu()
-    {
-        if (playerUI != null)
-        {
-            playerUI.SetActive(false);
-        }
-
-        if (enemyUI != null)
-        {
-            enemyUI.SetActive(true);
-        }
-    }
+    
 }
