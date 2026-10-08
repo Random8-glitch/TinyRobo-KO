@@ -1346,10 +1346,10 @@ RectTransform:
   - {fileID: 1153669670}
   m_Father: {fileID: 1041639127}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100.235275, y: -306}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &635207178
 MonoBehaviour:
@@ -1627,10 +1627,10 @@ RectTransform:
   - {fileID: 1855191354}
   m_Father: {fileID: 1041639127}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100.235275, y: -100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &679059116
 MonoBehaviour:
@@ -2452,10 +2452,10 @@ RectTransform:
   - {fileID: 1897721000}
   m_Father: {fileID: 1041639127}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 306.2353, y: -100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &911822696
 MonoBehaviour:
@@ -2931,7 +2931,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -707.9005, y: 14.7009}
+  m_AnchoredPosition: {x: -707.9005, y: 14.700928}
   m_SizeDelta: {x: -393.5294, y: 499.8274}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1041639128
@@ -3696,7 +3696,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1112044567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9397,10 +9397,10 @@ RectTransform:
   - {fileID: 7449899569182266399}
   m_Father: {fileID: 5938975065276045839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 306.2353, y: -100}
-  m_SizeDelta: {x: 200, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &601877873013225322
 GameObject:
@@ -9509,10 +9509,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ManagerWeapon, Assembly-CSharp
-        m_MethodName: ToggleWeapon
-        m_Mode: 3
+      - m_Target: {fileID: 9116099314556103841}
+        m_TargetAssemblyTypeName: PlayerWeaponToggle, Assembly-CSharp
+        m_MethodName: PresionarBoton
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -9581,10 +9581,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ManagerWeapon, Assembly-CSharp
-        m_MethodName: ToggleWeapon
-        m_Mode: 3
+      - m_Target: {fileID: 3324375866267492363}
+        m_TargetAssemblyTypeName: PlayerWeaponToggle, Assembly-CSharp
+        m_MethodName: PresionarBoton
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -9774,7 +9774,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &3324375866267492363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9852,10 +9852,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ManagerWeapon, Assembly-CSharp
-        m_MethodName: ToggleWeapon
-        m_Mode: 3
+      - m_Target: {fileID: 3654673147546894985}
+        m_TargetAssemblyTypeName: PlayerWeaponToggle, Assembly-CSharp
+        m_MethodName: PresionarBoton
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -9906,10 +9906,10 @@ RectTransform:
   - {fileID: 4246914125982358972}
   m_Father: {fileID: 5938975065276045839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100.235275, y: -306}
-  m_SizeDelta: {x: 200, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3654673147546894985
 MonoBehaviour:
@@ -10175,10 +10175,10 @@ RectTransform:
   - {fileID: 3703484628623725810}
   m_Father: {fileID: 5938975065276045839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100.235275, y: -100}
-  m_SizeDelta: {x: 200, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &5173991599314346016
 RectTransform:
@@ -10566,7 +10566,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -707.9005, y: 14.7009}
+  m_AnchoredPosition: {x: -707.9005, y: 14.700928}
   m_SizeDelta: {x: -393.5294, y: 499.8274}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &6000514256695175617
@@ -10857,10 +10857,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ManagerWeapon, Assembly-CSharp
-        m_MethodName: ToggleWeapon
-        m_Mode: 3
+      - m_Target: {fileID: 5909112090264319403}
+        m_TargetAssemblyTypeName: PlayerWeaponToggle, Assembly-CSharp
+        m_MethodName: PresionarBoton
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -11511,10 +11511,10 @@ RectTransform:
   - {fileID: 4738833843795772811}
   m_Father: {fileID: 5938975065276045839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 306.2353, y: -306}
-  m_SizeDelta: {x: 200, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &9116099314556103841
 MonoBehaviour:
