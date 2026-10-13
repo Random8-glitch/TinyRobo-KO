@@ -17,11 +17,14 @@ public class ModificadorStats : ScriptableObject
 public enum TipoScript
 {
     Stats,
-    RoboMov
+    RoboMov,
+    Weapon
 }
 
 public enum AtributoModificable
 {
+    
+
     VidaMax,
     Vida,
 
@@ -32,7 +35,9 @@ public enum AtributoModificable
     VelocidadGiroMaxima,
     DistanciaRebote,
     DistanciaReboteObjetivo,
-    TiempoAturdido
+    TiempoAturdido,
+
+    DañoPlus
 }
 
 [System.Serializable]

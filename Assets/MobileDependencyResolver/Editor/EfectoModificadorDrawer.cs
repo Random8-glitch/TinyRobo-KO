@@ -23,6 +23,11 @@ public class EfectoModificadorDrawer : PropertyDrawer
         "TiempoAturdido"
     };
 
+    private static readonly string[] weapon =
+    {
+        "DañoPlus"
+    };
+
     public override void OnGUI(
         Rect position,
         SerializedProperty property,
@@ -37,24 +42,61 @@ public class EfectoModificadorDrawer : PropertyDrawer
         float linea = EditorGUIUtility.singleLineHeight;
         float espacio = EditorGUIUtility.standardVerticalSpacing;
 
-        Rect r1 = new Rect(position.x, position.y, position.width, linea);
-        Rect r2 = new Rect(position.x, position.y + linea + espacio, position.width, linea);
-        Rect r3 = new Rect(position.x, position.y + (linea + espacio) * 2, position.width, linea);
+        Rect r1 = new Rect(
+            position.x, position.y,
+            position.width, linea);
 
-        EditorGUI.PropertyField(r1, script, new GUIContent("Script"));
+        Rect r2 = new Rect(
+            position.x,
+            position.y + linea + espacio,
+            position.width, linea);
 
-        string[] opciones = script.enumValueIndex == 0 ? stats : roboMov;
+        Rect r3 = new Rect(
+            position.x,
+            position.y + (linea + espacio) * 2,
+            position.width, linea);
 
-        string actual = ((AtributoModificable)atributo.enumValueIndex).ToString();
+        EditorGUI.PropertyField(
+            r1, script, new GUIContent("Script"));
+
+        string[] opciones;
+
+        switch ((TipoScript)script.intValue)
+        {
+            case TipoScript.Stats:
+                opciones = stats;
+                break;
+
+            case TipoScript.RoboMov:
+                opciones = roboMov;
+                break;
+
+            case TipoScript.Weapon:
+                opciones = weapon;
+                break;
+
+            default:
+                opciones = stats;
+                break;
+        }
+
+        string actual =
+            ((AtributoModificable)atributo.intValue).ToString();
+
         int indice = System.Array.IndexOf(opciones, actual);
-        if (indice < 0) indice = 0;
 
-        indice = EditorGUI.Popup(r2, "Stat", indice, opciones);
+        if (indice < 0)
+            indice = 0;
 
-        atributo.enumValueIndex =
-            (int)System.Enum.Parse(typeof(AtributoModificable), opciones[indice]);
+        indice = EditorGUI.Popup(
+            r2, "Stat", indice, opciones);
 
-        EditorGUI.PropertyField(r3, cantidad, new GUIContent("Cantidad"));
+        atributo.intValue = (int)System.Enum.Parse(
+            typeof(AtributoModificable),
+            opciones[indice]);
+
+        EditorGUI.PropertyField(
+            r3, cantidad, new GUIContent("Cantidad"));
 
         EditorGUI.EndProperty();
     }

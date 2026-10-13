@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using System.Collections;
 
@@ -21,6 +22,9 @@ public class AxePlayer : MonoBehaviour
     private Renderer rend;
     private Color colorOriginal;
 
+    // Referencia al EquiparChips del Player padre
+    private EquiparChips equiparChips;
+
     private void Start()
     {
         enemyLayer = LayerMask.NameToLayer("Enemy");
@@ -31,6 +35,9 @@ public class AxePlayer : MonoBehaviour
         {
             colorOriginal = rend.material.color;
         }
+
+        // Busca EquiparChips en los objetos padre
+        equiparChips = GetComponentInParent<EquiparChips>();
 
         StartCoroutine(CicloCritico());
     }
@@ -59,8 +66,15 @@ public class AxePlayer : MonoBehaviour
 
         if (enemigoDentro == enemigo)
         {
+            // Daño base del hacha
             float danio = danioNormal;
 
+            // 1. Aplicar multiplicador del chip
+            float multiplicadorChip = ObtenerMultiplicadorChip();
+
+            danio *= multiplicadorChip;
+
+            // 2. Aplicar crítico después del chip
             if (criticoActivo)
             {
                 danio *= multiplicadorCritico;
@@ -78,6 +92,41 @@ public class AxePlayer : MonoBehaviour
                 stats.RecibirDanio(danio);
             }
         }
+    }
+
+    // Busca únicamente efectos Weapon -> DañoPlus
+    private float ObtenerMultiplicadorChip()
+    {
+        // Si no existe EquiparChips, no modifica el daño
+        if (equiparChips == null)
+            return 1f;
+
+        ModificadorStats modificador =
+            equiparChips.ModificadorEquipado;
+
+        // Si no hay modificador equipado
+        if (modificador == null)
+            return 1f;
+
+        if (modificador.efectos == null)
+            return 1f;
+
+        float multiplicador = 1f;
+
+        foreach (EfectoModificador efecto in modificador.efectos)
+        {
+            if (efecto == null)
+                continue;
+
+            // Solamente Weapon -> DañoPlus
+            if (efecto.scriptObjetivo == TipoScript.Weapon &&
+                efecto.atributo == AtributoModificable.DañoPlus)
+            {
+                multiplicador *= efecto.cantidad;
+            }
+        }
+
+        return multiplicador;
     }
 
     private IEnumerator CicloCritico()
