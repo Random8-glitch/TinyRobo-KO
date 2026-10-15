@@ -10,14 +10,19 @@ public class BattleStart : MonoBehaviour
     [SerializeField] private GameObject weaponUI;
     [SerializeField] private GameObject chipUI;
 
+    [SerializeField] private bool menu;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if(menu == false){ 
+
         Time.timeScale = 0f;
 
         if (menuUI != null)
         {
             menuUI.SetActive(true);
+        }
         }
     }
 
