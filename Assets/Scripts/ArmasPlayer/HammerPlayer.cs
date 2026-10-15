@@ -21,6 +21,9 @@ public class HammerPlayer : MonoBehaviour
     private Color colorOriginal;
     private Color colorCargaMaxima = new Color(1f, 0.5f, 0f); // Naranja
 
+    // Referencia al EquiparChips del Player padre
+    private EquiparChips equiparChips;
+
     private void Start()
     {
         enemyLayer = LayerMask.NameToLayer("Enemy");
@@ -33,6 +36,9 @@ public class HammerPlayer : MonoBehaviour
         {
             colorOriginal = rend.material.color;
         }
+
+        // Busca EquiparChips en los objetos padre
+        equiparChips = GetComponentInParent<EquiparChips>();
     }
 
     private void Update()
@@ -78,6 +84,10 @@ public class HammerPlayer : MonoBehaviour
 
         float danioGolpe = danioActual;
 
+        float multiplicadorChip = ObtenerMultiplicadorChip();
+
+        danioGolpe *= multiplicadorChip;
+
         ReiniciarCarga();
 
         if (enemigoDentro == enemigo)
@@ -94,6 +104,40 @@ public class HammerPlayer : MonoBehaviour
                 stats.RecibirDanio(danioGolpe);
             }
         }
+    }
+
+    private float ObtenerMultiplicadorChip()
+    {
+        // Si no existe EquiparChips, no modifica el daño
+        if (equiparChips == null)
+            return 1f;
+
+        ModificadorStats modificador =
+            equiparChips.ModificadorEquipado;
+
+        // Si no hay modificador equipado
+        if (modificador == null)
+            return 1f;
+
+        if (modificador.efectos == null)
+            return 1f;
+
+        float multiplicador = 1f;
+
+        foreach (EfectoModificador efecto in modificador.efectos)
+        {
+            if (efecto == null)
+                continue;
+
+            // Solamente Weapon -> DañoPlus
+            if (efecto.scriptObjetivo == TipoScript.Weapon &&
+                efecto.atributo == AtributoModificable.DañoPlus)
+            {
+                multiplicador *= efecto.cantidad;
+            }
+        }
+
+        return multiplicador;
     }
 
     private void ReiniciarCarga()

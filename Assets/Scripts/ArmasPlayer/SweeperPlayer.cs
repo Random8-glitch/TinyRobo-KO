@@ -13,11 +13,16 @@ public class SweeperPlayer : MonoBehaviour
 
     private RoboMovPlayer player;
 
+    // Referencia al EquiparChips del Player padre
+    private EquiparChips equiparChips;
+
     private void Start()
     {
         enemyLayer = LayerMask.NameToLayer("Enemy");
 
         player = GetComponentInParent<RoboMovPlayer>();
+
+        equiparChips = GetComponentInParent<EquiparChips>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -27,6 +32,10 @@ public class SweeperPlayer : MonoBehaviour
 
         EnemyStats stats =
             other.GetComponent<EnemyStats>();
+
+        float multiplicadorChip = ObtenerMultiplicadorChip();
+
+        danioBase *= multiplicadorChip;
 
         if (stats != null)
         {
@@ -58,5 +67,39 @@ public class SweeperPlayer : MonoBehaviour
                 duracionEmpuje
             );
         }
+    }
+
+    private float ObtenerMultiplicadorChip()
+    {
+        // Si no existe EquiparChips, no modifica el daño
+        if (equiparChips == null)
+            return 1f;
+
+        ModificadorStats modificador =
+            equiparChips.ModificadorEquipado;
+
+        // Si no hay modificador equipado
+        if (modificador == null)
+            return 1f;
+
+        if (modificador.efectos == null)
+            return 1f;
+
+        float multiplicador = 1f;
+
+        foreach (EfectoModificador efecto in modificador.efectos)
+        {
+            if (efecto == null)
+                continue;
+
+            // Solamente Weapon -> DañoPlus
+            if (efecto.scriptObjetivo == TipoScript.Weapon &&
+                efecto.atributo == AtributoModificable.DañoPlus)
+            {
+                multiplicador *= efecto.cantidad;
+            }
+        }
+
+        return multiplicador;
     }
 }

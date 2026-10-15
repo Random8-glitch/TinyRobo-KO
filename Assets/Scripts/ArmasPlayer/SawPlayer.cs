@@ -27,6 +27,9 @@ public class SawPlayer : MonoBehaviour
     private Color originalColor;
     private Color originalImageColor;
 
+    // Referencia al EquiparChips del Player padre
+    private EquiparChips equiparChips;
+
     private void Start()
     {
         enemyLayer = LayerMask.NameToLayer("Enemy");
@@ -47,6 +50,9 @@ public class SawPlayer : MonoBehaviour
             originalImageColor = uiImage.color;
         else
             Debug.LogWarning("SawPlayer: no se ha asignado Image de UI. Indicador de transparencia no estará disponible.");
+
+        // Busca EquiparChips en los objetos padre
+        equiparChips = GetComponentInParent<EquiparChips>();
     }
 
     private void Update()
@@ -145,7 +151,45 @@ public class SawPlayer : MonoBehaviour
 
         if (stats != null)
         {
+            float multiplicadorChip = ObtenerMultiplicadorChip();
+
+            danioPorTick *= multiplicadorChip;
+
             stats.RecibirDanio(danioPorTick);
         }
+    }
+
+    private float ObtenerMultiplicadorChip()
+    {
+        // Si no existe EquiparChips, no modifica el daño
+        if (equiparChips == null)
+            return 1f;
+
+        ModificadorStats modificador =
+            equiparChips.ModificadorEquipado;
+
+        // Si no hay modificador equipado
+        if (modificador == null)
+            return 1f;
+
+        if (modificador.efectos == null)
+            return 1f;
+
+        float multiplicador = 1f;
+
+        foreach (EfectoModificador efecto in modificador.efectos)
+        {
+            if (efecto == null)
+                continue;
+
+            // Solamente Weapon -> DañoPlus
+            if (efecto.scriptObjetivo == TipoScript.Weapon &&
+                efecto.atributo == AtributoModificable.DañoPlus)
+            {
+                multiplicador *= efecto.cantidad;
+            }
+        }
+
+        return multiplicador;
     }
 }
