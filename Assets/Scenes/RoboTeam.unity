@@ -1566,6 +1566,7 @@ MonoBehaviour:
   menuUI: {fileID: 11128209}
   weaponUI: {fileID: 3279458565740759904}
   chipUI: {fileID: 1112044566}
+  menu: 0
 --- !u!43 &444597030
 Mesh:
   m_ObjectHideFlags: 0
@@ -2129,7 +2130,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 04435265cec5904418cbd7891596d1ea, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2615,6 +2616,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       propertyPath: m_Name
       value: EcscenarioBasico_003 v3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
