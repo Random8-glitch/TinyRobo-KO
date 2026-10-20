@@ -1141,9 +1141,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8f6850ec50fc544951d23451d5117e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovEnemy
-  velocidad: 5
-  tiempoDeGiro: 1
-  velocidadGiroMinima: 10
+  velocidad: 7
+  tiempoDeGiro: 0.8
+  velocidadGiroMinima: 15
   velocidadGiroMaxima: 55
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
@@ -1160,8 +1160,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10216887a9b626a438291e9ece3890a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  vidaMax: 100
-  vida: 100
+  vidaMax: 75
+  vida: 75
   textoVida: {fileID: 1445811716}
 --- !u!4 &340384554
 Transform:
@@ -2130,7 +2130,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 04435265cec5904418cbd7891596d1ea, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2619,7 +2619,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
