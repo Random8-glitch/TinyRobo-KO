@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,24 +12,20 @@ public class ManagerWeapon : MonoBehaviour
     [SerializeField] private WeaponManager weaponManager;
 
     [Header("Weapon Holders del jugador")]
-    [Tooltip("Los 3 lugares donde aparecerán las armas del jugador.")]
+    [Tooltip("Los 3 lugares donde aparecerán las armas.")]
     [SerializeField]
     private Transform[] weaponHolders =
         new Transform[MaxWeaponSlots];
 
     [Header("Ranuras visuales del jugador")]
-    [Tooltip("Las 3 imágenes donde aparecerán los iconos.")]
+    [Tooltip("Las 3 imágenes de los iconos.")]
     [SerializeField]
     private Image[] weaponSlotImages =
         new Image[MaxWeaponSlots];
 
-    
-
-    // -1 significa que la ranura está vacía.
     private readonly int[] equippedWeaponIDs =
         new int[MaxWeaponSlots];
 
-    // Instancias físicas de las armas.
     private readonly GameObject[] weaponInstances =
         new GameObject[MaxWeaponSlots];
 
@@ -44,8 +41,6 @@ public class ManagerWeapon : MonoBehaviour
 
         Instance = this;
 
-        weaponManager = WeaponManager.Instance;
-
         InitializeWeaponSlots();
     }
 
@@ -59,9 +54,10 @@ public class ManagerWeapon : MonoBehaviour
                 "No existe un WeaponManager persistente.",
                 this
             );
+            return;
         }
 
-        
+        RecuperarArmasEquipadas();
     }
 
     private void OnDestroy()
@@ -87,20 +83,12 @@ public class ManagerWeapon : MonoBehaviour
 
     private void ValidateConfiguration()
     {
-        if (weaponManager == null)
-        {
-            Debug.LogError(
-                "ManagerWeapon necesita una referencia a WeaponManager.",
-                this
-            );
-        }
-
         if (weaponHolders == null ||
             weaponHolders.Length != MaxWeaponSlots)
         {
             Debug.LogError(
-                $"ManagerWeapon necesita exactamente " +
-                $"{MaxWeaponSlots} Weapon Holders.",
+                "ManagerWeapon necesita exactamente " +
+                "3 Weapon Holders.",
                 this
             );
         }
@@ -109,25 +97,82 @@ public class ManagerWeapon : MonoBehaviour
             weaponSlotImages.Length != MaxWeaponSlots)
         {
             Debug.LogError(
-                $"ManagerWeapon necesita exactamente " +
-                $"{MaxWeaponSlots} imágenes de UI.",
+                "ManagerWeapon necesita exactamente " +
+                "3 imágenes de UI.",
                 this
             );
         }
     }
 
-    /// <summary>
-    /// Equipa o elimina un arma del jugador.
-    /// </summary>
+    // ==========================================
+    // SINCRONIZACIÓN CON WEAPONMANAGER
+    // ==========================================
+
+    private void SincronizarArmasEquipadas()
+    {
+        if (weaponManager == null)
+        {
+            weaponManager = WeaponManager.Instance;
+        }
+
+        if (weaponManager == null)
+            return;
+
+        weaponManager.ActualizarArmasEquipadas(
+            GetEquippedWeapons()
+        );
+    }
+
+    private void RecuperarArmasEquipadas()
+    {
+        if (weaponManager == null)
+            return;
+
+        int[] savedWeapons =
+            weaponManager.GetEquippedWeapons();
+
+        for (int i = 0; i < MaxWeaponSlots; i++)
+        {
+            int weaponID = savedWeapons[i];
+
+            if (weaponID == -1)
+                continue;
+
+            WeaponManager.WeaponRuntimeData weapon =
+                weaponManager.GetWeapon(weaponID);
+
+            if (weapon == null)
+                continue;
+
+            if (!weapon.Activo || !weapon.Comprado)
+                continue;
+
+            if (GetWeaponSlot(weaponID) != -1)
+                continue;
+
+            EquipWeaponInSlot(weapon, i, false);
+        }
+
+        SincronizarArmasEquipadas();
+    }
+
+    // ==========================================
+    // EQUIPAR Y DESEQUIPAR ARMAS
+    // ==========================================
+
     public void ToggleWeapon(int weaponID)
     {
         if (weaponManager == null)
         {
+            weaponManager = WeaponManager.Instance;
+        }
+
+        if (weaponManager == null)
+        {
             Debug.LogError(
-                "ManagerWeapon no tiene asignado un WeaponManager.",
+                "ManagerWeapon no tiene un WeaponManager.",
                 this
             );
-
             return;
         }
 
@@ -140,12 +185,9 @@ public class ManagerWeapon : MonoBehaviour
                 $"El arma con ID {weaponID} no existe.",
                 this
             );
-
             return;
         }
 
-        // Opcional, pero recomendable:
-        // no permitir equipar armas bloqueadas por rango.
         if (!weapon.Activo)
         {
             Debug.LogWarning(
@@ -153,24 +195,20 @@ public class ManagerWeapon : MonoBehaviour
                 $"Requiere rango {weapon.Rank}.",
                 this
             );
-
             return;
         }
 
-        // No permitir equipar armas que todavía no fueron compradas.
         if (!weapon.Comprado)
         {
             Debug.LogWarning(
-                $"El arma {weapon.WeaponName} todavía no está comprada.",
+                $"El arma {weapon.WeaponName} no está comprada.",
                 this
             );
-
             return;
         }
 
         int currentSlot = GetWeaponSlot(weaponID);
 
-        // Si ya está equipada, la quitamos.
         if (currentSlot != -1)
         {
             RemoveWeaponFromSlot(currentSlot);
@@ -182,10 +220,9 @@ public class ManagerWeapon : MonoBehaviour
         if (emptySlot == -1)
         {
             Debug.Log(
-                "Los tres puestos de armas del jugador están ocupados.",
+                "Los tres puestos de armas están ocupados.",
                 this
             );
-
             return;
         }
 
@@ -193,9 +230,9 @@ public class ManagerWeapon : MonoBehaviour
     }
 
     private void EquipWeaponInSlot(
-    WeaponManager.WeaponRuntimeData weapon,
-    int slotIndex
-)
+        WeaponManager.WeaponRuntimeData weapon,
+        int slotIndex,
+        bool sincronizar = true)
     {
         if (weapon == null)
             return;
@@ -203,16 +240,17 @@ public class ManagerWeapon : MonoBehaviour
         if (!IsValidSlot(slotIndex))
             return;
 
+        if (!IsSlotEmpty(slotIndex))
+            return;
+
         Transform holder = GetWeaponHolder(slotIndex);
 
         if (holder == null)
         {
             Debug.LogError(
-                $"No hay un Weapon Holder asignado " +
-                $"a la ranura {slotIndex} del jugador.",
+                $"No hay Weapon Holder en la ranura {slotIndex}.",
                 this
             );
-
             return;
         }
 
@@ -225,7 +263,6 @@ public class ManagerWeapon : MonoBehaviour
                 $"con ID {weapon.WeaponID} no tiene prefab.",
                 this
             );
-
             return;
         }
 
@@ -245,6 +282,11 @@ public class ManagerWeapon : MonoBehaviour
             slotIndex,
             weapon.WeaponIcon
         );
+
+        if (sincronizar)
+        {
+            SincronizarArmasEquipadas();
+        }
     }
 
     public void RemoveWeaponFromSlot(int slotIndex)
@@ -264,12 +306,17 @@ public class ManagerWeapon : MonoBehaviour
         equippedWeaponIDs[slotIndex] = -1;
 
         ClearWeaponSlotUI(slotIndex);
+
+        SincronizarArmasEquipadas();
     }
 
+    // ==========================================
+    // INTERFAZ DE USUARIO
+    // ==========================================
+
     private void UpdateWeaponSlotUI(
-    int slotIndex,
-    Sprite weaponIcon
-)
+        int slotIndex,
+        Sprite weaponIcon)
     {
         Image slotImage = GetWeaponSlotImage(slotIndex);
 
@@ -303,6 +350,10 @@ public class ManagerWeapon : MonoBehaviour
         slotImage.enabled = false;
     }
 
+    // ==========================================
+    // CONSULTAS Y ADMINISTRACIÓN
+    // ==========================================
+
     public void ClearAllWeapons()
     {
         for (int i = 0; i < MaxWeaponSlots; i++)
@@ -334,6 +385,9 @@ public class ManagerWeapon : MonoBehaviour
 
     public bool IsWeaponEquipped(int weaponID)
     {
+        if (weaponID < 0)
+            return false;
+
         return GetWeaponSlot(weaponID) != -1;
     }
 
@@ -386,12 +440,10 @@ public class ManagerWeapon : MonoBehaviour
 
         return weaponSlotImages[slotIndex];
     }
-    
+
     private bool IsValidSlot(int slotIndex)
     {
         return slotIndex >= 0 &&
                slotIndex < MaxWeaponSlots;
     }
-
-    
 }

@@ -19,56 +19,17 @@ public class MoverseHUB : MonoBehaviour
 
     public void AbrirHUB()
     {
-        if (HUB != null)
-        {
-            HUB.SetActive(true);
-        }
-
-        if (Tienda != null)
-        {
-            Tienda.SetActive(false);
-        }
-
-        if (Taller != null)
-        {
-            Taller.SetActive(false);
-        }
+        SceneManager.LoadScene("HubPrincipal");
     }
 
     public void AbrirTienda()
     {
-        if (HUB != null)
-        {
-            HUB.SetActive(false);
-        }
-
-        if (Tienda != null)
-        {
-            Tienda.SetActive(true);
-        }
-
-        if (Taller != null)
-        {
-            Taller.SetActive(false);
-        }
+        SceneManager.LoadScene("Tienda");
     }
 
     public void AbrirTaller()
     {
-        if (HUB != null)
-        {
-            HUB.SetActive(false);
-        }
-
-        if (Tienda != null)
-        {
-            Tienda.SetActive(false);
-        }
-
-        if (Taller != null)
-        {
-            Taller.SetActive(true);
-        }
+        SceneManager.LoadScene("Taller");
     }
 
     public void ExitGame()

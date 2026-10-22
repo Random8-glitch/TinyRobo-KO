@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,14 +38,11 @@ public class WeaponManager : MonoBehaviour
             set => activo = value;
         }
 
-        
-
         public WeaponRuntimeData(
             int weaponID,
             WeaponList.WeaponData weaponData,
             bool comprado,
-            bool activo
-        )
+            bool activo)
         {
             this.weaponID = weaponID;
 
@@ -58,7 +56,24 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
+    [Header("Chip equipado del jugador")]
+    [Tooltip("ScriptableObject original del chip equipado.")]
+    [SerializeField]
+    private ModificadorStats chipEquipado;
+
+    [Tooltip("Indica si ya se inicializó el estado del chip.")]
+    [SerializeField]
+    private bool chipInicializado;
+
+    public ModificadorStats ChipEquipado => chipEquipado;
+
+    public bool ChipInicializado => chipInicializado;
+
+    public event Action OnChipEquipadoChanged;
+
     public static WeaponManager Instance { get; private set; }
+
+    private const int MaxWeaponSlots = 3;
 
     [Header("Lista original de armas")]
     [SerializeField] private WeaponList weaponList;
@@ -68,13 +83,23 @@ public class WeaponManager : MonoBehaviour
     private List<WeaponRuntimeData> weapons =
         new List<WeaponRuntimeData>();
 
+    [Header("Armas equipadas del jugador")]
+    [Tooltip("Los ID de las tres armas equipadas. -1 indica una ranura vacía.")]
+    [SerializeField]
+    private List<int> equippedWeaponIDs = new List<int>();
+
     private PlayerDataManager playerDataManager;
 
     public IReadOnlyList<WeaponRuntimeData> Weapons => weapons;
 
+    public IReadOnlyList<int> EquippedWeaponIDs =>
+        equippedWeaponIDs.AsReadOnly();
+
+    public event Action OnWeaponsChanged;
+    public event Action OnEquippedWeaponsChanged;
+
     private void Awake()
     {
-
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -91,19 +116,13 @@ public class WeaponManager : MonoBehaviour
                 "No se encontró PlayerDataManager en este GameObject.",
                 this
             );
-
             return;
         }
 
-        /*
-         * Se suscribe antes de crear la lista.
-         *
-         * Si el Awake de PlayerDataManager todavía no se ha ejecutado,
-         * su LoadData invocará posteriormente este evento y actualizará
-         * los estados con el rango cargado desde PlayerPrefs.
-         */
-        playerDataManager.OnPlayerDataChanged += ActualizarArmasPorRango;
+        playerDataManager.OnPlayerDataChanged +=
+            ActualizarArmasPorRango;
 
+        InicializarRanurasEquipadas();
         CrearListaDeArmas();
     }
 
@@ -121,6 +140,27 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
+    private void InicializarRanurasEquipadas()
+    {
+        if (equippedWeaponIDs == null)
+        {
+            equippedWeaponIDs = new List<int>();
+        }
+
+        while (equippedWeaponIDs.Count < MaxWeaponSlots)
+        {
+            equippedWeaponIDs.Add(-1);
+        }
+
+        if (equippedWeaponIDs.Count > MaxWeaponSlots)
+        {
+            equippedWeaponIDs.RemoveRange(
+                MaxWeaponSlots,
+                equippedWeaponIDs.Count - MaxWeaponSlots
+            );
+        }
+    }
+
     private void CrearListaDeArmas()
     {
         weapons.Clear();
@@ -131,17 +171,14 @@ public class WeaponManager : MonoBehaviour
                 "No se ha asignado un WeaponList.",
                 this
             );
-
             return;
         }
 
         int playerRank = playerDataManager.Rank;
 
-        for (
-            int weaponID = 0;
-            weaponID < weaponList.WeaponCount;
-            weaponID++
-        )
+        for (int weaponID = 0;
+             weaponID < weaponList.WeaponCount;
+             weaponID++)
         {
             WeaponList.WeaponData weaponData =
                 weaponList.GetWeapon(weaponID);
@@ -152,17 +189,11 @@ public class WeaponManager : MonoBehaviour
                     $"El arma con ID {weaponID} no es válida.",
                     this
                 );
-
                 continue;
             }
 
-            // Las armas con ID 0, 1 y 2 comienzan compradas.
             bool compradoInicial = weaponID < 3;
 
-            /*
-             * El arma está activa cuando el rango del jugador
-             * es igual o superior al rango requerido.
-             */
             bool activoInicial =
                 playerRank >= weaponData.Rank;
 
@@ -195,6 +226,8 @@ public class WeaponManager : MonoBehaviour
             weapon.Activo =
                 playerRank >= weapon.Rank;
         }
+
+        OnWeaponsChanged?.Invoke();
     }
 
     public WeaponRuntimeData GetWeapon(int weaponID)
@@ -211,8 +244,6 @@ public class WeaponManager : MonoBehaviour
         return null;
     }
 
-    public event Action OnWeaponsChanged;
-
     public bool ComprarArma(int weaponID)
     {
         WeaponRuntimeData weapon = GetWeapon(weaponID);
@@ -227,7 +258,6 @@ public class WeaponManager : MonoBehaviour
                 $"{weapon.Rank}.",
                 this
             );
-
             return false;
         }
 
@@ -245,15 +275,124 @@ public class WeaponManager : MonoBehaviour
     {
         WeaponRuntimeData weapon = GetWeapon(weaponID);
 
-        return weapon != null &&
-               weapon.Comprado;
+        return weapon != null && weapon.Comprado;
     }
 
     public bool EstaActiva(int weaponID)
     {
         WeaponRuntimeData weapon = GetWeapon(weaponID);
 
-        return weapon != null &&
-               weapon.Activo;
+        return weapon != null && weapon.Activo;
     }
+
+    // ==========================================
+    // SISTEMA DE ARMAS EQUIPADAS
+    // ==========================================
+
+    public void ActualizarArmasEquipadas(int[] weaponIDs)
+    {
+        if (weaponIDs == null ||
+            weaponIDs.Length != MaxWeaponSlots)
+        {
+            Debug.LogError(
+                "La lista de armas equipadas debe " +
+                "contener exactamente tres posiciones.",
+                this
+            );
+            return;
+        }
+
+        InicializarRanurasEquipadas();
+
+        bool huboCambios = false;
+
+        for (int i = 0; i < MaxWeaponSlots; i++)
+        {
+            if (equippedWeaponIDs[i] != weaponIDs[i])
+            {
+                equippedWeaponIDs[i] = weaponIDs[i];
+                huboCambios = true;
+            }
+        }
+
+        if (huboCambios)
+        {
+            OnEquippedWeaponsChanged?.Invoke();
+        }
+    }
+
+    public int GetEquippedWeapon(int slotIndex)
+    {
+        if (slotIndex < 0 ||
+            slotIndex >= MaxWeaponSlots)
+        {
+            return -1;
+        }
+
+        InicializarRanurasEquipadas();
+
+        return equippedWeaponIDs[slotIndex];
+    }
+
+    public int[] GetEquippedWeapons()
+    {
+        InicializarRanurasEquipadas();
+
+        return equippedWeaponIDs.ToArray();
+    }
+
+    public bool IsWeaponEquipped(int weaponID)
+    {
+        if (weaponID < 0)
+            return false;
+
+        InicializarRanurasEquipadas();
+
+        return equippedWeaponIDs.Contains(weaponID);
+    }
+
+
+    
+
+    public void ActualizarChipEquipado(ModificadorStats chip)
+    {
+        // Siempre registrar el ScriptableObject original.
+        if (chip != null && chip.Origen != null)
+        {
+            chip = chip.Origen;
+        }
+
+        bool huboCambios =
+            !chipInicializado || chipEquipado != chip;
+
+        chipEquipado = chip;
+        chipInicializado = true;
+
+        if (huboCambios)
+        {
+            OnChipEquipadoChanged?.Invoke();
+        }
+    }
+
+    public ModificadorStats GetChipEquipado()
+    {
+        return chipEquipado;
+    }
+
+    public bool TieneChipEquipado()
+    {
+        return chipEquipado != null;
+    }
+
+    public bool EsChipEquipado(ModificadorStats chip)
+    {
+        if (chip == null)
+            return false;
+
+        ModificadorStats original =
+            chip.Origen != null ? chip.Origen : chip;
+
+        return chipEquipado == original;
+    }
+
 }

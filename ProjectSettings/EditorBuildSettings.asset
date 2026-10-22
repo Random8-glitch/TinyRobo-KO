@@ -23,5 +23,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BossFight.unity
     guid: 24e782880fb718b4dbb6a19612166178
+  - enabled: 1
+    path: Assets/Scenes/Taller.unity
+    guid: 49eb2911cade47042b2c1d8e10f20139
+  - enabled: 1
+    path: Assets/Scenes/Tienda.unity
+    guid: 3fc413a8104ea0141a4028849aebc8ee
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

@@ -1,10 +1,12 @@
+
 using UnityEngine;
 using System.Collections.Generic;
 
 public class EquiparChips : MonoBehaviour
 {
     [Header("Modificador equipado")]
-    [SerializeField] private ModificadorStats modificadorEquipado;
+    [SerializeField]
+    private ModificadorStats modificadorEquipado;
 
     private PlayerStats playerStats;
     private EnemyStats enemyStats;
@@ -15,13 +17,19 @@ public class EquiparChips : MonoBehaviour
     private bool esPlayer;
     private bool esEnemy;
 
-    // Guarda los efectos realmente aplicados.
+    private WeaponManager weaponManager;
+
+    // Referencia a la copia creada por este componente.
+    private ModificadorStats copiaPropia;
+
     private struct EfectoAplicado
     {
         public AtributoModificable atributo;
         public float cantidad;
 
-        public EfectoAplicado(AtributoModificable atributo, float cantidad)
+        public EfectoAplicado(
+            AtributoModificable atributo,
+            float cantidad)
         {
             this.atributo = atributo;
             this.cantidad = cantidad;
@@ -31,15 +39,19 @@ public class EquiparChips : MonoBehaviour
     private readonly List<EfectoAplicado> efectosAplicados =
         new List<EfectoAplicado>();
 
-    public ModificadorStats ModificadorEquipado => modificadorEquipado;
+    public ModificadorStats ModificadorEquipado =>
+        modificadorEquipado;
 
     private void Awake()
     {
         int playerLayer = LayerMask.NameToLayer("Player");
         int enemyLayer = LayerMask.NameToLayer("Enemy");
 
-        esPlayer = gameObject.layer == playerLayer;
-        esEnemy = gameObject.layer == enemyLayer;
+        esPlayer = playerLayer != -1 &&
+                   gameObject.layer == playerLayer;
+
+        esEnemy = enemyLayer != -1 &&
+                  gameObject.layer == enemyLayer;
 
         if (esPlayer)
         {
@@ -54,7 +66,7 @@ public class EquiparChips : MonoBehaviour
         else
         {
             Debug.LogWarning(
-                "GestorModificadores: Layer no válido.",
+                "EquiparChips: Layer no válido.",
                 this
             );
         }
@@ -62,67 +74,224 @@ public class EquiparChips : MonoBehaviour
 
     private void Start()
     {
-        // Aplica el modificador asignado desde el Inspector.
         ModificadorStats inicial = modificadorEquipado;
         modificadorEquipado = null;
 
+        if (esPlayer)
+        {
+            weaponManager = WeaponManager.Instance;
+
+            if (weaponManager != null)
+            {
+                // Si hay un estado guardado,
+                // tiene prioridad sobre el Inspector.
+                if (weaponManager.ChipInicializado)
+                {
+                    ModificadorStats guardado =
+                        weaponManager.GetChipEquipado();
+
+                    if (guardado != null)
+                    {
+                        EquiparInterno(guardado, false);
+                    }
+
+                    return;
+                }
+
+                // Primera inicialización del jugador.
+                if (inicial != null)
+                {
+                    Equipar(inicial);
+                }
+                else
+                {
+                    SincronizarChip();
+                }
+
+                return;
+            }
+
+            Debug.LogWarning(
+                "EquiparChips: No se encontró WeaponManager.",
+                this
+            );
+        }
+
+        // Funcionamiento original para enemigos
+        // o jugadores sin WeaponManager.
         if (inicial != null)
+        {
             Equipar(inicial);
+        }
     }
 
+    // ==========================================
+    // EQUIPAR CHIP
+    // ==========================================
+
     public void Equipar(ModificadorStats nuevoModificador)
+    {
+        EquiparInterno(nuevoModificador, true);
+    }
+
+    private void EquiparInterno(
+        ModificadorStats nuevoModificador,
+        bool sincronizar)
     {
         if (!esPlayer && !esEnemy)
             return;
 
-        if (nuevoModificador == modificadorEquipado)
-            return;
-
-        // Primero retirar el anterior.
-        Desequipar();
-
         if (nuevoModificador == null)
-            return;
-
-        modificadorEquipado = nuevoModificador;
-
-        foreach (EfectoModificador efecto in nuevoModificador.efectos)
         {
-            if (AplicarEfecto(efecto.atributo, efecto.cantidad))
+            DesequiparInterno(sincronizar);
+            return;
+        }
+
+        ModificadorStats originalNuevo =
+            nuevoModificador.Origen != null
+                ? nuevoModificador.Origen
+                : nuevoModificador;
+
+        if (modificadorEquipado != null)
+        {
+            ModificadorStats originalActual =
+                modificadorEquipado.Origen != null
+                    ? modificadorEquipado.Origen
+                    : modificadorEquipado;
+
+            if (originalActual == originalNuevo)
+                return;
+        }
+
+        // Retirar efectos anteriores.
+        DesequiparInterno(false);
+
+        // Crear una copia independiente.
+        ModificadorStats copia =
+            Instantiate(originalNuevo);
+
+        copia.Origen = originalNuevo;
+
+        copiaPropia = copia;
+        modificadorEquipado = copia;
+
+        // Aplicar efectos del nuevo chip.
+        foreach (EfectoModificador efecto in copia.efectos)
+        {
+            if (AplicarEfecto(
+                efecto.atributo,
+                efecto.cantidad))
             {
                 efectosAplicados.Add(
-                    new EfectoAplicado(efecto.atributo, efecto.cantidad)
+                    new EfectoAplicado(
+                        efecto.atributo,
+                        efecto.cantidad
+                    )
                 );
             }
         }
 
         ActualizarVidaUI();
+
+        if (sincronizar)
+        {
+            SincronizarChip();
+        }
     }
+
+    // ==========================================
+    // DESEQUIPAR CHIP
+    // ==========================================
 
     public void Desequipar()
     {
+        DesequiparInterno(true);
+    }
+
+    private void DesequiparInterno(bool sincronizar)
+    {
         if (modificadorEquipado == null &&
             efectosAplicados.Count == 0)
-            return;
+        {
+            if (sincronizar)
+            {
+                SincronizarChip();
+            }
 
-        // Retirar exactamente los efectos que se aplicaron.
+            return;
+        }
+
+        // Retirar exactamente los efectos aplicados.
         foreach (EfectoAplicado efecto in efectosAplicados)
         {
-            AplicarEfecto(efecto.atributo, -efecto.cantidad);
+            AplicarEfecto(
+                efecto.atributo,
+                -efecto.cantidad
+            );
         }
 
         efectosAplicados.Clear();
+
         modificadorEquipado = null;
 
+        // Destruir únicamente la copia propia.
+        if (copiaPropia != null)
+        {
+            Destroy(copiaPropia);
+            copiaPropia = null;
+        }
+
         ActualizarVidaUI();
+
+        if (sincronizar)
+        {
+            SincronizarChip();
+        }
     }
 
-    private bool AplicarEfecto(AtributoModificable atributo, float cantidad)
+    // ==========================================
+    // SINCRONIZACIÓN CON WEAPONMANAGER
+    // ==========================================
+
+    private void SincronizarChip()
+    {
+        // Los enemigos nunca modifican el
+        // chip persistente del jugador.
+        if (!esPlayer)
+            return;
+
+        if (weaponManager == null)
+        {
+            weaponManager = WeaponManager.Instance;
+        }
+
+        if (weaponManager == null)
+            return;
+
+        ModificadorStats original = null;
+
+        if (modificadorEquipado != null)
+        {
+            original =
+                modificadorEquipado.Origen != null
+                    ? modificadorEquipado.Origen
+                    : modificadorEquipado;
+        }
+
+        weaponManager.ActualizarChipEquipado(original);
+    }
+
+    // ==========================================
+    // APLICACIÓN DE EFECTOS
+    // ==========================================
+
+    private bool AplicarEfecto(
+        AtributoModificable atributo,
+        float cantidad)
     {
         switch (atributo)
         {
             case AtributoModificable.VidaMax:
-
                 if (esPlayer && playerStats != null)
                 {
                     playerStats.vidaMax += cantidad;
@@ -134,7 +303,6 @@ public class EquiparChips : MonoBehaviour
                     enemyStats.vidaMax += cantidad;
                     return true;
                 }
-
                 break;
 
             case AtributoModificable.Vida:
@@ -142,7 +310,8 @@ public class EquiparChips : MonoBehaviour
                 {
                     playerStats.vida = Mathf.Clamp(
                         playerStats.vida + cantidad,
-                        0f, Mathf.Max(0f, playerStats.vidaMax)
+                        0f,
+                        Mathf.Max(0f, playerStats.vidaMax)
                     );
                     return true;
                 }
@@ -151,7 +320,8 @@ public class EquiparChips : MonoBehaviour
                 {
                     enemyStats.vida = Mathf.Clamp(
                         enemyStats.vida + cantidad,
-                        0f, Mathf.Max(0f, enemyStats.vidaMax)
+                        0f,
+                        Mathf.Max(0f, enemyStats.vidaMax)
                     );
                     return true;
                 }
@@ -249,9 +419,25 @@ public class EquiparChips : MonoBehaviour
     private void ActualizarVidaUI()
     {
         if (esPlayer && playerStats != null)
+        {
             playerStats.ActualizarTexto();
+        }
 
         if (esEnemy && enemyStats != null)
+        {
             enemyStats.ActualizarTexto();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // No modificar WeaponManager cuando
+        // desaparece el jugador al cambiar de escena.
+        // Solo liberar la copia temporal.
+        if (copiaPropia != null)
+        {
+            Destroy(copiaPropia);
+            copiaPropia = null;
+        }
     }
 }

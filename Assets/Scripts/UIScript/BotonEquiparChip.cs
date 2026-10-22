@@ -19,7 +19,11 @@ public class BotonEquiparChip : MonoBehaviour
     private void OnDestroy()
     {
         if (boton != null)
-            boton.onClick.RemoveListener(EquiparODesequiparChip);
+        {
+            boton.onClick.RemoveListener(
+                EquiparODesequiparChip
+            );
+        }
     }
 
     public void EquiparODesequiparChip()
@@ -63,37 +67,40 @@ public class BotonEquiparChip : MonoBehaviour
         if (equiparChips == null)
         {
             Debug.LogWarning(
-                "BotonEquiparChip: No se encontró EquiparChips en el Player.",
+                "BotonEquiparChip: No se encontró " +
+                "EquiparChips en el Player.",
                 this
             );
             return;
         }
 
-        // Obtener el chip actualmente equipado.
-        ModificadorStats chipActual = equiparChips.ModificadorEquipado;
+        ModificadorStats chipActual =
+            equiparChips.ModificadorEquipado;
 
-        // Comprobar si es el mismo ScriptableObject original.
-        if (chipActual != null &&
-            chipActual.Origen == chip)
+        // Comprobar si es el mismo chip original.
+        if (chipActual != null)
         {
-            equiparChips.Desequipar();
+            ModificadorStats originalActual =
+                chipActual.Origen != null
+                    ? chipActual.Origen
+                    : chipActual;
 
-            Debug.Log(
-                "Chip desequipado: " + chip.name,
-                this
-            );
+            if (originalActual == chip)
+            {
+                equiparChips.Desequipar();
 
-            return;
+                Debug.Log(
+                    "Chip desequipado: " + chip.name,
+                    this
+                );
+
+                return;
+            }
         }
 
-        // Crear una copia independiente.
-        ModificadorStats copiaChip = Instantiate(chip);
-
-        // Guardar de qué ScriptableObject proviene.
-        copiaChip.Origen = chip;
-
-        // Equipar el nuevo chip.
-        equiparChips.Equipar(copiaChip);
+        // EquiparChips creará la copia y guardará
+        // el chip original en WeaponManager.
+        equiparChips.Equipar(chip);
 
         Debug.Log(
             "Chip equipado: " + chip.name,
