@@ -1,45 +1,62 @@
+
 using UnityEngine;
 
 /// <summary>
-/// Trampa giratoria con desplazamiento vertical opcional.
-/// Rota el `objetoARotar` y (si está activado) lo mueve arriba/abajo entre
-/// `minHeightOffset` y `maxHeightOffset`, pausando en los extremos.
+/// Trampa giratoria con movimiento vertical y horizontal opcional.
+/// Permite configurar límites, velocidades y pausas independientes.
 /// </summary>
 public class TrampaGiratorea : MonoBehaviour
 {
     [Header("Referencia")]
-    [Tooltip("Objeto que será rotado. Si está vacío, se usará el Transform propio.")]
+    [Tooltip("Objeto que rotará y se moverá. Si está vacío, se usa este Transform.")]
     [SerializeField] private Transform objetoARotar;
 
     [Header("Rotación")]
-    [Tooltip("Eje local alrededor del que rotará el objeto (en unidades de Vector3).")]
     [SerializeField] private Vector3 ejeLocal = Vector3.up;
-    [Tooltip("Velocidad de rotación en grados por segundo.")]
     [SerializeField] private float velocidadRotacion = 90f;
-    [Tooltip("Si es true usa el espacio local del objeto a rotar; si es false usa espacio mundial.")]
     [SerializeField] private bool usarEspacioLocal = true;
-    [Tooltip("Permite activar/desactivar la rotación desde el Inspector.")]
     [SerializeField] private bool rotarAlAwake = true;
 
     [Header("Movimiento vertical")]
-    [Tooltip("Habilita movimiento vertical (arriba/abajo).")]
     [SerializeField] private bool enableVerticalMovement = false;
-    [Tooltip("Desplazamiento mínimo relativo a la posición local inicial (negativo = abajo).")]
     [SerializeField] private float minHeightOffset = -0.5f;
-    [Tooltip("Desplazamiento máximo relativo a la posición local inicial (positivo = arriba).")]
     [SerializeField] private float maxHeightOffset = 0.5f;
-    [Tooltip("Velocidad de movimiento vertical en unidades por segundo.")]
     [SerializeField] private float verticalSpeed = 1f;
-    [Tooltip("Tiempo (s) que se queda detenido en cada extremo.")]
-    [SerializeField] private float pauseAtExtremes = 0.5f;
-    [Tooltip("Inicio del movimiento vertical en dirección hacia arriba si true, si no hacia abajo.")]
+    [SerializeField] private float verticalPauseAtExtremes = 0.5f;
     [SerializeField] private bool startMovingUp = true;
 
+    [Header("Movimiento horizontal")]
+    [Tooltip("Activa el desplazamiento sobre el eje X local.")]
+    [SerializeField] private bool enableHorizontalMovement = false;
+
+    [Tooltip("Distancia mínima respecto a la posición inicial en X.")]
+    [SerializeField] private float minHorizontalOffset = -2f;
+
+    [Tooltip("Distancia máxima respecto a la posición inicial en X.")]
+    [SerializeField] private float maxHorizontalOffset = 2f;
+
+    [Tooltip("Velocidad del movimiento horizontal.")]
+    [SerializeField] private float horizontalSpeed = 1f;
+
+    [Tooltip("Tiempo de pausa horizontal en cada extremo.")]
+    [SerializeField] private float horizontalPauseAtExtremes = 0.5f;
+
+    [Tooltip("Si está activo, comienza moviéndose hacia el extremo máximo.")]
+    [SerializeField] private bool startMovingRight = true;
+
     private bool rotando;
+
+    // Estado vertical
     private bool movingUp;
-    private bool paused;
-    private float pauseTimer;
+    private bool verticalPaused;
+    private float verticalPauseTimer;
     private float baseLocalY;
+
+    // Estado horizontal
+    private bool movingRight;
+    private bool horizontalPaused;
+    private float horizontalPauseTimer;
+    private float baseLocalX;
 
     private void Awake()
     {
@@ -48,104 +65,217 @@ public class TrampaGiratorea : MonoBehaviour
 
         rotando = rotarAlAwake;
 
-        // Guardar Y local base para desplazamientos relativos
+        // Guardar la posición inicial local.
+        baseLocalX = objetoARotar.localPosition.x;
         baseLocalY = objetoARotar.localPosition.y;
 
-        // Asegurar offsets coherentes
+        // Corregir límites invertidos.
         if (minHeightOffset > maxHeightOffset)
         {
-            float tmp = minHeightOffset;
-            minHeightOffset = maxHeightOffset;
-            maxHeightOffset = tmp;
+            (minHeightOffset, maxHeightOffset) =
+                (maxHeightOffset, minHeightOffset);
+        }
+
+        if (minHorizontalOffset > maxHorizontalOffset)
+        {
+            (minHorizontalOffset, maxHorizontalOffset) =
+                (maxHorizontalOffset, minHorizontalOffset);
         }
 
         movingUp = startMovingUp;
-        paused = false;
-        pauseTimer = 0f;
+        movingRight = startMovingRight;
+
+        verticalPaused = false;
+        horizontalPaused = false;
+
+        verticalPauseTimer = 0f;
+        horizontalPauseTimer = 0f;
     }
 
     private void Update()
     {
-        // Rotación
-        if (rotando && objetoARotar != null)
+        if (objetoARotar == null)
+            return;
+
+        // Rotación continua.
+        if (rotando)
         {
             float step = velocidadRotacion * Time.deltaTime;
+
             if (usarEspacioLocal)
                 objetoARotar.Rotate(ejeLocal.normalized, step, Space.Self);
             else
                 objetoARotar.Rotate(ejeLocal.normalized, step, Space.World);
         }
 
-        // Movimiento vertical
-        if (enableVerticalMovement && objetoARotar != null)
-        {
+        // Movimiento vertical.
+        if (enableVerticalMovement)
             HandleVerticalMovement();
-        }
+
+        // Movimiento horizontal independiente.
+        if (enableHorizontalMovement)
+            HandleHorizontalMovement();
     }
 
     private void HandleVerticalMovement()
     {
-        if (paused)
+        if (verticalPaused)
         {
-            pauseTimer -= Time.deltaTime;
-            if (pauseTimer <= 0f)
-            {
-                paused = false;
-            }
+            verticalPauseTimer -= Time.deltaTime;
+
+            if (verticalPauseTimer <= 0f)
+                verticalPaused = false;
+
             return;
         }
 
-        float targetLocalY = baseLocalY + (movingUp ? maxHeightOffset : minHeightOffset);
+        float targetY = baseLocalY +
+            (movingUp ? maxHeightOffset : minHeightOffset);
+
         Vector3 lp = objetoARotar.localPosition;
-        lp.y = Mathf.MoveTowards(lp.y, targetLocalY, verticalSpeed * Time.deltaTime);
+
+        lp.y = Mathf.MoveTowards(
+            lp.y,
+            targetY,
+            Mathf.Max(0f, verticalSpeed) * Time.deltaTime
+        );
+
         objetoARotar.localPosition = lp;
 
-        if (Mathf.Abs(lp.y - targetLocalY) <= 0.001f)
+        if (Mathf.Abs(lp.y - targetY) <= 0.001f)
         {
-            // Llegó al extremo: pausar y cambiar dirección
-            paused = true;
-            pauseTimer = Mathf.Max(0f, pauseAtExtremes);
+            verticalPaused = true;
+            verticalPauseTimer = Mathf.Max(0f, verticalPauseAtExtremes);
             movingUp = !movingUp;
         }
     }
 
-    // API pública
+    private void HandleHorizontalMovement()
+    {
+        if (horizontalPaused)
+        {
+            horizontalPauseTimer -= Time.deltaTime;
+
+            if (horizontalPauseTimer <= 0f)
+                horizontalPaused = false;
+
+            return;
+        }
+
+        float targetX = baseLocalX +
+            (movingRight ? maxHorizontalOffset : minHorizontalOffset);
+
+        Vector3 lp = objetoARotar.localPosition;
+
+        lp.x = Mathf.MoveTowards(
+            lp.x,
+            targetX,
+            Mathf.Max(0f, horizontalSpeed) * Time.deltaTime
+        );
+
+        objetoARotar.localPosition = lp;
+
+        if (Mathf.Abs(lp.x - targetX) <= 0.001f)
+        {
+            horizontalPaused = true;
+            horizontalPauseTimer =
+                Mathf.Max(0f, horizontalPauseAtExtremes);
+
+            movingRight = !movingRight;
+        }
+    }
+
+    // API pública de rotación.
 
     public void StartRotation() => rotando = true;
     public void StopRotation() => rotando = false;
-    public void SetSpeed(float nuevaVelocidad) => velocidadRotacion = nuevaVelocidad;
+
+    public void SetSpeed(float nuevaVelocidad)
+    {
+        velocidadRotacion = nuevaVelocidad;
+    }
+
     public float GetSpeed() => velocidadRotacion;
-    public void SetTarget(Transform target)
-    {
-        objetoARotar = target ?? transform;
-        baseLocalY = objetoARotar.localPosition.y;
-    }
-
-    // Vertical control API
-    public void EnableVerticalMovement(bool enable)
-    {
-        enableVerticalMovement = enable;
-        // recalcular base para suavizar cambio
-        if (objetoARotar != null) baseLocalY = objetoARotar.localPosition.y;
-        paused = false;
-    }
-
-    public void SetVerticalSpeed(float v) => verticalSpeed = Mathf.Max(0f, v);
-    public void SetVerticalOffsets(float minOffset, float maxOffset)
-    {
-        if (minOffset > maxOffset) (minOffset, maxOffset) = (maxOffset, minOffset);
-        minHeightOffset = minOffset;
-        maxHeightOffset = maxOffset;
-    }
-
-    public void SetPauseAtExtremes(float seconds) => pauseAtExtremes = Mathf.Max(0f, seconds);
 
     public void RotateByDegrees(float grados)
     {
         if (objetoARotar == null) return;
+
         if (usarEspacioLocal)
             objetoARotar.Rotate(ejeLocal.normalized, grados, Space.Self);
         else
             objetoARotar.Rotate(ejeLocal.normalized, grados, Space.World);
+    }
+
+    public void SetTarget(Transform target)
+    {
+        objetoARotar = target != null ? target : transform;
+
+        baseLocalX = objetoARotar.localPosition.x;
+        baseLocalY = objetoARotar.localPosition.y;
+    }
+
+    // API pública de movimiento vertical.
+
+    public void EnableVerticalMovement(bool enable)
+    {
+        enableVerticalMovement = enable;
+
+        if (objetoARotar != null)
+            baseLocalY = objetoARotar.localPosition.y;
+
+        verticalPaused = false;
+        verticalPauseTimer = 0f;
+    }
+
+    public void SetVerticalSpeed(float v)
+    {
+        verticalSpeed = Mathf.Max(0f, v);
+    }
+
+    public void SetVerticalOffsets(float minOffset, float maxOffset)
+    {
+        if (minOffset > maxOffset)
+            (minOffset, maxOffset) = (maxOffset, minOffset);
+
+        minHeightOffset = minOffset;
+        maxHeightOffset = maxOffset;
+    }
+
+    public void SetVerticalPause(float seconds)
+    {
+        verticalPauseAtExtremes = Mathf.Max(0f, seconds);
+    }
+
+    // API pública de movimiento horizontal.
+
+    public void EnableHorizontalMovement(bool enable)
+    {
+        enableHorizontalMovement = enable;
+
+        if (objetoARotar != null)
+            baseLocalX = objetoARotar.localPosition.x;
+
+        horizontalPaused = false;
+        horizontalPauseTimer = 0f;
+    }
+
+    public void SetHorizontalSpeed(float v)
+    {
+        horizontalSpeed = Mathf.Max(0f, v);
+    }
+
+    public void SetHorizontalOffsets(float minOffset, float maxOffset)
+    {
+        if (minOffset > maxOffset)
+            (minOffset, maxOffset) = (maxOffset, minOffset);
+
+        minHorizontalOffset = minOffset;
+        maxHorizontalOffset = maxOffset;
+    }
+
+    public void SetHorizontalPause(float seconds)
+    {
+        horizontalPauseAtExtremes = Mathf.Max(0f, seconds);
     }
 }
