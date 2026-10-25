@@ -9,6 +9,8 @@ public class RoboMovPlayer : MonoBehaviour
     [SerializeField] public float distanciaRebote = 0.5f;
     [SerializeField] public float distanciaReboteEnemigo = 1f;
 
+    private EquiparChips equiparChips;
+
     private Rigidbody rb;
     private bool girando = false;
 
@@ -25,6 +27,8 @@ public class RoboMovPlayer : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        equiparChips = GetComponent<EquiparChips>();
 
         wallLayer = LayerMask.NameToLayer("Wall");
         enemyLayer = LayerMask.NameToLayer("Enemy");
@@ -53,9 +57,57 @@ public class RoboMovPlayer : MonoBehaviour
         if (girando)
             return;
 
+        // Velocidad normal del robot.
+        float velocidadActual = velocidad;
+
+        // Consultar el chip equipado.
+        ModificadorStats chip = equiparChips != null
+            ? equiparChips.ModificadorEquipado
+            : null;
+
+        if (chip != null)
+        {
+            float modificador = 0f;
+            bool permiteModificarMovimiento = false;
+
+            foreach (EfectoModificador efecto in chip.efectos)
+            {
+                // Comprobar que el chip permite modificar
+                // el movimiento del robot.
+                if (efecto.scriptObjetivo == TipoScript.RoboMov &&
+                    efecto.atributo == AtributoModificable.ModificadorMovimiento)
+                {
+                    modificador += efecto.cantidad;
+                    permiteModificarMovimiento = true;
+                }
+            }
+
+            // W y S solamente funcionan con el chip adecuado.
+            if (permiteModificarMovimiento)
+            {
+                // W: Aumentar velocidad.
+                if (Input.GetKey(KeyCode.W) &&
+                    !Input.GetKey(KeyCode.S))
+                {
+                    velocidadActual += modificador;
+                }
+
+                // S: Disminuir velocidad.
+                else if (Input.GetKey(KeyCode.S) &&
+                         !Input.GetKey(KeyCode.W))
+                {
+                    velocidadActual -= modificador;
+                }
+            }
+        }
+
+        // Evitar velocidades negativas.
+        velocidadActual = Mathf.Max(0f, velocidadActual);
+
+        // Movimiento original del robot.
         rb.MovePosition(
             rb.position +
-            transform.forward * velocidad * Time.fixedDeltaTime
+            transform.forward * velocidadActual * Time.fixedDeltaTime
         );
     }
 

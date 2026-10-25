@@ -20,7 +20,8 @@ public class EfectoModificadorDrawer : PropertyDrawer
         "VelocidadGiroMaxima",
         "DistanciaRebote",
         "DistanciaReboteObjetivo",
-        "TiempoAturdido"
+        "TiempoAturdido",
+        "ModificadorMovimiento"
     };
 
     private static readonly string[] weapon =

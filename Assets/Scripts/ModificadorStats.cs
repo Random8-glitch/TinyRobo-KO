@@ -36,6 +36,7 @@ public enum AtributoModificable
     DistanciaRebote,
     DistanciaReboteObjetivo,
     TiempoAturdido,
+    ModificadorMovimiento,
 
     DañoPlus
 }

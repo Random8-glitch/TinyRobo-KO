@@ -379,6 +379,13 @@ public class EquiparChips : MonoBehaviour
                 }
                 break;
 
+            case AtributoModificable.ModificadorMovimiento:
+                if (esPlayer && roboMovPlayer != null)
+                {
+                    return true;
+                }
+                break;
+
             case AtributoModificable.DistanciaRebote:
                 if (esPlayer && roboMovPlayer != null)
                 {
