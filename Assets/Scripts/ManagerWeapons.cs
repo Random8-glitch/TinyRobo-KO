@@ -273,7 +273,18 @@ public class ManagerWeapon : MonoBehaviour
         );
 
         newWeapon.transform.localPosition = Vector3.zero;
-        newWeapon.transform.localRotation = Quaternion.identity;
+
+        // Rotación especial únicamente para el arma ID 4
+        if (weapon.WeaponID == 4 || weapon.WeaponID == 5)
+        {
+            newWeapon.transform.localRotation =
+                Quaternion.Euler(0f, 180f, 0f);
+        }
+        else
+        {
+            newWeapon.transform.localRotation =
+                Quaternion.identity;
+        }
 
         weaponInstances[slotIndex] = newWeapon;
         equippedWeaponIDs[slotIndex] = weapon.WeaponID;
@@ -350,9 +361,7 @@ public class ManagerWeapon : MonoBehaviour
         slotImage.enabled = false;
     }
 
-    // ==========================================
-    // CONSULTAS Y ADMINISTRACIÓN
-    // ==========================================
+    
 
     public void ClearAllWeapons()
     {

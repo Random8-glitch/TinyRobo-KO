@@ -29,3 +29,11 @@ MonoBehaviour:
     weaponPrefab: {fileID: 5894913754969531725, guid: 002a90e6e34bb424b8c320eae4358efd, type: 3}
     weaponIcon: {fileID: 21300000, guid: 1c1068d3bf5fd824cbc1c124c1a485bf, type: 3}
     rank: 1
+  - weaponName: BallestaJugador
+    weaponPrefab: {fileID: 8152900279315467729, guid: c010c021353105847b6ce1bcbebc9246, type: 3}
+    weaponIcon: {fileID: 21300000, guid: 0098f5616416f784dbb287f4277f5c61, type: 3}
+    rank: 1
+  - weaponName: "Ca\xF1onJugador"
+    weaponPrefab: {fileID: 2437887046415379548, guid: 50a4885cff5ad224bb0b94d14c52a994, type: 3}
+    weaponIcon: {fileID: 21300000, guid: d25b7844fc453ad4fba4da0d4ee37378, type: 3}
+    rank: 1
