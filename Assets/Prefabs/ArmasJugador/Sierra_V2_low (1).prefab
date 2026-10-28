@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6795966339119449902}
   - component: {fileID: 6914464862505327071}
   - component: {fileID: 3132643940609987111}
+  - component: {fileID: 5321350520769198263}
   m_Layer: 0
   m_Name: Centro
   m_TagString: Untagged
@@ -30,7 +31,8 @@ Transform:
   m_LocalPosition: {x: 0.00071517925, y: -0.0000000047683715, z: -0.0070818327}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 282944777603372342}
   m_Father: {fileID: 8205699717771960664}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6914464862505327071
@@ -90,6 +92,35 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5321350520769198263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920549363952071829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47b30104874997f40a001d13d15eb234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrampaGiratorea
+  objetoARotar: {fileID: 6795966339119449902}
+  ejeLocal: {x: 0, y: 1, z: 0}
+  velocidadRotacion: 700
+  usarEspacioLocal: 1
+  rotarAlAwake: 1
+  enableVerticalMovement: 0
+  minHeightOffset: -0.5
+  maxHeightOffset: 0.5
+  verticalSpeed: 1
+  verticalPauseAtExtremes: 0.5
+  startMovingUp: 1
+  enableHorizontalMovement: 0
+  minHorizontalOffset: -2
+  maxHorizontalOffset: 2
+  horizontalSpeed: 1
+  horizontalPauseAtExtremes: 0.5
+  startMovingRight: 1
 --- !u!1 &5894913754969531725
 GameObject:
   m_ObjectHideFlags: 0
@@ -122,7 +153,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6795966339119449902}
-  - {fileID: 282944777603372342}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5565354615205406702
@@ -138,6 +168,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SawPlayer
   danioPorTick: 1
+  boostDamage: 1.5
+  boostDuration: 5
+  cooldownDuration: 10
+  sawRenderer: {fileID: 0}
+  boostColor: {r: 1, g: 0, b: 0, a: 1}
+  uiImage: {fileID: 0}
+  boostAlpha: 0.5
 --- !u!65 &5579981210065744719
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -185,12 +222,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8087853228150795857}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.000024288845, y: -0.0000000139445175, z: -0.000029046438}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.0006908904, y: 0, z: 0.007052786}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8205699717771960664}
+  m_Father: {fileID: 6795966339119449902}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3361919590450847149
 MeshFilter:

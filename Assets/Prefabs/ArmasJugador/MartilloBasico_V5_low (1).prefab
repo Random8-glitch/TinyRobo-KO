@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1331823955320788720}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4170862835575834740
@@ -47,7 +48,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f5d36c431b0532489856e8c9d08269d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HammerPlayer
+  martilloARotar: {fileID: 3102284499602991657}
+  rotacionPuntoA: {x: 45, y: 0, z: 0}
+  rotacionPuntoB: {x: -100, y: 0, z: 0}
+  velocidadPreparacion: 90
+  velocidadGolpe: 700
+  velocidadRegreso: 50
   tiempoEspera: 0.25
+  puntoImpacto: {fileID: 1331823955320788720}
+  radioDeteccion: 0.12
   danioMinimo: 5
   danioMaximo: 40
   tiempoCargaCompleta: 20
@@ -129,3 +138,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.9509087, y: 1.1795609, z: 2.354052}
   m_Center: {x: -0.033724573, y: 0.10611697, z: -1.9144247}
+--- !u!1 &2552300781029166544
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1331823955320788720}
+  m_Layer: 0
+  m_Name: Punto de Impacto
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1331823955320788720
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2552300781029166544}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.362, z: -0.602}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3102284499602991657}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
