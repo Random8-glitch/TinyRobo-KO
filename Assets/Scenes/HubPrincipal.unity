@@ -12375,6 +12375,7 @@ MonoBehaviour:
   escenaPermitida: HubPrincipal
   camaraJugador: {fileID: 1677747945}
   velocidad: 5
+  velocidadCorrer: 12
   fuerzaSalto: 1.5
   gravedad: -20
   sensibilidadMouse: 5

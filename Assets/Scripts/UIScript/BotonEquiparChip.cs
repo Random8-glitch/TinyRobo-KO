@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,12 +7,30 @@ public class BotonEquiparChip : MonoBehaviour
     [Header("Chip que equipará el botón")]
     [SerializeField] private ModificadorStats chip;
 
+    [Header("Colores del botón")]
+    [SerializeField] private Color colorEquipado = Color.green;
+
     private Button boton;
+    private ColorBlock coloresOriginales;
 
     private void Awake()
     {
         boton = GetComponent<Button>();
+
+        // Guardar los colores originales del botón.
+        coloresOriginales = boton.colors;
+
         boton.onClick.AddListener(EquiparODesequiparChip);
+    }
+
+    private void Start()
+    {
+        ActualizarColor();
+    }
+
+    private void OnEnable()
+    {
+        ActualizarColor();
     }
 
     private void OnDestroy()
@@ -77,7 +94,7 @@ public class BotonEquiparChip : MonoBehaviour
         ModificadorStats chipActual =
             equiparChips.ModificadorEquipado;
 
-        // Comprobar si es el mismo chip original.
+        // Comprobar si el chip pulsado ya está equipado.
         if (chipActual != null)
         {
             ModificadorStats originalActual =
@@ -89,6 +106,8 @@ public class BotonEquiparChip : MonoBehaviour
             {
                 equiparChips.Desequipar();
 
+                ActualizarColor();
+
                 Debug.Log(
                     "Chip desequipado: " + chip.name,
                     this
@@ -98,13 +117,97 @@ public class BotonEquiparChip : MonoBehaviour
             }
         }
 
-        // EquiparChips creará la copia y guardará
-        // el chip original en WeaponManager.
+        // Equipar el chip seleccionado.
         equiparChips.Equipar(chip);
+
+        // Actualizar el color de este botón.
+        ActualizarColor();
+
+        // Actualizar los demás botones de chips.
+        BotonEquiparChip[] botones =
+            FindObjectsByType<BotonEquiparChip>(
+                FindObjectsSortMode.None
+            );
+
+        foreach (BotonEquiparChip otroBoton in botones)
+        {
+            if (otroBoton != this)
+            {
+                otroBoton.ActualizarColor();
+            }
+        }
 
         Debug.Log(
             "Chip equipado: " + chip.name,
             this
         );
+    }
+
+    private void ActualizarColor()
+    {
+        if (boton == null)
+            return;
+
+        if (chip == null)
+        {
+            RestaurarColorOriginal();
+            return;
+        }
+
+        int playerLayer = LayerMask.NameToLayer("Player");
+
+        if (playerLayer == -1)
+        {
+            RestaurarColorOriginal();
+            return;
+        }
+
+        EquiparChips[] gestores =
+            FindObjectsByType<EquiparChips>(
+                FindObjectsSortMode.None
+            );
+
+        foreach (EquiparChips gestor in gestores)
+        {
+            if (gestor.gameObject.layer != playerLayer)
+                continue;
+
+            ModificadorStats equipado =
+                gestor.ModificadorEquipado;
+
+            if (equipado == null)
+            {
+                RestaurarColorOriginal();
+                return;
+            }
+
+            ModificadorStats originalEquipado =
+                equipado.Origen != null
+                    ? equipado.Origen
+                    : equipado;
+
+            if (originalEquipado == chip)
+            {
+                // El chip está equipado: botón verde.
+                ColorBlock colores = coloresOriginales;
+                colores.normalColor = colorEquipado;
+                colores.highlightedColor = colorEquipado;
+                colores.selectedColor = colorEquipado;
+
+                boton.colors = colores;
+                return;
+            }
+        }
+
+        // El chip no está equipado.
+        RestaurarColorOriginal();
+    }
+
+    private void RestaurarColorOriginal()
+    {
+        if (boton != null)
+        {
+            boton.colors = coloresOriginales;
+        }
     }
 }

@@ -12,6 +12,7 @@ public class MovimientoPrimeraPersona : MonoBehaviour
 
     [Header("Movimiento")]
     [SerializeField] private float velocidad = 5f;
+    [SerializeField] private float velocidadCorrer = 9f;
     [SerializeField] private float fuerzaSalto = 1.5f;
     [SerializeField] private float gravedad = -20f;
 
@@ -27,7 +28,6 @@ public class MovimientoPrimeraPersona : MonoBehaviour
     private void Awake()
     {
         controlador = GetComponent<CharacterController>();
-
         ComprobarEscena();
     }
 
@@ -93,12 +93,19 @@ public class MovimientoPrimeraPersona : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
+        // Correr mientras se mantiene presionada la tecla Shift.
+        float velocidadActual =
+            (Input.GetKey(KeyCode.LeftShift) ||
+             Input.GetKey(KeyCode.RightShift))
+            ? velocidadCorrer
+            : velocidad;
+
         Vector3 movimiento =
             transform.right * horizontal +
             transform.forward * vertical;
 
         movimiento = Vector3.ClampMagnitude(movimiento, 1f);
-        movimiento *= velocidad;
+        movimiento *= velocidadActual;
 
         if (controlador.isGrounded && velocidadVertical < 0f)
         {

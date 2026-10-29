@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4031500067619191968}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3047527505202483977
@@ -47,6 +48,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c2672e3a373d2b489cdf5f13d5c02c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HammerEnemy
+  martilloARotar: {fileID: 594323770190995850}
+  rotacionPuntoA: {x: 45, y: 0, z: 0}
+  rotacionPuntoB: {x: -120, y: 0, z: 0}
+  velocidadPreparacion: 90
+  velocidadGolpe: 900
+  velocidadRegreso: 50
+  puntoImpacto: {fileID: 4031500067619191968}
+  radioDeteccion: 0.12
   tiempoEspera: 0.25
   danioMinimo: 5
   danioMaximo: 40
@@ -127,5 +136,36 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.9509087, y: 1.1795609, z: 2.354052}
-  m_Center: {x: -0.033724573, y: 0.10611697, z: -1.9144247}
+  m_Size: {x: 2.9509087, y: 4.775859, z: 2.354052}
+  m_Center: {x: -0.033724546, y: 0.4970708, z: -1.9144247}
+--- !u!1 &7208448943256822262
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4031500067619191968}
+  m_Layer: 0
+  m_Name: PuntoDeImpacto
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4031500067619191968
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7208448943256822262}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.373, z: -0.607}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 594323770190995850}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

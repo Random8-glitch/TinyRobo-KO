@@ -4,10 +4,9 @@ using System.Collections;
 
 public class Derrota : MonoBehaviour
 {
-
-    [Header("Referencias")]
-    [SerializeField] private PlayerStats playerStats;
-    [SerializeField] private CronometroHUD cronometroHUD;
+    [Header("Deteccion del jugador")]
+    [SerializeField] private string nombreLayerJugador = "Player";
+    [SerializeField] private float intervaloComprobacion = 0.5f;
 
     [Header("UI - Fade")]
     [SerializeField] private CanvasGroup fadeCanvasGroup;
@@ -15,40 +14,48 @@ public class Derrota : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip soundoDerrota;
-    [SerializeField] private float delayAntesDeCarga = 2f; // Espera a que termine el sonido
+    [SerializeField] private AudioClip sonidoDerrota;
+    [SerializeField] private float delayAntesDeCarga = 2f;
 
-    [Header("Comportamiento")]
-    [SerializeField] private string gameOverScene = "GameOver"; // Nombre de la escena de derrota
+    [Header("Escena de derrota")]
+    [SerializeField] private string gameOverScene = "GameOver";
 
     private bool yaDerrota = false;
+    private int layerJugador;
+    private float siguienteComprobacion = 0f;
 
     private void Start()
     {
-        if (playerStats == null)
-            playerStats = FindObjectOfType<PlayerStats>();
+        layerJugador = LayerMask.NameToLayer(nombreLayerJugador);
 
-        if (cronometroHUD == null)
-            cronometroHUD = FindObjectOfType<CronometroHUD>();
+        if (layerJugador == -1)
+        {
+            Debug.LogError(
+                "Derrota: no existe la Layer '" +
+                nombreLayerJugador + "'. Revisa su nombre en Unity."
+            );
+
+            enabled = false;
+            return;
+        }
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
 
-        if (playerStats == null)
-            Debug.LogWarning("Derrota: no se encontró PlayerStats en la escena.");
-
-        if (cronometroHUD == null)
-            Debug.LogWarning("Derrota: no se encontró CronometroHUD en la escena.");
-
-        if (fadeCanvasGroup == null)
-            Debug.LogWarning("Derrota: no se encontró CanvasGroup para el fade. Asigna una en el inspector.");
-        else
+        if (fadeCanvasGroup != null)
         {
-            // Asegurar que el fade comienza transparente y no bloquea input
             fadeCanvasGroup.alpha = 0f;
             fadeCanvasGroup.interactable = false;
             fadeCanvasGroup.blocksRaycasts = false;
         }
+        else
+        {
+            Debug.LogWarning(
+                "Derrota: no hay CanvasGroup asignado para el fade."
+            );
+        }
+
+        siguienteComprobacion = Time.time + intervaloComprobacion;
     }
 
     private void Update()
@@ -56,80 +63,73 @@ public class Derrota : MonoBehaviour
         if (yaDerrota)
             return;
 
-        // Condición 1: Vida del jugador llega a 0
-        if (playerStats != null && playerStats.vida <= 0f)
-        {
-            ActivarDerrota("La vida del jugador llegó a 0.");
+        if (Time.time < siguienteComprobacion)
             return;
+
+        siguienteComprobacion = Time.time + intervaloComprobacion;
+
+        // Buscar objetos activos en la escena.
+        GameObject[] objetos = FindObjectsByType<GameObject>(
+            FindObjectsSortMode.None
+        );
+
+        bool jugadorEncontrado = false;
+
+        foreach (GameObject objeto in objetos)
+        {
+            if (objeto.layer == layerJugador)
+            {
+                jugadorEncontrado = true;
+                break;
+            }
         }
 
-        // Condición 2: Tiempo del cronómetro se agota
-        if (cronometroHUD != null && cronometroHUD.TiempoRestante <= 0f)
+        // Si no existe ningun objeto activo en la Layer Player,
+        // iniciar la derrota.
+        if (!jugadorEncontrado)
         {
-            // Al agotarse el tiempo, comparar vida del jugador vs vida total de enemigos
-            if (EvaluarDerrotaPorTiempo())
-            {
-                ActivarDerrota("El tiempo se agotó y la vida del jugador es inferior o igual a la de los enemigos.");
-            }
-            else
-            {
-                Debug.Log("Tiempo agotado, pero el jugador tiene más vida que los enemigos. No se ejecuta la derrota.");
-            }
-            return;
+            ActivarDerrota(
+                "No se encontro ningun objeto activo en la Layer Player."
+            );
         }
-
     }
 
-    // Devuelve true si debe ejecutarse la derrota al agotarse el tiempo
-    private bool EvaluarDerrotaPorTiempo()
-    {
-        float vidaJugador = playerStats != null ? playerStats.vida : 0f;
-
-        // Sumar vida de todos los EnemyStats activos en la escena
-        EnemyStats[] enemigos = FindObjectsOfType<EnemyStats>();
-        float vidaEnemigosTotal = 0f;
-        foreach (var e in enemigos)
-        {
-            if (e != null)
-                vidaEnemigosTotal += e.vida;
-        }
-
-        Debug.Log($"EvaluarDerrotaPorTiempo -> Vida jugador: {vidaJugador} | Vida enemigos total: {vidaEnemigosTotal}");
-
-        return vidaJugador <= vidaEnemigosTotal;
-    }
 
     private void ActivarDerrota(string razon)
     {
-        yaDerrota = true;
-        Debug.Log($"¡GAME OVER! {razon}");
+        if (yaDerrota)
+            return;
 
-        // Pausar juego
+        yaDerrota = true;
+
+        Debug.Log("GAME OVER: " + razon);
+
+        // Pausar el juego.
         Time.timeScale = 0f;
 
-        // Iniciar secuencia de derrota (fade + sonido + carga de escena)
+        // Iniciar la secuencia de derrota.
         StartCoroutine(SecuenciaDerrota());
     }
 
+
     private IEnumerator SecuenciaDerrota()
     {
-        // Reproducir sonido de derrota
-        if (audioSource != null && soundoDerrota != null)
+        // Reproducir sonido sin pausar el juego.
+        if (audioSource != null && sonidoDerrota != null)
         {
-            audioSource.PlayOneShot(soundoDerrota);
+            audioSource.PlayOneShot(sonidoDerrota);
         }
 
-        // Esperar a que termine el sonido (o el delay configurado)
         yield return new WaitForSecondsRealtime(delayAntesDeCarga);
 
-        // Hacer fade a negro
+        // Fundido a negro.
         if (fadeCanvasGroup != null)
         {
             yield return StartCoroutine(FadeANegro());
         }
 
-        // Cargar escena de Game Over
-        Time.timeScale = 1f; // Restaurar tiempo antes de cargar escena
+        Time.timeScale = 1f;
+
         SceneManager.LoadScene(gameOverScene);
     }
 
@@ -140,10 +140,15 @@ public class Derrota : MonoBehaviour
         while (tiempoTranscurrido < duracionFade)
         {
             tiempoTranscurrido += Time.unscaledDeltaTime;
-            fadeCanvasGroup.alpha = Mathf.Clamp01(tiempoTranscurrido / duracionFade);
+
+            fadeCanvasGroup.alpha = duracionFade > 0f
+                ? Mathf.Clamp01(tiempoTranscurrido / duracionFade)
+                : 1f;
+
             yield return null;
         }
 
-        fadeCanvasGroup.alpha = 1f; // Asegurar que está completamente negro
+        fadeCanvasGroup.alpha = 1f;
     }
 }
+

@@ -32,7 +32,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7561957989812490473}
-  - {fileID: 5597786069365734512}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2137419001996861119
@@ -67,8 +66,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.1115189, y: 1, z: 1.4717722}
-  m_Center: {x: 0.040992215, y: -0.000000026669321, z: -1.3423104}
+  m_Size: {x: 3.1115189, y: 1.8530183, z: 1.4717722}
+  m_Center: {x: 0.04099226, y: -0.42650926, z: -1.3423104}
 --- !u!1 &1314298471657489477
 GameObject:
   m_ObjectHideFlags: 0
@@ -95,12 +94,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1314298471657489477}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.000024288845, y: -0.0000000139445175, z: -0.000029046438}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1277519880885543310}
+  m_Father: {fileID: 7561957989812490473}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7598315298666486534
 MeshFilter:
@@ -170,6 +169,7 @@ GameObject:
   - component: {fileID: 7561957989812490473}
   - component: {fileID: 2339513920640672295}
   - component: {fileID: 1804220990686383806}
+  - component: {fileID: 211217891344460943}
   m_Layer: 0
   m_Name: Centro
   m_TagString: Untagged
@@ -186,10 +186,11 @@ Transform:
   m_GameObject: {fileID: 4220716639284529696}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.00071517925, y: -0.0000000047683715, z: -0.0070818327}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5597786069365734512}
   m_Father: {fileID: 1277519880885543310}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2339513920640672295
@@ -249,3 +250,32 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &211217891344460943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4220716639284529696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47b30104874997f40a001d13d15eb234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrampaGiratorea
+  objetoARotar: {fileID: 7561957989812490473}
+  ejeLocal: {x: 0, y: 1, z: 0}
+  velocidadRotacion: 700
+  usarEspacioLocal: 1
+  rotarAlAwake: 1
+  enableVerticalMovement: 0
+  minHeightOffset: -0.5
+  maxHeightOffset: 0.5
+  verticalSpeed: 1
+  verticalPauseAtExtremes: 0.5
+  startMovingUp: 1
+  enableHorizontalMovement: 0
+  minHorizontalOffset: -2
+  maxHorizontalOffset: 2
+  horizontalSpeed: 1
+  horizontalPauseAtExtremes: 0.5
+  startMovingRight: 1
