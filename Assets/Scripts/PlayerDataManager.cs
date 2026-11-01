@@ -1,6 +1,8 @@
+
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 public class PlayerDataManager : MonoBehaviour
@@ -14,11 +16,17 @@ public class PlayerDataManager : MonoBehaviour
     [SerializeField] private int rank = 1;
     [SerializeField] private int money = 0;
 
+    [Header("Movimiento")]
+    [SerializeField] private bool toggleMov = true;
+
+    public bool ToggleMov => toggleMov;
+
     [Header("UI")]
     [Tooltip("Nombre del objeto TextMeshPro que mostrará el dinero.")]
     [SerializeField] private string nombreTextoDinero = "TextoDinero";
 
     private TextMeshProUGUI textoDinero;
+    private Toggle toggleMovUI;
 
     public int Rank => rank;
     public int Money => money;
@@ -44,7 +52,6 @@ public class PlayerDataManager : MonoBehaviour
 
     private void OnEnable()
     {
-        // Se ejecuta cada vez que termina de cargar una escena.
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -57,15 +64,17 @@ public class PlayerDataManager : MonoBehaviour
     {
         BuscarTextoDinero();
         ActualizarUIDinero();
+
+        BuscarToggleMov(SceneManager.GetActiveScene());
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         BuscarTextoDinero();
         ActualizarUIDinero();
+
+        BuscarToggleMov(scene);
     }
-
-
 
     private void BuscarTextoDinero()
     {
@@ -100,7 +109,60 @@ public class PlayerDataManager : MonoBehaviour
         }
     }
 
+    // Buscar el ToggleMov al iniciar una escena.
+    private void BuscarToggleMov(Scene scene)
+    {
+        // Desvincular el Toggle anterior.
+        if (toggleMovUI != null)
+        {
+            toggleMovUI.onValueChanged.RemoveListener(
+                OnToggleMovChanged
+            );
+        }
 
+        toggleMovUI = null;
+
+        Toggle[] toggles =
+            Resources.FindObjectsOfTypeAll<Toggle>();
+
+        for (int i = 0; i < toggles.Length; i++)
+        {
+            Toggle toggle = toggles[i];
+
+            if (toggle.gameObject.name == "ToggleMov" &&
+                toggle.gameObject.scene == scene)
+            {
+                toggleMovUI = toggle;
+
+                // Aplicar el valor guardado en el bool
+                // sin activar el evento del Toggle.
+                toggleMovUI.SetIsOnWithoutNotify(toggleMov);
+
+                // Detectar cambios manuales del jugador.
+                toggleMovUI.onValueChanged.AddListener(
+                    OnToggleMovChanged
+                );
+
+                return;
+            }
+        }
+    }
+
+    // Actualizar el bool cuando el jugador modifica el Toggle.
+    private void OnToggleMovChanged(bool nuevoEstado)
+    {
+        toggleMov = nuevoEstado;
+    }
+
+    private void OnDestroy()
+    {
+        if (toggleMovUI != null)
+        {
+            toggleMovUI.onValueChanged.RemoveListener(
+                OnToggleMovChanged
+            );
+        }
+    }
 
     public void SetRank(int newRank)
     {
@@ -110,8 +172,6 @@ public class PlayerDataManager : MonoBehaviour
 
         OnPlayerDataChanged?.Invoke();
     }
-
-
 
     public void AddMoney(int amount)
     {
@@ -142,8 +202,6 @@ public class PlayerDataManager : MonoBehaviour
 
         return true;
     }
-
- 
 
     public void SaveData()
     {

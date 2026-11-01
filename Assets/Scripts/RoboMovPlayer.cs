@@ -10,6 +10,13 @@ public class RoboMovPlayer : MonoBehaviour
     [SerializeField] public float distanciaReboteEnemigo = 1f;
 
     private EquiparChips equiparChips;
+    private PlayerDataManager playerDataManager;
+
+    [Header("Movimiento manual")]
+    [SerializeField] private float tiempoAceleracionManual = 1f;
+
+    private float velocidadManualActual = 0f;
+    private int direccionManualAnterior = 0;
 
     private Rigidbody rb;
     private bool girando = false;
@@ -29,6 +36,7 @@ public class RoboMovPlayer : MonoBehaviour
         rb = GetComponent<Rigidbody>();
 
         equiparChips = GetComponent<EquiparChips>();
+        playerDataManager = PlayerDataManager.Instance;
 
         wallLayer = LayerMask.NameToLayer("Wall");
         enemyLayer = LayerMask.NameToLayer("Enemy");
@@ -54,61 +62,16 @@ public class RoboMovPlayer : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (girando)
-            return;
+        // Recuperar la referencia si el manager se inicializa después.
+        if (playerDataManager == null)
+            playerDataManager = PlayerDataManager.Instance;
 
-        // Velocidad normal del robot.
-        float velocidadActual = velocidad;
-
-        // Consultar el chip equipado.
-        ModificadorStats chip = equiparChips != null
-            ? equiparChips.ModificadorEquipado
-            : null;
-
-        if (chip != null)
-        {
-            float modificador = 0f;
-            bool permiteModificarMovimiento = false;
-
-            foreach (EfectoModificador efecto in chip.efectos)
-            {
-                // Comprobar que el chip permite modificar
-                // el movimiento del robot.
-                if (efecto.scriptObjetivo == TipoScript.RoboMov &&
-                    efecto.atributo == AtributoModificable.ModificadorMovimiento)
-                {
-                    modificador += efecto.cantidad;
-                    permiteModificarMovimiento = true;
-                }
-            }
-
-            // W y S solamente funcionan con el chip adecuado.
-            if (permiteModificarMovimiento)
-            {
-                // W: Aumentar velocidad.
-                if (Input.GetKey(KeyCode.W) &&
-                    !Input.GetKey(KeyCode.S))
-                {
-                    velocidadActual += modificador;
-                }
-
-                // S: Disminuir velocidad.
-                else if (Input.GetKey(KeyCode.S) &&
-                         !Input.GetKey(KeyCode.W))
-                {
-                    velocidadActual -= modificador;
-                }
-            }
-        }
-
-        // Evitar velocidades negativas.
-        velocidadActual = Mathf.Max(0f, velocidadActual);
-
-        // Movimiento original del robot.
-        rb.MovePosition(
-            rb.position +
-            transform.forward * velocidadActual * Time.fixedDeltaTime
-        );
+        // ToggleMov activo: movimiento automático original.
+        // ToggleMov desactivado: movimiento manual con W y S.
+        if (playerDataManager != null && !playerDataManager.ToggleMov)
+            MovimientoManual();
+        else
+            MovimientoAutomatico();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -389,5 +352,121 @@ public class RoboMovPlayer : MonoBehaviour
         }
 
         return Vector3.zero;
+    }
+
+    // ================================
+    // MODOS DE MOVIMIENTO
+    // ================================
+
+    private void MovimientoAutomatico()
+    {
+        // Al volver al modo automático, reiniciar la aceleración manual.
+        velocidadManualActual = 0f;
+        direccionManualAnterior = 0;
+
+        if (girando)
+            return;
+
+        // Velocidad normal del robot.
+        float velocidadActual = velocidad;
+
+        // Consultar el chip equipado.
+        ModificadorStats chip = equiparChips != null
+            ? equiparChips.ModificadorEquipado
+            : null;
+
+        if (chip != null)
+        {
+            float modificador = 0f;
+            bool permiteModificarMovimiento = false;
+
+            foreach (EfectoModificador efecto in chip.efectos)
+            {
+                // Comprobar que el chip permite modificar
+                // el movimiento del robot.
+                if (efecto.scriptObjetivo == TipoScript.RoboMov &&
+                    efecto.atributo == AtributoModificable.ModificadorMovimiento)
+                {
+                    modificador += efecto.cantidad;
+                    permiteModificarMovimiento = true;
+                }
+            }
+
+            // W y S solamente funcionan con el chip adecuado.
+            if (permiteModificarMovimiento)
+            {
+                // W: Aumentar velocidad.
+                if (Input.GetKey(KeyCode.W) &&
+                    !Input.GetKey(KeyCode.S))
+                {
+                    velocidadActual += modificador;
+                }
+
+                // S: Disminuir velocidad.
+                else if (Input.GetKey(KeyCode.S) &&
+                         !Input.GetKey(KeyCode.W))
+                {
+                    velocidadActual -= modificador;
+                }
+            }
+        }
+
+        // Evitar velocidades negativas.
+        velocidadActual = Mathf.Max(0f, velocidadActual);
+
+        // Movimiento original del robot.
+        rb.MovePosition(
+            rb.position +
+            transform.forward * velocidadActual * Time.fixedDeltaTime
+        );
+    }
+
+    // Movimiento manual: W avanza, S retrocede, A y D giran en Update().
+    private void MovimientoManual()
+    {
+        // Respetar los bloqueos por choque, empuje y aturdimiento.
+        if (girando || empujado || aturdido)
+        {
+            velocidadManualActual = 0f;
+            direccionManualAnterior = 0;
+            return;
+        }
+
+        int direccion = 0;
+
+        // W tiene prioridad si W y S se pulsan simultáneamente.
+        if (Input.GetKey(KeyCode.W))
+            direccion = 1;
+        else if (Input.GetKey(KeyCode.S))
+            direccion = -1;
+
+        // Sin tecla de avance o retroceso, se detiene de inmediato.
+        if (direccion == 0)
+        {
+            velocidadManualActual = 0f;
+            direccionManualAnterior = 0;
+            return;
+        }
+
+        // Al invertir el sentido se vuelve a acelerar desde cero.
+        if (direccion != direccionManualAnterior)
+            velocidadManualActual = 0f;
+
+        direccionManualAnterior = direccion;
+
+        float velocidadMaxima = Mathf.Max(0f, velocidad);
+        float duracion = Mathf.Max(0.01f, tiempoAceleracionManual);
+
+        // De 0 a velocidadMaxima en tiempoAceleracionManual segundos.
+        velocidadManualActual = Mathf.MoveTowards(
+            velocidadManualActual,
+            velocidadMaxima,
+            velocidadMaxima / duracion * Time.fixedDeltaTime
+        );
+
+        rb.MovePosition(
+            rb.position +
+            transform.forward * (direccion * velocidadManualActual) * Time.fixedDeltaTime
+        );
     }
 }
