@@ -1844,11 +1844,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40934816646c8c44ba1b908787256b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovPlayer
-  velocidad: 5
+  velocidad: 7.5
   tiempoDeGiro: 0.8
-  velocidadGiroManual: 30
-  distanciaRebote: 0.5
+  velocidadGiroManual: 100
+  distanciaRebote: 1
   distanciaReboteEnemigo: 1
+  tiempoAceleracionManual: 1
   tiempoAturdido: 1
 --- !u!33 &6248861747064425131
 MeshFilter:

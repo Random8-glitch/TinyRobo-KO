@@ -702,10 +702,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8f6850ec50fc544951d23451d5117e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovEnemy
-  velocidad: 5
+  velocidad: 9.5
   tiempoDeGiro: 1
-  velocidadGiroMinima: 10
-  velocidadGiroMaxima: 55
+  velocidadGiroMinima: 60
+  velocidadGiroMaxima: 80
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 1

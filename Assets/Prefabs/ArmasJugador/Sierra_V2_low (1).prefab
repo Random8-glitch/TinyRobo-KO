@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 1920549363952071829}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.00071517925, y: -0.0000000047683715, z: -0.0070818327}
+  m_LocalPosition: {x: 0.00071517925, y: 0, z: -0.0070818327}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 8205699717771960664}
   - component: {fileID: 5565354615205406702}
   - component: {fileID: 5579981210065744719}
+  - component: {fileID: -4262772300621582033}
   m_Layer: 0
   m_Name: Sierra_V2_low (1)
   m_TagString: Untagged
@@ -167,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73e35ac9a7f1d6a419ac4a896e9b954c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SawPlayer
-  danioPorTick: 1
+  danioPorTick: 0.2
   boostDamage: 1.5
   boostDuration: 5
   cooldownDuration: 10
@@ -196,6 +197,35 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.1115189, y: 1, z: 1.4717722}
   m_Center: {x: 0.040992215, y: -0.000000026669321, z: -1.3423104}
+--- !u!114 &-4262772300621582033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5894913754969531725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47b30104874997f40a001d13d15eb234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrampaGiratorea
+  objetoARotar: {fileID: 8205699717771960664}
+  ejeLocal: {x: 0, y: 1, z: 0}
+  velocidadRotacion: 90
+  usarEspacioLocal: 1
+  rotarAlAwake: 1
+  enableVerticalMovement: 0
+  minHeightOffset: -0.5
+  maxHeightOffset: 0.5
+  verticalSpeed: 1
+  verticalPauseAtExtremes: 0.5
+  startMovingUp: 1
+  enableHorizontalMovement: 0
+  minHorizontalOffset: -2
+  maxHorizontalOffset: 2
+  horizontalSpeed: 1
+  horizontalPauseAtExtremes: 0.5
+  startMovingRight: 1
 --- !u!1 &8087853228150795857
 GameObject:
   m_ObjectHideFlags: 0

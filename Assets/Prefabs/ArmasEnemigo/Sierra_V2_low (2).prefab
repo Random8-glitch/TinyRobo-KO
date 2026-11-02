@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6721be257e8c467499cb5d494281ff87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SawEnemy
-  danioPorTick: 1
+  danioPorTick: 0.2
 --- !u!65 &4216388227553163983
 BoxCollider:
   m_ObjectHideFlags: 0

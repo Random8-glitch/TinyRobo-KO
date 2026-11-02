@@ -55,7 +55,7 @@ MonoBehaviour:
   rotacionPuntoA: {x: 45, y: 0, z: 0}
   rotacionPuntoB: {x: -120, y: 0, z: 0}
   velocidadPreparacion: 100
-  velocidadGolpe: 500
+  velocidadGolpe: 700
   velocidadRegreso: 150
   puntoImpacto: {fileID: 7003159868474962181}
   radioDeteccion: 0.12

@@ -51,9 +51,9 @@ MonoBehaviour:
   martilloARotar: {fileID: 594323770190995850}
   rotacionPuntoA: {x: 45, y: 0, z: 0}
   rotacionPuntoB: {x: -120, y: 0, z: 0}
-  velocidadPreparacion: 90
-  velocidadGolpe: 900
-  velocidadRegreso: 50
+  velocidadPreparacion: 120
+  velocidadGolpe: 1000
+  velocidadRegreso: 40
   puntoImpacto: {fileID: 4031500067619191968}
   radioDeteccion: 0.12
   tiempoEspera: 0.25
