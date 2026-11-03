@@ -12,6 +12,10 @@ public class RoboMovEnemy : MonoBehaviour
 
     [SerializeField] private float tiempoAturdido = 1f;
 
+    // Control de rumbo por IA
+    private bool controlIA = false;
+    private Vector3 direccionIA;
+
     private Rigidbody rb;
     private bool girando = false;
 
@@ -47,11 +51,20 @@ public class RoboMovEnemy : MonoBehaviour
         if (girando || empujado || aturdido)
             return;
 
-        if (player == null)
-            return;
+        Vector3 direccion;
 
-        Vector3 direccion =
-            player.transform.position - transform.position;
+        if (controlIA)
+        {
+            direccion = direccionIA;
+        }
+        else
+        {
+            if (player == null)
+                return;
+
+            direccion =
+                player.transform.position - transform.position;
+        }
 
         direccion.y = 0f;
 
@@ -59,9 +72,7 @@ public class RoboMovEnemy : MonoBehaviour
             return;
 
         Quaternion rotacionObjetivo =
-            Quaternion.LookRotation(
-                direccion.normalized
-            );
+            Quaternion.LookRotation(direccion.normalized);
 
         transform.rotation =
             Quaternion.RotateTowards(
@@ -71,11 +82,24 @@ public class RoboMovEnemy : MonoBehaviour
             );
     }
 
+    public void SetDireccionIA(Vector3 direccion)
+    {
+        controlIA = true;
+
+        direccion.y = 0f;
+
+        if (direccion.sqrMagnitude > 0.01f)
+        {
+            direccionIA = direccion.normalized;
+        }
+    }
+
     private void FixedUpdate()
     {
         if (girando || empujado || aturdido)
             return;
 
+        // El robot SIEMPRE avanza hacia delante.
         rb.MovePosition(
             rb.position +
             transform.forward *

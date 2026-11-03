@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class AxeEnemy : MonoBehaviour
+public class AxeEnemy : MonoBehaviour, IEnemyWeaponState
 {
     [Header("Ataque")]
     [SerializeField] private float tiempoEspera = 1f;
@@ -20,6 +20,7 @@ public class AxeEnemy : MonoBehaviour
     [SerializeField] private Transform puntoImpacto;
     [SerializeField] private float radioDeteccion = 0.2f;
     [SerializeField] private bool dibujarPuntoImpacto = true;
+    public bool EstaAtacando => atacando;
 
     [Header("Estado Critico")]
     [SerializeField] private float tiempoMinCritico = 5f;

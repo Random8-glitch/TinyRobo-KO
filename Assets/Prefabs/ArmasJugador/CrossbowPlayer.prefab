@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a80a696e84250be4281d0fae24bf1310, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrossbowSpawner
-  prefabFlecha: {fileID: 8472558152452267006, guid: 3ccb6c1a0d7dbe8408853ea95caeb3fe, type: 3}
+  prefabProyectil: {fileID: 8472558152452267006, guid: 3ccb6c1a0d7dbe8408853ea95caeb3fe, type: 3}
   puntoDisparo: {fileID: 0}
   tiempoEntreDisparos: 3
 --- !u!1 &8152900279315467729

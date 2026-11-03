@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 26304317931076916}
-  m_Layer: 0
+  - component: {fileID: 8941472857272640612}
+  m_Layer: 3
   m_Name: Trampa_001_Sierra Vertical
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,6 +33,18 @@ Transform:
   - {fileID: 7361944469046413702}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8941472857272640612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3886439086373466327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39c55ae80b6a8074d9269fbd6a28bcd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyTrapLayer
 --- !u!1 &5480789411502729099
 GameObject:
   m_ObjectHideFlags: 0
@@ -44,7 +57,7 @@ GameObject:
   - component: {fileID: 6990652180344361290}
   - component: {fileID: 4383904874936822195}
   - component: {fileID: 4648291382994346809}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -162,6 +175,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Obstaculo_001 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 1291529824523982264, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1697081177369956929, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: boostDamage
       value: 0
@@ -182,14 +199,46 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 43fb10a145873924992e08af8c4f2661, type: 2}
+    - target: {fileID: 2211672983964428943, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2780513121754944241, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 4938082573777435036, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 43fb10a145873924992e08af8c4f2661, type: 2}
+    - target: {fileID: 6573776182258356833, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6574491973305257084, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 43fb10a145873924992e08af8c4f2661, type: 2}
+    - target: {fileID: 6750159490645561911, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8114748426624281999, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8328583491645578244, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8431528356267187282, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505817977413594585, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 8560019241945322429, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -268,6 +317,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sierra_V2_low (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1239933845346055630, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1277519880885543310, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.19581115
@@ -320,6 +373,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1314298471657489477, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 4216388227553163983, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: m_Size.x
       value: 2.6833267
@@ -339,6 +396,10 @@ PrefabInstance:
     - target: {fileID: 4216388227553163983, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: m_Center.z
       value: 0.022258759
+      objectReference: {fileID: 0}
+    - target: {fileID: 4220716639284529696, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -389,6 +450,10 @@ PrefabInstance:
     - target: {fileID: 1239933845346055630, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: m_Name
       value: Sierra_V2_low (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1239933845346055630, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1277519880885543310, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: m_LocalScale.x
@@ -442,6 +507,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1314298471657489477, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2137419001996861119, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: danioPorTick
       value: 0.5
@@ -465,6 +534,10 @@ PrefabInstance:
     - target: {fileID: 4216388227553163983, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
       propertyPath: m_Center.z
       value: 0.022258759
+      objectReference: {fileID: 0}
+    - target: {fileID: 4220716639284529696, guid: 676f4e6f82e6e564d81f37d847834a7b, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
