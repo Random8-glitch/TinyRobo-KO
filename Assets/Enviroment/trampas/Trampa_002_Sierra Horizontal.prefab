@@ -247,7 +247,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73e35ac9a7f1d6a419ac4a896e9b954c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SawPlayer
-  danioPorTick: 1
+  danioPorTick: 0.1
   boostDamage: 0
   boostDuration: 0
   cooldownDuration: 0

@@ -154,9 +154,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 26304317931076916}
     m_Modifications:
+    - target: {fileID: 999949895885684711, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: danioPorTick
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 1291529824523982264, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: m_Name
       value: Obstaculo_001 (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697081177369956929, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: boostDamage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697081177369956929, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: danioPorTick
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697081177369956929, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: boostDuration
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697081177369956929, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: cooldownDuration
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1934872200102948259, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -209,6 +229,14 @@ PrefabInstance:
     - target: {fileID: 8560019241945322429, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8833316304547661480, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: danioPorTick
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8935672389551589118, guid: c2d61a800a9e97d4abb0fe479bac5ab5, type: 3}
+      propertyPath: danioPorTick
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
