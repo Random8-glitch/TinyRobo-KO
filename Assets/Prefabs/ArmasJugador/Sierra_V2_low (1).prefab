@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6914464862505327071}
   - component: {fileID: 3132643940609987111}
   - component: {fileID: 5321350520769198263}
+  - component: {fileID: 4608624212748791105}
   m_Layer: 0
   m_Name: Centro
   m_TagString: Untagged
@@ -104,9 +105,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47b30104874997f40a001d13d15eb234, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrampaGiratorea
-  objetoARotar: {fileID: 6795966339119449902}
+  objetoARotar: {fileID: 282944777603372342}
   ejeLocal: {x: 0, y: 1, z: 0}
   velocidadRotacion: 700
+  usarEspacioLocal: 1
+  rotarAlAwake: 1
+  enableVerticalMovement: 0
+  minHeightOffset: -0.5
+  maxHeightOffset: 0.5
+  verticalSpeed: 1
+  verticalPauseAtExtremes: 0.5
+  startMovingUp: 1
+  enableHorizontalMovement: 0
+  minHorizontalOffset: -2
+  maxHorizontalOffset: 2
+  horizontalSpeed: 1
+  horizontalPauseAtExtremes: 0.5
+  startMovingRight: 1
+--- !u!114 &4608624212748791105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920549363952071829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47b30104874997f40a001d13d15eb234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrampaGiratorea
+  objetoARotar: {fileID: 8205699717771960664}
+  ejeLocal: {x: 0, y: 1, z: 0}
+  velocidadRotacion: 90
   usarEspacioLocal: 1
   rotarAlAwake: 1
   enableVerticalMovement: 0
@@ -132,7 +162,6 @@ GameObject:
   - component: {fileID: 8205699717771960664}
   - component: {fileID: 5565354615205406702}
   - component: {fileID: 5579981210065744719}
-  - component: {fileID: -4262772300621582033}
   m_Layer: 0
   m_Name: Sierra_V2_low (1)
   m_TagString: Untagged
@@ -195,37 +224,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.1115189, y: 1, z: 3.5422115}
-  m_Center: {x: 0.04099226, y: 0, z: -0.30709076}
---- !u!114 &-4262772300621582033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5894913754969531725}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47b30104874997f40a001d13d15eb234, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TrampaGiratorea
-  objetoARotar: {fileID: 8205699717771960664}
-  ejeLocal: {x: 0, y: 1, z: 0}
-  velocidadRotacion: 90
-  usarEspacioLocal: 1
-  rotarAlAwake: 1
-  enableVerticalMovement: 0
-  minHeightOffset: -0.5
-  maxHeightOffset: 0.5
-  verticalSpeed: 1
-  verticalPauseAtExtremes: 0.5
-  startMovingUp: 1
-  enableHorizontalMovement: 0
-  minHorizontalOffset: -2
-  maxHorizontalOffset: 2
-  horizontalSpeed: 1
-  horizontalPauseAtExtremes: 0.5
-  startMovingRight: 1
+  m_Size: {x: 3.6857412, y: 1, z: 3.8722649}
+  m_Center: {x: 0.07441795, y: 0, z: -0.007747948}
 --- !u!1 &8087853228150795857
 GameObject:
   m_ObjectHideFlags: 0

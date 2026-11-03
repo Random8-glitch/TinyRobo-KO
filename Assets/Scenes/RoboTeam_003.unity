@@ -571,13 +571,17 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 340384554}
-  - component: {fileID: 340384553}
   - component: {fileID: 340384552}
+  - component: {fileID: 340384553}
+  - component: {fileID: 340384559}
+  - component: {fileID: 340384558}
+  - component: {fileID: 340384557}
   - component: {fileID: 340384551}
   - component: {fileID: 340384550}
   - component: {fileID: 340384549}
   - component: {fileID: 340384548}
   - component: {fileID: 340384555}
+  - component: {fileID: 340384556}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
@@ -762,6 +766,101 @@ MonoBehaviour:
   randomRotation: 180
   widthRange: {x: 1, y: 1}
   heightRange: {x: 1, y: 1}
+--- !u!114 &340384556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340384547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26b140645c65ece468e53f2a0064bb9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ManagerWeaponEnemy
+  weaponList: {fileID: 0}
+  weaponHolders:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  weaponSlotImages:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  autoEquipOnAwake: 1
+  maxScanWeaponID: 64
+--- !u!114 &340384557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340384547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a8e01830356c8d4f80f605328cdb3c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyWeaponAnalysis
+  armaFrontal: {fileID: 1516479360}
+  armaLateralIzquierda: {fileID: 2132792229}
+  armaLateralDerecha: {fileID: 1404514592}
+  pesoOrientacionArma: 0.7
+--- !u!114 &340384558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340384547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7342cf6acdad5448ddc8cc2c4bbd42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPerception
+  distanciaDeteccion: 10
+  radioDeteccion: 0.4
+  alturaDeteccion: 0.5
+  capasObstaculos:
+    serializedVersion: 2
+    m_Bits: 0
+  penalizacionPared: 4
+  penalizacionTrampa: 6
+  angulosBusqueda:
+  - 0
+  - 30
+  - -30
+  - 60
+  - -60
+  - 90
+  - -90
+  - 120
+  - -120
+  - 180
+--- !u!114 &340384559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340384547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a548f13fcc8ebcb4c92ead6bff5eb4a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
+  percepcion: {fileID: 340384558}
+  analisisArmas: {fileID: 340384557}
+  jugador: {fileID: 1873017252}
+  porcentajeVidaRetirada: 30
+  distanciaReanudarAtaque: 10
+  distanciaIdeal: 5
+  distanciaPersecucion: 7
+  rodearJugador: 1
+  intensidadRodeo: 0.7
+  intensidadRetiradaDiagonal: 0.35
+  tiempoCambioRodeo: 3
+  intervaloDecision: 0.25
+  estadoActual: 0
 --- !u!1 &440813430
 GameObject:
   m_ObjectHideFlags: 0

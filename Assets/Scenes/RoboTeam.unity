@@ -847,9 +847,12 @@ MonoBehaviour:
   alturaDeteccion: 0.5
   capasObstaculos:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 136
+  nombreCapaTrampa: Trap
+  nombreCapaPared: Wall
   penalizacionPared: 4
   penalizacionTrampa: 6
+  penalizacionOtros: 4
   angulosBusqueda:
   - 0
   - 30

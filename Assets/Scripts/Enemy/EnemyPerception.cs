@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class EnemyPerception : MonoBehaviour
@@ -8,11 +9,19 @@ public class EnemyPerception : MonoBehaviour
     [SerializeField] private float alturaDeteccion = 0.5f;
 
     [Header("Capas")]
+    [Tooltip("Agrega aquí todas las capas que el enemigo debe evitar.")]
     [SerializeField] private LayerMask capasObstaculos;
 
-    [Header("Evitación")]
+    [Tooltip("Capa que identifica las trampas.")]
+    [SerializeField] private string nombreCapaTrampa = "Trap";
+
+    [Tooltip("Capa que identifica las paredes.")]
+    [SerializeField] private string nombreCapaPared = "Wall";
+
+    [Header("Penalizaciones")]
     [SerializeField] private float penalizacionPared = 4f;
     [SerializeField] private float penalizacionTrampa = 6f;
+    [SerializeField] private float penalizacionOtros = 4f;
 
     [Header("Direcciones de búsqueda")]
     [SerializeField]
@@ -22,19 +31,23 @@ public class EnemyPerception : MonoBehaviour
         90f, -90f, 120f, -120f, 180f
     };
 
+    private int layerTrampa = -1;
+    private int layerPared = -1;
+
     private void Awake()
     {
-        // Si no se asignaron capas manualmente, intenta encontrarlas.
+        layerTrampa = LayerMask.NameToLayer(nombreCapaTrampa);
+        layerPared = LayerMask.NameToLayer(nombreCapaPared);
+
+        // Si no se asignaron capas manualmente,
+        // agrega automáticamente Wall y Trap.
         if (capasObstaculos.value == 0)
         {
-            int wall = LayerMask.NameToLayer("Wall");
-            int trap = LayerMask.NameToLayer("Trap");
+            if (layerPared != -1)
+                capasObstaculos |= 1 << layerPared;
 
-            if (wall != -1)
-                capasObstaculos |= 1 << wall;
-
-            if (trap != -1)
-                capasObstaculos |= 1 << trap;
+            if (layerTrampa != -1)
+                capasObstaculos |= 1 << layerTrampa;
         }
     }
 
@@ -49,12 +62,18 @@ public class EnemyPerception : MonoBehaviour
         posicionEnemigo.y = 0f;
         posicionJugador.y = 0f;
 
-        return Vector3.Distance(posicionEnemigo, posicionJugador);
+        return Vector3.Distance(
+            posicionEnemigo,
+            posicionJugador
+        );
     }
 
     public bool HayObstaculoDelante()
     {
-        return HayObstaculoEnDireccion(transform.forward, out _);
+        return HayObstaculoEnDireccion(
+            transform.forward,
+            out _
+        );
     }
 
     public Vector3 AjustarRumbo(Vector3 rumboDeseado)
@@ -82,29 +101,37 @@ public class EnemyPerception : MonoBehaviour
                 out RaycastHit obstaculo
             );
 
-            float alineacion = Vector3.Dot(rumboDeseado, direccion);
+            float alineacion = Vector3.Dot(
+                rumboDeseado,
+                direccion
+            );
 
-            // Cuanto más alineada esté con el rumbo deseado, mejor.
             float puntuacion = alineacion * 3f;
 
             if (bloqueado)
             {
                 int layer = obstaculo.collider.gameObject.layer;
 
-                int trapLayer = LayerMask.NameToLayer("Trap");
-
-                if (layer == trapLayer)
+                if (layer == layerTrampa)
+                {
                     puntuacion -= penalizacionTrampa;
-                else
+                }
+                else if (layer == layerPared)
+                {
                     puntuacion -= penalizacionPared;
+                }
+                else
+                {
+                    puntuacion -= penalizacionOtros;
+                }
 
-                // Penaliza especialmente los obstáculos cercanos.
+                // Penaliza más los obstáculos cercanos.
                 puntuacion -=
                     (distanciaDeteccion - obstaculo.distance) * 0.5f;
             }
             else
             {
-                // Favorece las direcciones completamente despejadas.
+                // Favorece las direcciones despejadas.
                 puntuacion += 3f;
             }
 
