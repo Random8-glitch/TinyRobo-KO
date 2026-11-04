@@ -1778,6 +1778,7 @@ GameObject:
   - component: {fileID: 5731245900559924309}
   - component: {fileID: 7075459856964981695}
   - component: {fileID: 2318229714662963936}
+  - component: {fileID: 5611363086025200045}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -1846,7 +1847,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovPlayer
   velocidad: 7.5
   tiempoDeGiro: 0.8
-  velocidadGiroManual: 100
+  velocidadGiroManual: 95
   distanciaRebote: 1
   distanciaReboteEnemigo: 1
   tiempoAceleracionManual: 1
@@ -1924,7 +1925,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 3.3429337, y: 1, z: 3.4513402}
@@ -1956,3 +1957,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 0
+--- !u!114 &5611363086025200045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8815226836013115687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfb570d5ead0a8f408d5c5e4505de024, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RobotCollisionDamage
+  decalPrefab: {fileID: 0}
+  maxDecals: 5
+  collisionCooldown: 3
+  surfaceOffset: 0.015
+  randomRotation: 180
+  widthRange: {x: 1, y: 1}
+  heightRange: {x: 1, y: 1}

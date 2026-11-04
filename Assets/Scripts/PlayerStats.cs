@@ -6,10 +6,17 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] public float vidaMax = 100f;
     [SerializeField] public float vida = 100f;
 
-    [SerializeField] private TMP_Text textoVida;
+    private TMP_Text textoVida;
 
     private void Start()
     {
+        GameObject objetoVida = GameObject.Find("VidaJugador");
+
+        if (objetoVida != null)
+        {
+            textoVida = objetoVida.GetComponent<TMP_Text>();
+        }
+
         ActualizarTexto();
     }
 

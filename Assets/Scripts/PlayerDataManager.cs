@@ -1,4 +1,5 @@
 
+
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,6 +21,9 @@ public class PlayerDataManager : MonoBehaviour
     [SerializeField] private bool toggleMov = true;
 
     public bool ToggleMov => toggleMov;
+
+    [Header("Carroza Equipada")]
+    [SerializeField] private GameObject carrozaEquipada;
 
     [Header("UI")]
     [Tooltip("Nombre del objeto TextMeshPro que mostrará el dinero.")]
@@ -66,6 +70,8 @@ public class PlayerDataManager : MonoBehaviour
         ActualizarUIDinero();
 
         BuscarToggleMov(SceneManager.GetActiveScene());
+
+        InstanciarCarroza(SceneManager.GetActiveScene());
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -74,6 +80,48 @@ public class PlayerDataManager : MonoBehaviour
         ActualizarUIDinero();
 
         BuscarToggleMov(scene);
+
+        InstanciarCarroza(scene);
+    }
+
+    private void InstanciarCarroza(Scene scene)
+    {
+        if (carrozaEquipada == null)
+            return;
+
+        GameObject[] objetos = scene.GetRootGameObjects();
+
+        foreach (GameObject objeto in objetos)
+        {
+            Transform playerEmpty = BuscarPlayerEmpty(objeto.transform);
+
+            if (playerEmpty != null)
+            {
+                Instantiate(
+                    carrozaEquipada,
+                    playerEmpty.position,
+                    playerEmpty.rotation
+                );
+
+                return;
+            }
+        }
+    }
+
+    private Transform BuscarPlayerEmpty(Transform objeto)
+    {
+        if (objeto.name == "PlayerEmpty")
+            return objeto;
+
+        foreach (Transform hijo in objeto)
+        {
+            Transform encontrado = BuscarPlayerEmpty(hijo);
+
+            if (encontrado != null)
+                return encontrado;
+        }
+
+        return null;
     }
 
     private void BuscarTextoDinero()
@@ -109,10 +157,8 @@ public class PlayerDataManager : MonoBehaviour
         }
     }
 
-    // Buscar el ToggleMov al iniciar una escena.
     private void BuscarToggleMov(Scene scene)
     {
-        // Desvincular el Toggle anterior.
         if (toggleMovUI != null)
         {
             toggleMovUI.onValueChanged.RemoveListener(
@@ -134,11 +180,8 @@ public class PlayerDataManager : MonoBehaviour
             {
                 toggleMovUI = toggle;
 
-                // Aplicar el valor guardado en el bool
-                // sin activar el evento del Toggle.
                 toggleMovUI.SetIsOnWithoutNotify(toggleMov);
 
-                // Detectar cambios manuales del jugador.
                 toggleMovUI.onValueChanged.AddListener(
                     OnToggleMovChanged
                 );
@@ -148,7 +191,6 @@ public class PlayerDataManager : MonoBehaviour
         }
     }
 
-    // Actualizar el bool cuando el jugador modifica el Toggle.
     private void OnToggleMovChanged(bool nuevoEstado)
     {
         toggleMov = nuevoEstado;

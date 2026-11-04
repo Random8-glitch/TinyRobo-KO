@@ -13758,6 +13758,7 @@ MonoBehaviour:
   rank: 1
   money: 100
   toggleMov: 1
+  carrozaEquipada: {fileID: 8815226836013115687, guid: fc6fe6e9c144365439540abc9cd25247, type: 3}
   nombreTextoDinero: TextoDinero
 --- !u!4 &1695382791
 Transform:

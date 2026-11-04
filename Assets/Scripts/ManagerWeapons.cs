@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class ManagerWeapon : MonoBehaviour
 {
@@ -11,10 +12,9 @@ public class ManagerWeapon : MonoBehaviour
     [Header("Datos de armas")]
     [SerializeField] private WeaponManager weaponManager;
 
-    [Header("Weapon Holders del jugador")]
-    [Tooltip("Los 3 lugares donde aparecerán las armas.")]
-    [SerializeField]
-    private Transform[] weaponHolders =
+    // Se asignan automáticamente al buscar al jugador.
+    // Orden: Vacio Arma 1, Vacio Arma 2, Vacio Arma 3.
+    private readonly Transform[] weaponHolders =
         new Transform[MaxWeaponSlots];
 
     [Header("Ranuras visuales del jugador")]
@@ -44,7 +44,7 @@ public class ManagerWeapon : MonoBehaviour
         InitializeWeaponSlots();
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         weaponManager = WeaponManager.Instance;
 
@@ -54,10 +54,66 @@ public class ManagerWeapon : MonoBehaviour
                 "No existe un WeaponManager persistente.",
                 this
             );
-            return;
+            yield break;
+        }
+
+        // La carroza puede ser instanciada después de este ManagerWeapon.
+        // Esperar hasta encontrar los tres puntos antes de recuperar armas.
+        while (!BuscarWeaponHolders())
+        {
+            yield return new WaitForSeconds(0.1f);
         }
 
         RecuperarArmasEquipadas();
+    }
+
+    private bool BuscarWeaponHolders()
+    {
+        int layerPlayer = LayerMask.NameToLayer("Player");
+
+        if (layerPlayer == -1)
+            return false;
+
+        GameObject[] objetos = FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        foreach (GameObject objeto in objetos)
+        {
+            // Buscar un jugador de esta misma escena.
+            if (objeto.layer != layerPlayer ||
+                objeto.scene != gameObject.scene)
+                continue;
+
+            Transform[] hijos = objeto.GetComponentsInChildren<Transform>(true);
+            Transform[] encontrados = new Transform[MaxWeaponSlots];
+
+            foreach (Transform hijo in hijos)
+            {
+                if (hijo.name == "Vacio Arma 1")
+                    encontrados[0] = hijo;
+                else if (hijo.name == "Vacio Arma 2")
+                    encontrados[1] = hijo;
+                else if (hijo.name == "Vacio Arma 3")
+                    encontrados[2] = hijo;
+            }
+
+            // Los tres deben pertenecer al mismo jugador.
+            if (encontrados[0] == null ||
+                encontrados[1] == null ||
+                encontrados[2] == null)
+                continue;
+
+            for (int i = 0; i < MaxWeaponSlots; i++)
+            {
+                weaponHolders[i] = encontrados[i];
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private void OnDestroy()
@@ -83,16 +139,6 @@ public class ManagerWeapon : MonoBehaviour
 
     private void ValidateConfiguration()
     {
-        if (weaponHolders == null ||
-            weaponHolders.Length != MaxWeaponSlots)
-        {
-            Debug.LogError(
-                "ManagerWeapon necesita exactamente " +
-                "3 Weapon Holders.",
-                this
-            );
-        }
-
         if (weaponSlotImages == null ||
             weaponSlotImages.Length != MaxWeaponSlots)
         {
@@ -361,7 +407,7 @@ public class ManagerWeapon : MonoBehaviour
         slotImage.enabled = false;
     }
 
-    
+
 
     public void ClearAllWeapons()
     {
