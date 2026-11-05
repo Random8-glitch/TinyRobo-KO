@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+[DefaultExecutionOrder(-100)]
 [RequireComponent(typeof(PlayerDataManager))]
 public class WeaponManager : MonoBehaviour
 {

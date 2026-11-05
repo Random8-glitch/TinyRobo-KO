@@ -130,9 +130,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78cca75d4ae9f114b834c5ed9a59c656, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
-  vidaMax: 100
-  vida: 100
-  textoVida: {fileID: 0}
+  vidaMax: 75
+  vida: 75
 --- !u!114 &5656245254629123745
 MonoBehaviour:
   m_ObjectHideFlags: 0

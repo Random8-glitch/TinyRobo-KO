@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
+[DefaultExecutionOrder(-200)]
 public class PlayerDataManager : MonoBehaviour
 {
     public static PlayerDataManager Instance { get; private set; }
@@ -24,6 +25,14 @@ public class PlayerDataManager : MonoBehaviour
 
     [Header("Carroza Equipada")]
     [SerializeField] private GameObject carrozaEquipada;
+
+    [SerializeField] private int robotEquipadoID = -1;
+
+    public GameObject CarrozaActual { get; private set; }
+
+    public int RobotEquipadoID => robotEquipadoID;
+
+    public event Action OnRobotEquipadoChanged;
 
     [Header("UI")]
     [Tooltip("Nombre del objeto TextMeshPro que mostrará el dinero.")]
@@ -71,6 +80,9 @@ public class PlayerDataManager : MonoBehaviour
 
         BuscarToggleMov(SceneManager.GetActiveScene());
 
+        // Identificar el robot inicial mediante su prefab.
+        DetectarRobotEquipadoInicial();
+
         InstanciarCarroza(SceneManager.GetActiveScene());
     }
 
@@ -89,15 +101,23 @@ public class PlayerDataManager : MonoBehaviour
         if (carrozaEquipada == null)
             return;
 
+        // Evitar instanciar dos veces en la misma escena.
+        if (CarrozaActual != null &&
+            CarrozaActual.scene == scene)
+        {
+            return;
+        }
+
         GameObject[] objetos = scene.GetRootGameObjects();
 
         foreach (GameObject objeto in objetos)
         {
-            Transform playerEmpty = BuscarPlayerEmpty(objeto.transform);
+            Transform playerEmpty =
+                BuscarPlayerEmpty(objeto.transform);
 
             if (playerEmpty != null)
             {
-                Instantiate(
+                CarrozaActual = Instantiate(
                     carrozaEquipada,
                     playerEmpty.position,
                     playerEmpty.rotation
@@ -106,6 +126,10 @@ public class PlayerDataManager : MonoBehaviour
                 return;
             }
         }
+
+        Debug.LogWarning(
+            $"No se encontró PlayerEmpty en la escena '{scene.name}'."
+        );
     }
 
     private Transform BuscarPlayerEmpty(Transform objeto)
@@ -288,4 +312,125 @@ public class PlayerDataManager : MonoBehaviour
     {
         // SaveData();
     }
+
+
+    private void DetectarRobotEquipadoInicial()
+    {
+        RoboManager roboManager = RoboManager.Instance;
+
+        if (roboManager == null)
+        {
+            Debug.LogWarning(
+                "PlayerDataManager: No se encontró RoboManager.",
+                this
+            );
+            return;
+        }
+
+        robotEquipadoID = -1;
+
+        if (carrozaEquipada == null)
+            return;
+
+        foreach (RoboManager.RobotRuntimeData robot in roboManager.Robots)
+        {
+            if (robot == null)
+                continue;
+
+            // Comparar el prefab original con los de RoboManager.
+            if (robot.RobotPrefab == carrozaEquipada)
+            {
+                robotEquipadoID = robot.RobotID;
+                return;
+            }
+        }
+
+        Debug.LogWarning(
+            "La carroza inicial no corresponde a ningún robot de RoboManager.",
+            this
+        );
+    }
+
+    public bool CambiarRobotEquipado(int nuevoRobotID)
+    {
+        RoboManager roboManager = RoboManager.Instance;
+
+        if (roboManager == null)
+            return false;
+
+        RoboManager.RobotRuntimeData robot =
+            roboManager.GetRobot(nuevoRobotID);
+
+        if (robot == null)
+            return false;
+
+        // Solo pueden equiparse robots comprados.
+        if (!robot.Comprado)
+            return false;
+
+        if (robot.RobotPrefab == null)
+            return false;
+
+        // No cambiar si ya está equipado.
+        if (robotEquipadoID == nuevoRobotID ||
+            carrozaEquipada == robot.RobotPrefab)
+        {
+            return false;
+        }
+
+        GameObject carrozaAnterior = CarrozaActual;
+
+        bool existeCarrozaAnterior =
+            carrozaAnterior != null;
+
+        Vector3 posicion = Vector3.zero;
+        Quaternion rotacion = Quaternion.identity;
+
+        // Conservar posición y rotación de la carroza anterior.
+        if (existeCarrozaAnterior)
+        {
+            posicion = carrozaAnterior.transform.position;
+            rotacion = carrozaAnterior.transform.rotation;
+
+            // Desactivar inmediatamente la carroza anterior.
+            carrozaAnterior.SetActive(false);
+        }
+
+        // Guardar el nuevo prefab y su ID.
+        carrozaEquipada = robot.RobotPrefab;
+        robotEquipadoID = nuevoRobotID;
+
+        if (existeCarrozaAnterior)
+        {
+            // Instanciar la nueva carroza en la posición anterior.
+            CarrozaActual = Instantiate(
+                carrozaEquipada,
+                posicion,
+                rotacion
+            );
+
+            // Destruir la carroza antigua.
+            Destroy(carrozaAnterior);
+        }
+        else
+        {
+            // Si no existe una carroza, usar PlayerEmpty.
+            CarrozaActual = null;
+
+            InstanciarCarroza(
+                SceneManager.GetActiveScene()
+            );
+        }
+
+        // Avisar a los demás sistemas del cambio.
+        OnRobotEquipadoChanged?.Invoke();
+
+        Debug.Log(
+            $"Robot equipado: {robot.RobotName} (ID {nuevoRobotID})",
+            this
+        );
+
+        return true;
+    }
+
 }

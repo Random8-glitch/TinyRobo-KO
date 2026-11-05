@@ -1477,10 +1477,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ManagerWeapon
   weaponManager: {fileID: 0}
-  weaponHolders:
-  - {fileID: 83625302}
-  - {fileID: 1611079648}
-  - {fileID: 838716772}
   weaponSlotImages:
   - {fileID: 1995487838}
   - {fileID: 2011531436}
@@ -2174,6 +2170,37 @@ Transform:
   - {fileID: 1262572968}
   - {fileID: 1212942821}
   - {fileID: 407058690}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &769114225
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 769114226}
+  m_Layer: 8
+  m_Name: PlayerEmpty
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &769114226
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 769114225}
+  serializedVersion: 2
+  m_LocalRotation: {x: 8.103669e-15, y: 1, z: 0.000000014901163, w: 0.00000058114523}
+  m_LocalPosition: {x: -76.39, y: 1.5, z: 43.92}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &789590614
@@ -3242,12 +3269,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330421374cc1ef7459e3ee62d122a0d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Derrota
-  playerStats: {fileID: 1873017253}
-  cronometroHUD: {fileID: 1390779610}
+  nombreLayerJugador: Player
+  intervaloComprobacion: 0.5
   fadeCanvasGroup: {fileID: 1206433144}
   duracionFade: 1
   audioSource: {fileID: 0}
-  soundoDerrota: {fileID: 0}
+  sonidoDerrota: {fileID: 0}
   delayAntesDeCarga: 2
   gameOverScene: EscenaDerrota
 --- !u!114 &1103707346
@@ -7816,13 +7843,13 @@ GameObject:
   - component: {fileID: 1873017249}
   - component: {fileID: 1873017248}
   - component: {fileID: 1873017247}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!54 &1873017247
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7945,6 +7972,7 @@ MonoBehaviour:
   velocidadGiroManual: 30
   distanciaRebote: 0.5
   distanciaReboteEnemigo: 1
+  tiempoAceleracionManual: 1
   tiempoAturdido: 1
 --- !u!4 &1873017252
 Transform:
@@ -7979,7 +8007,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   vidaMax: 100
   vida: 100
-  textoVida: {fileID: 1687833520}
 --- !u!1 &1909875347
 GameObject:
   m_ObjectHideFlags: 0
@@ -10085,6 +10112,7 @@ SceneRoots:
   - {fileID: 1245790179}
   - {fileID: 2116095810}
   - {fileID: 754204248}
+  - {fileID: 769114226}
   - {fileID: 1873017252}
   - {fileID: 340384554}
   - {fileID: 2013990442}

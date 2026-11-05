@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
+[DefaultExecutionOrder(100)]
 public class ManagerWeapon : MonoBehaviour
 {
     public static ManagerWeapon Instance { get; private set; }
@@ -54,66 +55,79 @@ public class ManagerWeapon : MonoBehaviour
                 "No existe un WeaponManager persistente.",
                 this
             );
+
             yield break;
         }
 
-        // La carroza puede ser instanciada después de este ManagerWeapon.
-        // Esperar hasta encontrar los tres puntos antes de recuperar armas.
-        while (!BuscarWeaponHolders())
+        // Esperar hasta que PlayerDataManager
+        // tenga una carroza instanciada.
+        while (PlayerDataManager.Instance == null ||
+               PlayerDataManager.Instance.CarrozaActual == null)
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return null;
         }
 
+        // Buscar los puntos de las armas.
+        if (!BuscarWeaponHolders())
+        {
+            Debug.LogError(
+                "La carroza fue instanciada, pero no se " +
+                "encontraron los tres puntos de armas.",
+                this
+            );
+
+            yield break;
+        }
+
+        // Recuperar las armas solamente cuando
+        // todos los puntos estén disponibles.
         RecuperarArmasEquipadas();
     }
 
     private bool BuscarWeaponHolders()
     {
-        int layerPlayer = LayerMask.NameToLayer("Player");
+        PlayerDataManager playerData =
+            PlayerDataManager.Instance;
 
-        if (layerPlayer == -1)
-            return false;
-
-        GameObject[] objetos = FindObjectsByType<GameObject>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None
-        );
-
-        foreach (GameObject objeto in objetos)
+        if (playerData == null ||
+            playerData.CarrozaActual == null)
         {
-            // Buscar un jugador de esta misma escena.
-            if (objeto.layer != layerPlayer ||
-                objeto.scene != gameObject.scene)
-                continue;
-
-            Transform[] hijos = objeto.GetComponentsInChildren<Transform>(true);
-            Transform[] encontrados = new Transform[MaxWeaponSlots];
-
-            foreach (Transform hijo in hijos)
-            {
-                if (hijo.name == "Vacio Arma 1")
-                    encontrados[0] = hijo;
-                else if (hijo.name == "Vacio Arma 2")
-                    encontrados[1] = hijo;
-                else if (hijo.name == "Vacio Arma 3")
-                    encontrados[2] = hijo;
-            }
-
-            // Los tres deben pertenecer al mismo jugador.
-            if (encontrados[0] == null ||
-                encontrados[1] == null ||
-                encontrados[2] == null)
-                continue;
-
-            for (int i = 0; i < MaxWeaponSlots; i++)
-            {
-                weaponHolders[i] = encontrados[i];
-            }
-
-            return true;
+            return false;
         }
 
-        return false;
+        // Buscar únicamente dentro de la carroza instanciada.
+        Transform carroza =
+            playerData.CarrozaActual.transform;
+
+        Transform[] hijos =
+            carroza.GetComponentsInChildren<Transform>(true);
+
+        // Limpiar referencias anteriores.
+        for (int i = 0; i < MaxWeaponSlots; i++)
+        {
+            weaponHolders[i] = null;
+        }
+
+        foreach (Transform hijo in hijos)
+        {
+            if (hijo.name == "Vacio Arma 1")
+            {
+                weaponHolders[0] = hijo;
+            }
+            else if (hijo.name == "Vacio Arma 2")
+            {
+                weaponHolders[1] = hijo;
+            }
+            else if (hijo.name == "Vacio Arma 3")
+            {
+                weaponHolders[2] = hijo;
+            }
+        }
+
+        // Comprobar que encontramos los tres puntos.
+        return weaponHolders[0] != null &&
+               weaponHolders[1] != null &&
+               weaponHolders[2] != null;
     }
 
     private void OnDestroy()
@@ -501,4 +515,52 @@ public class ManagerWeapon : MonoBehaviour
         return slotIndex >= 0 &&
                slotIndex < MaxWeaponSlots;
     }
+
+
+    private void OnEnable()
+    {
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.OnRobotEquipadoChanged +=
+                ReconstruirArmasTrasCambioRobot;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.OnRobotEquipadoChanged -=
+                ReconstruirArmasTrasCambioRobot;
+        }
+    }
+
+    private void ReconstruirArmasTrasCambioRobot()
+    {
+        // Limpiar referencias de la carroza anterior.
+        // No sincronizar con WeaponManager todavía.
+        for (int i = 0; i < MaxWeaponSlots; i++)
+        {
+            weaponHolders[i] = null;
+            weaponInstances[i] = null;
+            equippedWeaponIDs[i] = -1;
+
+            ClearWeaponSlotUI(i);
+        }
+
+        // Localizar los puntos de la nueva carroza.
+        if (!BuscarWeaponHolders())
+        {
+            Debug.LogWarning(
+                "No se encontraron los puntos de armas " +
+                "en la nueva carroza.",
+                this
+            );
+            return;
+        }
+
+        // Restaurar las armas desde WeaponManager.
+        RecuperarArmasEquipadas();
+    }
+
 }

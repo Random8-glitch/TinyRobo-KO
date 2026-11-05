@@ -9,6 +9,7 @@ public class BattleStart : MonoBehaviour
     [Header("Menús de selección")]
     [SerializeField] private GameObject weaponUI;
     [SerializeField] private GameObject chipUI;
+    [SerializeField] private GameObject roboUI;
 
     [SerializeField] private bool menu;
 
@@ -47,6 +48,11 @@ public class BattleStart : MonoBehaviour
         {
             chipUI.SetActive(false);
         }
+
+        if (roboUI != null)
+        {
+            roboUI.SetActive(false);
+        }
     }
 
     public void AbrirChipMenu()
@@ -59,6 +65,29 @@ public class BattleStart : MonoBehaviour
         if (chipUI != null)
         {
             chipUI.SetActive(true);
+        }
+
+        if (roboUI != null)
+        {
+            roboUI.SetActive(false);
+        }
+    }
+
+    public void AbrirRoboMenu()
+    {
+        if (roboUI != null)
+        {
+            roboUI.SetActive(true);
+        }
+
+        if (weaponUI != null)
+        {
+            weaponUI.SetActive(false);
+        }
+
+        if (chipUI != null)
+        {
+            chipUI.SetActive(false);
         }
     }
 }

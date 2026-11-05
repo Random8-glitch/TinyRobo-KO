@@ -62,6 +62,62 @@ public class WeaponShop : MonoBehaviour
         }
     }
 
+
+    // ==========================================
+    // ESPACIOS DE TIENDA PARA ROBOTS
+    // ==========================================
+
+    [Serializable]
+    public class RobotShopSlot
+    {
+        [Tooltip(
+            "GameObject raíz del espacio del robot. " +
+            "Debe contener la Image y un Button como hijo."
+        )]
+        [SerializeField] private GameObject robotUIObject;
+
+        [Tooltip("Precio de compra del robot.")]
+        [Min(0)]
+        [SerializeField] private int price;
+
+        [Header("Información asignada automáticamente")]
+        [SerializeField] private int robotID = -1;
+
+        [NonSerialized] private Image robotImage;
+        [NonSerialized] private Button purchaseButton;
+        [NonSerialized] private UnityAction purchaseAction;
+
+        public GameObject RobotUIObject => robotUIObject;
+        public int Price => price;
+        public int RobotID => robotID;
+        public Image RobotImage => robotImage;
+        public Button PurchaseButton => purchaseButton;
+
+        public UnityAction PurchaseAction
+        {
+            get => purchaseAction;
+            set => purchaseAction = value;
+        }
+
+        public void SetRobotID(int newRobotID)
+        {
+            robotID = newRobotID;
+        }
+
+        public void FindUIComponents()
+        {
+            robotImage = null;
+            purchaseButton = null;
+
+            if (robotUIObject == null)
+                return;
+
+            robotImage = robotUIObject.GetComponent<Image>();
+            purchaseButton =
+                robotUIObject.GetComponentInChildren<Button>(true);
+        }
+    }
+
     [Header("Referencias opcionales")]
     [Tooltip(
         "Puede dejarse vacío. Se buscará mediante " +
@@ -75,7 +131,14 @@ public class WeaponShop : MonoBehaviour
     )]
     [SerializeField] private WeaponManager weaponManager;
 
-    [Header("Objetos de la tienda")]
+    [Header("Referencias opcionales - Robots")]
+    [Tooltip(
+        "Puede dejarse vacío. Se buscará en el mismo GameObject " +
+        "de PlayerDataManager o mediante RoboManager.Instance."
+    )]
+    [SerializeField] private RoboManager roboManager;
+
+    [Header("Objetos de la tienda - Armas")]
     [Tooltip(
         "El orden de esta lista debe coincidir con el orden " +
         "de las armas en WeaponManager."
@@ -84,7 +147,16 @@ public class WeaponShop : MonoBehaviour
     private List<WeaponShopSlot> weaponSlots =
         new List<WeaponShopSlot>();
 
-    [Header("Apariencia")]
+    [Header("Objetos de la tienda - Robots")]
+    [Tooltip(
+        "El orden de esta lista debe coincidir con el orden " +
+        "de los robots en RoboManager."
+    )]
+    [SerializeField]
+    private List<RobotShopSlot> robotSlots =
+        new List<RobotShopSlot>();
+
+    [Header("Apariencia - Armas")]
     [Tooltip(
         "Transparencia de las armas bloqueadas por rango. " +
         "0.5 representa 50%."
@@ -92,20 +164,36 @@ public class WeaponShop : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float lockedWeaponAlpha = 0.5f;
 
-    [Header("Comportamiento")]
+    [Header("Apariencia - Robots")]
+    [Tooltip("Transparencia de los robots que no están activos.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float lockedRobotAlpha = 0.5f;
+
+    [Header("Comportamiento - Armas")]
     [Tooltip(
         "Desactiva el botón cuando el jugador no tiene " +
         "dinero suficiente."
     )]
     [SerializeField] private bool disableButtonWithoutMoney = true;
 
+    [Header("Comportamiento - Robots")]
+    [Tooltip(
+        "Desactiva el botón del robot cuando no hay " +
+        "dinero suficiente."
+    )]
+    [SerializeField] private bool disableRobotButtonWithoutMoney = true;
+
     private bool initialized;
     private bool subscribedToEvents;
+    private bool subscribedToWeaponEvents;
+    private bool subscribedToRobotEvents;
 
     private void Awake()
     {
         PrepareWeaponSlots();
+        PrepareRobotSlots();
         ConfigureButtons();
+        ConfigureRobotButtons();
         DisableAllButtons();
     }
 
@@ -132,6 +220,7 @@ public class WeaponShop : MonoBehaviour
     {
         UnsubscribeFromEvents();
         RemoveButtonListeners();
+        RemoveRobotButtonListeners();
     }
 
     private void InitializeShop()
@@ -142,6 +231,26 @@ public class WeaponShop : MonoBehaviour
             return;
         }
 
+        // Cada catálogo funciona de manera independiente.
+        // Si falta uno de los managers, el otro puede seguir funcionando.
+        if (weaponSlots.Count > 0 && weaponManager == null)
+        {
+            Debug.LogWarning(
+                "WeaponShop no encontró WeaponManager: " +
+                "se desactivarán los botones de armas.",
+                this
+            );
+        }
+
+        if (robotSlots.Count > 0 && roboManager == null)
+        {
+            Debug.LogWarning(
+                "WeaponShop no encontró RoboManager: " +
+                "se desactivarán los botones de robots.",
+                this
+            );
+        }
+
         initialized = true;
 
         SubscribeToEvents();
@@ -150,56 +259,51 @@ public class WeaponShop : MonoBehaviour
 
     private bool ResolveReferences()
     {
-        /*
-         * Primero intenta utilizar referencias asignadas
-         * manualmente desde el Inspector.
-         */
-
-        if (playerDataManager == null &&
-            weaponManager != null)
+        // PlayerDataManager se utiliza para consultar y descontar dinero.
+        if (playerDataManager == null && weaponManager != null)
         {
             playerDataManager =
                 weaponManager.GetComponent<PlayerDataManager>();
         }
 
-        /*
-         * Si no fue asignado manualmente, utiliza la instancia
-         * persistente de PlayerDataManager.
-         */
+        if (playerDataManager == null && roboManager != null)
+        {
+            playerDataManager =
+                roboManager.GetComponent<PlayerDataManager>();
+        }
 
         if (playerDataManager == null)
         {
-            playerDataManager =
-                PlayerDataManager.Instance;
+            playerDataManager = PlayerDataManager.Instance;
         }
 
-        /*
-         * WeaponManager está en el mismo GameObject
-         * que PlayerDataManager.
-         */
-
-        if (weaponManager == null &&
-            playerDataManager != null)
+        // Resolver WeaponManager y RoboManager de manera independiente.
+        if (weaponManager == null && playerDataManager != null)
         {
             weaponManager =
                 playerDataManager.GetComponent<WeaponManager>();
+        }
+
+        if (weaponManager == null)
+        {
+            weaponManager = WeaponManager.Instance;
+        }
+
+        if (roboManager == null && playerDataManager != null)
+        {
+            roboManager =
+                playerDataManager.GetComponent<RoboManager>();
+        }
+
+        if (roboManager == null)
+        {
+            roboManager = RoboManager.Instance;
         }
 
         if (playerDataManager == null)
         {
             Debug.LogError(
                 "WeaponShop no pudo encontrar PlayerDataManager.",
-                this
-            );
-
-            return false;
-        }
-
-        if (weaponManager == null)
-        {
-            Debug.LogError(
-                "WeaponShop no pudo encontrar WeaponManager en el " +
-                "GameObject de PlayerDataManager.",
                 this
             );
 
@@ -267,6 +371,58 @@ public class WeaponShop : MonoBehaviour
         }
     }
 
+    // ==========================================
+    // PREPARAR ESPACIOS PARA ROBOTS
+    // ==========================================
+
+    private void PrepareRobotSlots()
+    {
+        for (int i = 0; i < robotSlots.Count; i++)
+        {
+            RobotShopSlot slot = robotSlots[i];
+
+            if (slot == null)
+            {
+                Debug.LogWarning(
+                    $"El espacio de robot {i} está vacío.",
+                    this
+                );
+                continue;
+            }
+
+            // Posición 0 = robot ID 0; posición 1 = robot ID 1; etc.
+            slot.SetRobotID(i);
+            slot.FindUIComponents();
+
+            if (slot.RobotUIObject == null)
+            {
+                Debug.LogWarning(
+                    $"El espacio del robot {i} no tiene GameObject.",
+                    this
+                );
+                continue;
+            }
+
+            if (slot.RobotImage == null)
+            {
+                Debug.LogWarning(
+                    $"El objeto {slot.RobotUIObject.name} no tiene " +
+                    "un componente Image en su objeto raíz.",
+                    slot.RobotUIObject
+                );
+            }
+
+            if (slot.PurchaseButton == null)
+            {
+                Debug.LogWarning(
+                    $"El objeto {slot.RobotUIObject.name} no tiene " +
+                    "un Button entre sus hijos.",
+                    slot.RobotUIObject
+                );
+            }
+        }
+    }
+
     private void ConfigureButtons()
     {
         for (int i = 0; i < weaponSlots.Count; i++)
@@ -302,6 +458,33 @@ public class WeaponShop : MonoBehaviour
         }
     }
 
+    private void ConfigureRobotButtons()
+    {
+        for (int i = 0; i < robotSlots.Count; i++)
+        {
+            RobotShopSlot slot = robotSlots[i];
+
+            if (slot == null || slot.PurchaseButton == null)
+                continue;
+
+            // No eliminar eventos asignados manualmente en el Inspector.
+            if (slot.PurchaseAction != null)
+            {
+                slot.PurchaseButton.onClick.RemoveListener(
+                    slot.PurchaseAction
+                );
+            }
+
+            int capturedRobotID = slot.RobotID;
+            slot.PurchaseAction =
+                () => TryPurchaseRobot(capturedRobotID);
+
+            slot.PurchaseButton.onClick.AddListener(
+                slot.PurchaseAction
+            );
+        }
+    }
+
     private void RemoveButtonListeners()
     {
         for (int i = 0; i < weaponSlots.Count; i++)
@@ -323,32 +506,67 @@ public class WeaponShop : MonoBehaviour
         }
     }
 
+    private void RemoveRobotButtonListeners()
+    {
+        for (int i = 0; i < robotSlots.Count; i++)
+        {
+            RobotShopSlot slot = robotSlots[i];
+
+            if (slot == null ||
+                slot.PurchaseButton == null ||
+                slot.PurchaseAction == null)
+            {
+                continue;
+            }
+
+            slot.PurchaseButton.onClick.RemoveListener(
+                slot.PurchaseAction
+            );
+
+            slot.PurchaseAction = null;
+        }
+    }
+
     private void SubscribeToEvents()
     {
-        if (subscribedToEvents ||
-            playerDataManager == null)
+        if (!subscribedToEvents && playerDataManager != null)
         {
-            return;
+            playerDataManager.OnPlayerDataChanged += RefreshShop;
+            subscribedToEvents = true;
         }
 
-        playerDataManager.OnPlayerDataChanged +=
-            RefreshShop;
+        if (!subscribedToWeaponEvents && weaponManager != null)
+        {
+            weaponManager.OnWeaponsChanged += RefreshShop;
+            subscribedToWeaponEvents = true;
+        }
 
-        subscribedToEvents = true;
+        if (!subscribedToRobotEvents && roboManager != null)
+        {
+            roboManager.OnRobotsChanged += RefreshShop;
+            subscribedToRobotEvents = true;
+        }
     }
 
     private void UnsubscribeFromEvents()
     {
-        if (!subscribedToEvents ||
-            playerDataManager == null)
+        if (subscribedToEvents && playerDataManager != null)
         {
-            return;
+            playerDataManager.OnPlayerDataChanged -= RefreshShop;
+            subscribedToEvents = false;
         }
 
-        playerDataManager.OnPlayerDataChanged -=
-            RefreshShop;
+        if (subscribedToWeaponEvents && weaponManager != null)
+        {
+            weaponManager.OnWeaponsChanged -= RefreshShop;
+            subscribedToWeaponEvents = false;
+        }
 
-        subscribedToEvents = false;
+        if (subscribedToRobotEvents && roboManager != null)
+        {
+            roboManager.OnRobotsChanged -= RefreshShop;
+            subscribedToRobotEvents = false;
+        }
     }
 
     public void RefreshShop()
@@ -363,12 +581,23 @@ public class WeaponShop : MonoBehaviour
         {
             RefreshWeaponSlot(weaponSlots[i]);
         }
+
+        for (int i = 0; i < robotSlots.Count; i++)
+        {
+            RefreshRobotSlot(robotSlots[i]);
+        }
     }
 
     private void RefreshWeaponSlot(WeaponShopSlot slot)
     {
         if (slot == null)
             return;
+
+        if (weaponManager == null)
+        {
+            ClearInvalidSlot(slot);
+            return;
+        }
 
         WeaponManager.WeaponRuntimeData weapon =
             weaponManager.GetWeapon(slot.WeaponID);
@@ -427,10 +656,65 @@ public class WeaponShop : MonoBehaviour
             canPurchase;
     }
 
+    // ==========================================
+    // ACTUALIZAR ROBOTS DE LA TIENDA
+    // ==========================================
+
+    private void RefreshRobotSlot(RobotShopSlot slot)
+    {
+        if (slot == null)
+            return;
+
+        if (roboManager == null)
+        {
+            ClearInvalidRobotSlot(slot);
+            return;
+        }
+
+        RoboManager.RobotRuntimeData robot =
+            roboManager.GetRobot(slot.RobotID);
+
+        if (robot == null)
+        {
+            ClearInvalidRobotSlot(slot);
+            return;
+        }
+
+        if (slot.RobotImage != null)
+        {
+            slot.RobotImage.sprite = robot.RobotIcon;
+
+            Color imageColor = slot.RobotImage.color;
+            imageColor.a = robot.Activo ? 1f : lockedRobotAlpha;
+            slot.RobotImage.color = imageColor;
+        }
+
+        if (slot.PurchaseButton == null)
+            return;
+
+        bool hasEnoughMoney =
+            playerDataManager.Money >= slot.Price;
+
+        bool canPurchase = robot.Activo && !robot.Comprado;
+
+        if (disableRobotButtonWithoutMoney)
+        {
+            canPurchase &= hasEnoughMoney;
+        }
+
+        slot.PurchaseButton.interactable = canPurchase;
+    }
+
     public void TryPurchaseWeapon(int weaponID)
     {
         if (!ResolveReferences())
             return;
+
+        if (weaponManager == null)
+        {
+            Debug.LogWarning("No se encontró WeaponManager.", this);
+            return;
+        }
 
         WeaponShopSlot slot =
             GetSlotByWeaponID(weaponID);
@@ -553,6 +837,108 @@ public class WeaponShop : MonoBehaviour
         RefreshShop();
     }
 
+    // ==========================================
+    // COMPRA DE ROBOTS
+    // ==========================================
+
+    public void TryPurchaseRobot(int robotID)
+    {
+        if (!ResolveReferences())
+            return;
+
+        if (roboManager == null)
+        {
+            Debug.LogWarning("No se encontró RoboManager.", this);
+            return;
+        }
+
+        RobotShopSlot slot = GetSlotByRobotID(robotID);
+
+        if (slot == null)
+        {
+            Debug.LogWarning(
+                $"No existe un espacio de tienda para el robot ID {robotID}.",
+                this
+            );
+            return;
+        }
+
+        RoboManager.RobotRuntimeData robot =
+            roboManager.GetRobot(robotID);
+
+        if (robot == null)
+        {
+            Debug.LogWarning(
+                $"No existe un robot con ID {robotID}.",
+                this
+            );
+            return;
+        }
+
+        if (robot.Comprado)
+        {
+            Debug.Log($"El robot {robot.RobotName} ya fue comprado.", this);
+            RefreshRobotSlot(slot);
+            return;
+        }
+
+        if (!robot.Activo)
+        {
+            Debug.LogWarning(
+                $"El robot {robot.RobotName} todavía no está activo.",
+                this
+            );
+            RefreshRobotSlot(slot);
+            return;
+        }
+
+        if (playerDataManager.Money < slot.Price)
+        {
+            Debug.LogWarning(
+                $"No hay suficiente dinero para comprar " +
+                $"{robot.RobotName}. Precio: {slot.Price}.",
+                this
+            );
+            RefreshRobotSlot(slot);
+            return;
+        }
+
+        // Los robots gratuitos no necesitan SpendMoney(0).
+        if (slot.Price > 0 &&
+            !playerDataManager.SpendMoney(slot.Price))
+        {
+            Debug.LogWarning(
+                $"No se pudo pagar el robot {robot.RobotName}.",
+                this
+            );
+            RefreshRobotSlot(slot);
+            return;
+        }
+
+        // El RoboManager actual permite modificar Comprado directamente.
+        // No requiere añadir un método ComprarRobot a RoboManager.
+        robot.Comprado = true;
+
+        Debug.Log(
+            $"Se compró {robot.RobotName} por {slot.Price}.",
+            this
+        );
+
+        RefreshShop();
+    }
+
+    private RobotShopSlot GetSlotByRobotID(int robotID)
+    {
+        for (int i = 0; i < robotSlots.Count; i++)
+        {
+            RobotShopSlot slot = robotSlots[i];
+            if (slot != null && slot.RobotID == robotID)
+                return slot;
+        }
+
+        return null;
+    }
+
     private WeaponShopSlot GetSlotByWeaponID(int weaponID)
     {
         for (int i = 0; i < weaponSlots.Count; i++)
@@ -590,11 +976,38 @@ public class WeaponShop : MonoBehaviour
         }
     }
 
+    private void ClearInvalidRobotSlot(RobotShopSlot slot)
+    {
+        if (slot.RobotImage != null)
+        {
+            slot.RobotImage.sprite = null;
+
+            Color imageColor = slot.RobotImage.color;
+            imageColor.a = lockedRobotAlpha;
+            slot.RobotImage.color = imageColor;
+        }
+
+        if (slot.PurchaseButton != null)
+        {
+            slot.PurchaseButton.interactable = false;
+        }
+    }
+
     private void DisableAllButtons()
     {
         for (int i = 0; i < weaponSlots.Count; i++)
         {
             WeaponShopSlot slot = weaponSlots[i];
+
+            if (slot?.PurchaseButton != null)
+            {
+                slot.PurchaseButton.interactable = false;
+            }
+        }
+
+        for (int i = 0; i < robotSlots.Count; i++)
+        {
+            RobotShopSlot slot = robotSlots[i];
 
             if (slot?.PurchaseButton != null)
             {

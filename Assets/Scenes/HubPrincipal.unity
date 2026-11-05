@@ -13736,6 +13736,7 @@ GameObject:
   - component: {fileID: 1695382791}
   - component: {fileID: 1695382790}
   - component: {fileID: 1695382792}
+  - component: {fileID: 1695382793}
   m_Layer: 0
   m_Name: 'PlayerDataManager '
   m_TagString: Untagged
@@ -13756,9 +13757,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDataManager
   rank: 1
-  money: 100
+  money: 400
   toggleMov: 1
   carrozaEquipada: {fileID: 8815226836013115687, guid: fc6fe6e9c144365439540abc9cd25247, type: 3}
+  robotEquipadoID: 0
   nombreTextoDinero: TextoDinero
 --- !u!4 &1695382791
 Transform:
@@ -13792,6 +13794,20 @@ MonoBehaviour:
   weaponList: {fileID: 11400000, guid: 8e9ad4fee94424949a62ba440be5fcd1, type: 2}
   weapons: []
   equippedWeaponIDs: 
+--- !u!114 &1695382793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1695382789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cdc2eb4fb118694792f9532071d33d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboManager
+  robotList: {fileID: 11400000, guid: e53e9e4f0a8e51649a9096ad6b8ec3e2, type: 2}
+  robots: []
 --- !u!1 &1751570947
 GameObject:
   m_ObjectHideFlags: 0
@@ -14891,6 +14907,7 @@ MonoBehaviour:
   menuUI: {fileID: 0}
   weaponUI: {fileID: 0}
   chipUI: {fileID: 0}
+  roboUI: {fileID: 0}
   menu: 1
 --- !u!4 &1932867331 stripped
 Transform:

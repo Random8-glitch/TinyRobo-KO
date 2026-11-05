@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ModificadorStats
   efectos:
   - scriptObjetivo: 2
-    atributo: 10
+    atributo: 11
     cantidad: 1.5

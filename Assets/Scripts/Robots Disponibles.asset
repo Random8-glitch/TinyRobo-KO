@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba1af4c328899854b830eb8f8776c3a0, type: 3}
+  m_Name: Robots Disponibles
+  m_EditorClassIdentifier: Assembly-CSharp::RobotList
+  robots:
+  - robotName: RoboRookie
+    robotPrefab: {fileID: 8815226836013115687, guid: fc6fe6e9c144365439540abc9cd25247, type: 3}
+    robotIcon: {fileID: 21300000, guid: 5a1f0d1a0624e5b4996808f0d0f86bd1, type: 3}
+    rank: 1
+  - robotName: Bastion
+    robotPrefab: {fileID: 8309926236782794556, guid: 06194df016dc090458944bffea13d85c, type: 3}
+    robotIcon: {fileID: 21300000, guid: 2443a3d4d526473469cffd1421b94057, type: 3}
+    rank: 1
+  - robotName: Wasp
+    robotPrefab: {fileID: 5148719636842858078, guid: ad8f95b4385673e4d85a0fdef5bd7b7c, type: 3}
+    robotIcon: {fileID: 21300000, guid: cfa6f6cf22549ed448ae754488d88c50, type: 3}
+    rank: 1
