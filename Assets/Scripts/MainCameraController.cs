@@ -3,6 +3,7 @@ using UnityEngine;
 
 /// Controlador de cámara top-down con búsqueda automática
 /// del jugador mediante el Layer "Player".
+ [DefaultExecutionOrder(200)]
 public class MainCameraController : MonoBehaviour
 {
     [Header("Target")]
