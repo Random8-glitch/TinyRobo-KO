@@ -1778,10 +1778,10 @@ GameObject:
   - component: {fileID: 5731245900559924309}
   - component: {fileID: 7075459856964981695}
   - component: {fileID: 2318229714662963936}
-  - component: {fileID: 5611363086025200045}
+  - component: {fileID: 6424373930227610857}
   m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1832,7 +1832,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   vidaMax: 100
   vida: 100
-  textoVida: {fileID: 0}
 --- !u!114 &480936714984627271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1845,11 +1844,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40934816646c8c44ba1b908787256b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovPlayer
-  velocidad: 7.5
-  tiempoDeGiro: 0.8
+  velocidad: 10
+  tiempoDeGiro: 1
   velocidadGiroManual: 95
   distanciaRebote: 1
-  distanciaReboteEnemigo: 1
+  distanciaReboteEnemigo: 2
   tiempoAceleracionManual: 1
   tiempoAturdido: 1
 --- !u!33 &6248861747064425131
@@ -1928,8 +1927,8 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.3429337, y: 1, z: 3.4513402}
-  m_Center: {x: -0.0053949356, y: -8.558479e-17, z: 0.1474011}
+  m_Size: {x: 2.460351, y: 0.45481044, z: 3.2}
+  m_Center: {x: 0.0054327846, y: -0.012594759, z: 0.1474011}
 --- !u!54 &2318229714662963936
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1946,7 +1945,7 @@ Rigidbody:
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 704
+    m_Bits: 648
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1955,9 +1954,9 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 84
+  m_Constraints: 80
   m_CollisionDetection: 0
---- !u!114 &5611363086025200045
+--- !u!114 &6424373930227610857
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

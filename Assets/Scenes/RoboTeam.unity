@@ -949,6 +949,7 @@ MonoBehaviour:
   menuUI: {fileID: 0}
   weaponUI: {fileID: 0}
   chipUI: {fileID: 0}
+  roboUI: {fileID: 0}
   menu: 0
 --- !u!1001 &530719273
 PrefabInstance:
@@ -1938,7 +1939,7 @@ MonoBehaviour:
   colorNormal: {r: 1, g: 1, b: 1, a: 1}
   colorUrgencia: {r: 1, g: 0, b: 0, a: 1}
   tiempoUrgencia: 10
-  tiempoInicial: 61
+  tiempoInicial: 5
   iniciarAutomaticamente: 1
   textoCronometro: {fileID: 1503851480}
   alTerminarTiempo:
