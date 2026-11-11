@@ -50,6 +50,8 @@ public class EnemyAI : MonoBehaviour
 
     private int direccionRodeo = 1;
 
+    private EnemyNavigation navegacion;
+
     private void Awake()
     {
         movimiento = GetComponent<RoboMovEnemy>();
@@ -60,6 +62,8 @@ public class EnemyAI : MonoBehaviour
 
         if (analisisArmas == null)
             analisisArmas = GetComponent<EnemyWeaponAnalysis>();
+
+        navegacion = GetComponent<EnemyNavigation>();
     }
 
     private void Start()
@@ -71,6 +75,11 @@ public class EnemyAI : MonoBehaviour
 
             if (objetoJugador != null)
                 jugador = objetoJugador.transform;
+        }
+
+        if (navegacion != null && jugador != null)
+        {
+            navegacion.EstablecerObjetivo(jugador);
         }
 
         CambiarDireccionRodeo();
@@ -150,7 +159,24 @@ public class EnemyAI : MonoBehaviour
         switch (estadoActual)
         {
             case EstadoIA.Perseguir:
-                rumboDeseado = haciaJugador.normalized;
+
+                if (navegacion != null && navegacion.RutaValida)
+                {
+                    Vector3 direccionRuta =
+                        navegacion.ObtenerDireccionNavegacion();
+
+                    if (direccionRuta.sqrMagnitude > 0.001f)
+                        rumboDeseado = direccionRuta;
+                    else
+                        rumboDeseado = haciaJugador.normalized;
+                }
+                else
+                {
+                    // Si no existe una ruta válida,
+                    // utiliza la persecución convencional.
+                    rumboDeseado = haciaJugador.normalized;
+                }
+
                 break;
 
             case EstadoIA.Combatir:
@@ -192,32 +218,40 @@ public class EnemyAI : MonoBehaviour
     }
 
     // Comportamiento de combate.
+
     private Vector3 CalcularRumboCombate(Vector3 haciaJugador)
     {
         float distancia = haciaJugador.magnitude;
-        Vector3 rumbo = Vector3.zero;
 
+        Vector3 direccionJugador = haciaJugador.normalized;
+
+        // Siempre conserva cierta intención de acercarse al jugador.
+        Vector3 rumbo = direccionJugador * 0.4f;
+
+        // Si está demasiado lejos, aumenta la persecución.
         if (distancia > distanciaIdeal + 1f)
         {
-            rumbo += haciaJugador.normalized;
+            rumbo += direccionJugador * 0.8f;
         }
+        // Si está demasiado cerca, intenta recuperar distancia.
         else if (distancia < distanciaIdeal - 1f)
         {
-            rumbo -= haciaJugador.normalized;
+            rumbo -= direccionJugador * 0.8f;
         }
 
-        // Utiliza los costados si tiene armas laterales.
+        // El rodeo es una maniobra secundaria, no la dirección principal.
         if (rodearJugador && TieneArmasLaterales())
         {
             rumbo += ObtenerDireccionLateral(haciaJugador)
-                * intensidadRodeo;
+                * (intensidadRodeo * 0.5f);
         }
 
         if (rumbo.sqrMagnitude < 0.01f)
-            rumbo = ObtenerDireccionLateral(haciaJugador);
+            rumbo = direccionJugador;
 
         return rumbo.normalized;
     }
+
 
     // Se aleja del jugador mientras conserva
     // un pequeño componente diagonal.

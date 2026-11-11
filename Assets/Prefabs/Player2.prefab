@@ -112,7 +112,7 @@ GameObject:
   - component: {fileID: 5678549693786827573}
   m_Layer: 8
   m_Name: Player2
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -163,7 +163,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   vidaMax: 150
   vida: 150
-  textoVida: {fileID: 0}
 --- !u!114 &315584991557202132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,8 +258,8 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.3429337, y: 3.1039853, z: 3.5186987}
-  m_Center: {x: -0.0053949356, y: 1.0519927, z: 0.11372173}
+  m_Size: {x: 3.3429337, y: 3.0549343, z: 3.5186987}
+  m_Center: {x: -0.0053949356, y: 1.0765182, z: 0.11372173}
 --- !u!54 &5913288743288026859
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@ public class jefeBoton : MonoBehaviour
 {
     public void Starter()
     {
-        SceneManager.LoadScene("Jefe");
+        SceneManager.LoadScene("PeleaZack");
     }
 
     public void ExitGame()

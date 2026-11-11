@@ -871,6 +871,7 @@ GameObject:
   - component: {fileID: 440813435}
   - component: {fileID: 440813433}
   - component: {fileID: 440813434}
+  - component: {fileID: 440813436}
   m_Layer: 0
   m_Name: GameManagerPelea
   m_TagString: Untagged
@@ -951,6 +952,18 @@ MonoBehaviour:
   chipUI: {fileID: 0}
   roboUI: {fileID: 0}
   menu: 0
+--- !u!114 &440813436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 440813430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c50ca8791d78843803e52a062306eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResultadoPorTiempo
 --- !u!1 &567259931
 GameObject:
   m_ObjectHideFlags: 0
@@ -1921,7 +1934,19 @@ MonoBehaviour:
   textoCronometro: {fileID: 1503851480}
   alTerminarTiempo:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 440813436}
+        m_TargetAssemblyTypeName: ResultadoPorTiempo, Assembly-CSharp
+        m_MethodName: ComprobarResultado
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1404514591
 GameObject:
   m_ObjectHideFlags: 0
@@ -3298,7 +3323,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1998477971}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: PlayerEmpty
   m_TagString: Untagged
   m_Icon: {fileID: 0}

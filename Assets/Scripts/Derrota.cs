@@ -95,7 +95,7 @@ public class Derrota : MonoBehaviour
     }
 
 
-    private void ActivarDerrota(string razon)
+    public void ActivarDerrota(string razon)
     {
         if (yaDerrota)
             return;
@@ -104,11 +104,14 @@ public class Derrota : MonoBehaviour
 
         Debug.Log("GAME OVER: " + razon);
 
-        // Pausar el juego.
         Time.timeScale = 0f;
 
-        // Iniciar la secuencia de derrota.
         StartCoroutine(SecuenciaDerrota());
+    }
+
+    public void DerrotaPorTiempo()
+    {
+        ActivarDerrota("Se agotó el tiempo y la vida del enemigo era superior.");
     }
 
 

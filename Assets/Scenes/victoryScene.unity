@@ -785,7 +785,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Siguiente Pelea
+  m_text: Rival
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1314,7 +1314,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 984939667}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1d66caf95f635f4291d8a7f0300645e, type: 3}
   m_Name: 
@@ -1324,7 +1324,7 @@ MonoBehaviour:
   prefsKeyPrefix: SceneOpenCount_
   bossUnlockKeyPrefix: BossUnlocked_
   maxOpenCountBeforeReset: 4
-  milestoneCount: 4
+  milestoneCount: 3
   botonAActivar: {fileID: 2056758272}
   disableButtonOnStart: 1
 --- !u!4 &984939669

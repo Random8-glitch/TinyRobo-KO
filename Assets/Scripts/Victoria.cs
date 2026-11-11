@@ -192,4 +192,31 @@ public class Victoria : MonoBehaviour
         if (!yaVictoria)
             IniciarVictoria();
     }
+
+    public void VictoriaPorTiempo()
+    {
+        ActivarVictoria("Se agotó el tiempo y la vida del jugador era superior.");
+    }
+
+    private void ActivarVictoria(string motivo)
+    {
+        yaVictoria = true;
+        Debug.Log($"¡VICTORIA! {motivo}.");
+
+        // Dar recompensa por victoria
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.AddMoney(35);
+            Debug.Log($"Recompensa de victoria: +35 dinero. Total: {PlayerDataManager.Instance.Money}");
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró PlayerDataManager.Instance.");
+        }
+
+        // Pausar juego
+        Time.timeScale = 0f;
+
+        StartCoroutine(SecuenciaVictoria());
+    }
 }
