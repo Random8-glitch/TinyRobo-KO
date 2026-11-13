@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1896228568465207090
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3067248983946256615}
+  - component: {fileID: 3569466615831140997}
+  - component: {fileID: 611783557610203223}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3067248983946256615
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896228568465207090}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 572.8063, y: 444.35748, z: 931.8062}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3569466615831140997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896228568465207090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ec3a3ca44e578b41a3c4a94d6daf54d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pausa
+  panelPausa: {fileID: 0}
+  panelConfiguracion: {fileID: 0}
+  esMenuPrincipal: 1
+  teclaPausa: 27
+--- !u!114 &611783557610203223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896228568465207090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a02e3197d3d967f478bdd661508c3260, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Configuracion
+  desplegableResolucion: {fileID: 0}
+  togglePantallaCompleta: {fileID: 0}
+  toggleModoVentana: {fileID: 0}
+  resoluciones:
+  - nombre: 1280 x 720
+    ancho: 1280
+    alto: 720
+  - nombre: 1600 x 900
+    ancho: 1600
+    alto: 900
+  - nombre: 1920 x 1080
+    ancho: 1920
+    alto: 1080
+  - nombre: 2560 x 1440
+    ancho: 2560
+    alto: 1440
+  - nombre: 3840 x 2160
+    ancho: 3840
+    alto: 2160
+  desplegableLimiteFPS: {fileID: 0}
+  toggleVSync: {fileID: 0}
+  limitesFPS: 1e0000003c0000007800000090000000f0000000ffffffff

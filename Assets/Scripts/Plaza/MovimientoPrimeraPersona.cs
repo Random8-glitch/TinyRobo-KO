@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(CharacterController))]
 public class MovimientoPrimeraPersona : MonoBehaviour
@@ -19,6 +20,10 @@ public class MovimientoPrimeraPersona : MonoBehaviour
     [Header("Camara y raton")]
     [SerializeField] private float sensibilidadMouse = 2f;
     [SerializeField] private float limiteVertical = 85f;
+
+    [Header("UI")]
+    [Tooltip("UI que bloquea el movimiento y la camara cuando esta activa")]
+    [SerializeField] private GameObject[] interfacesBloqueanMovimiento;
 
     private CharacterController controlador;
     private float rotacionVertical = 0f;
@@ -71,6 +76,12 @@ public class MovimientoPrimeraPersona : MonoBehaviour
     {
         if (!movimientoHabilitado)
             return;
+
+        if (UIBloqueaMovimiento())
+        {
+            LiberarCursor();
+            return;
+        }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -159,5 +170,28 @@ public class MovimientoPrimeraPersona : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private bool UIBloqueaMovimiento()
+    {
+        if (interfacesBloqueanMovimiento != null)
+        {
+            foreach (GameObject interfaz in interfacesBloqueanMovimiento)
+            {
+                if (interfaz != null &&
+                    interfaz.activeInHierarchy)
+                {
+                    return true;
+                }
+            }
+        }
+
+        if (EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject())
+        {
+            return true;
+        }
+
+        return false;
     }
 }

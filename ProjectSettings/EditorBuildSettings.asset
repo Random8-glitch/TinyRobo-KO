@@ -17,9 +17,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/RoboTeam_003.unity
     guid: 428b2e7bc115090459a4e8fc64902706
-  - enabled: 0
-    path: Assets/Scenes/Jefe.unity
-    guid: 36573a113b7c6cb458497e0a82dbacee
   - enabled: 1
     path: Assets/Scenes/PeleaZack.unity
     guid: 0ab9690fbb6dac3499331a815feaec92
@@ -32,9 +29,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/victoryScene.unity
     guid: 7ea2205b0222f614dbb0965e335767d9
-  - enabled: 1
-    path: Assets/Scenes/BossFight.unity
-    guid: 24e782880fb718b4dbb6a19612166178
   - enabled: 1
     path: Assets/Scenes/Taller.unity
     guid: e6a32a3fe4a67e84da7f9f1b5d80f670
