@@ -1,7 +1,10 @@
 
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
+[DefaultExecutionOrder(100)]
 
 public class ManagerWeaponEnemy : MonoBehaviour
 {
@@ -25,6 +28,14 @@ public class ManagerWeaponEnemy : MonoBehaviour
     [Header("Auto equipamiento")]
     [SerializeField] private bool autoEquipOnAwake = true;
     [SerializeField] private int maxScanWeaponID = 64;
+
+    [Header("Chips disponibles para este enemigo")]
+    [Tooltip("Se elige un chip al azar de esta lista en el 50% de las apariciones. El otro 50% queda sin chip.")]
+    [SerializeField]
+    private List<ModificadorStats> chipsDisponibles =
+        new List<ModificadorStats>();
+
+    private EquiparChips equiparChips;
 
     private readonly int[] equippedWeaponIDs =
         new int[MaxWeaponSlots];
@@ -52,12 +63,79 @@ public class ManagerWeaponEnemy : MonoBehaviour
 
     private void Awake()
     {
-        // Cada enemigo debe tener su propio administrador.
+        // Cada enemigo mantiene su propio administrador.
         // No se utiliza el Singleton para evitar compartir referencias.
         InitializeWeaponSlots();
 
+        equiparChips = GetComponent<EquiparChips>();
+
         if (autoEquipOnAwake)
             RandomizeAndEquipWeapons();
+    }
+
+    private IEnumerator Start()
+    {
+        // Esperar a que EquiparChips termine su Start.
+        yield return null;
+
+        // Buscar EquiparChips en otro objeto con Layer Enemy.
+        equiparChips = BuscarEquiparChipsEnemy();
+
+        RandomizeAndEquipChip();
+    }
+
+    private void RandomizeAndEquipChip()
+    {
+        if (equiparChips == null)
+        {
+            Debug.LogWarning(
+                "ManagerWeaponEnemy: no se encontró EquiparChips en este mismo GameObject.",
+                this
+            );
+            return;
+        }
+
+        // 50% de probabilidad de quedarse sin chip.
+        if (Random.value < 0.5f)
+        {
+            equiparChips.Desequipar();
+            Debug.Log("ManagerWeaponEnemy: enemigo sin chip.", this);
+            return;
+        }
+
+        // Ignorar referencias vacías que puedan existir en el Inspector.
+        List<ModificadorStats> chipsValidos = new List<ModificadorStats>();
+
+        if (chipsDisponibles != null)
+        {
+            foreach (ModificadorStats chip in chipsDisponibles)
+            {
+                if (chip != null)
+                    chipsValidos.Add(chip);
+            }
+        }
+
+        if (chipsValidos.Count == 0)
+        {
+            equiparChips.Desequipar();
+            Debug.LogWarning(
+                "ManagerWeaponEnemy: no hay chips válidos disponibles para equipar.",
+                this
+            );
+            return;
+        }
+
+        // Dentro del 50% restante, todos los elementos de la lista
+        // tienen la misma probabilidad de ser seleccionados.
+        int indice = Random.Range(0, chipsValidos.Count);
+        ModificadorStats chipElegido = chipsValidos[indice];
+
+        equiparChips.Equipar(chipElegido);
+
+        Debug.Log(
+            $"ManagerWeaponEnemy: chip equipado: {chipElegido.name}.",
+            this
+        );
     }
 
     private void InitializeWeaponSlots()
@@ -366,5 +444,75 @@ public class ManagerWeaponEnemy : MonoBehaviour
             $"ManagerWeaponEnemy: equipado con {EquippedWeaponCount} arma(s).",
             this
         );
+    }
+
+    private EquiparChips BuscarEquiparChipsEnemy()
+    {
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
+
+        if (enemyLayer == -1)
+        {
+            Debug.LogWarning("ManagerWeaponEnemy: no existe la Layer Enemy.", this);
+            return null;
+        }
+
+        // Versión moderna (Unity 2023+)
+        EquiparChips[] todosLosChips = FindObjectsByType<EquiparChips>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        EquiparChips masCercano = null;
+        float distanciaMinima = float.MaxValue;
+
+        foreach (EquiparChips chip in todosLosChips)
+        {
+            if (chip == null) continue;
+            if (chip.gameObject.layer != enemyLayer) continue;
+
+            float distancia = Vector3.Distance(transform.position, chip.transform.position);
+
+            if (distancia < distanciaMinima)
+            {
+                distanciaMinima = distancia;
+                masCercano = chip;
+            }
+        }
+
+        if (masCercano == null)
+        {
+            Debug.LogWarning("ManagerWeaponEnemy: no se encontró ningún EquiparChips en Layer Enemy.", this);
+        }
+
+        return masCercano;
+    }
+
+    private EquiparChips BuscarChipUnico(
+        Transform raiz,
+        int enemyLayer)
+    {
+        EquiparChips encontrado = null;
+
+        foreach (EquiparChips candidato in
+            raiz.GetComponentsInChildren<EquiparChips>(true))
+        {
+            if (candidato.gameObject.layer != enemyLayer)
+                continue;
+
+            if (encontrado != null && encontrado != candidato)
+            {
+                Debug.LogWarning(
+                    "ManagerWeaponEnemy: hay varios EquiparChips " +
+                    "en objetos con Layer Enemy.",
+                    this
+                );
+
+                return null;
+            }
+
+            encontrado = candidato;
+        }
+
+        return encontrado;
     }
 }

@@ -153,9 +153,10 @@ public class SawPlayer : MonoBehaviour
         {
             float multiplicadorChip = ObtenerMultiplicadorChip();
 
-            danioPorTick *= multiplicadorChip;
+            // Aplicar el chip solo a este impacto, sin acumularlo en danioPorTick.
+            float danioFinal = danioPorTick * multiplicadorChip;
 
-            stats.RecibirDanio(danioPorTick);
+            stats.RecibirDanio(danioFinal);
         }
     }
 

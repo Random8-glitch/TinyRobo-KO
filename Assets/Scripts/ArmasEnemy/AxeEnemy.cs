@@ -39,6 +39,7 @@ public class AxeEnemy : MonoBehaviour, IEnemyWeaponState
     private Material materialInstancia;
 
     private Quaternion rotacionReposo;
+    private EquiparChips equiparChips;
 
     private void Start()
     {
@@ -51,6 +52,8 @@ public class AxeEnemy : MonoBehaviour, IEnemyWeaponState
             materialInstancia = rend.material;
             colorOriginal = materialInstancia.color;
         }
+
+        equiparChips = GetComponentInParent<EquiparChips>();
 
         if (hachaARotar != null)
         {
@@ -109,7 +112,7 @@ public class AxeEnemy : MonoBehaviour, IEnemyWeaponState
         danoAplicado = false;
 
         // Calcula el daño al comenzar cada ataque.
-        float danioGolpe = danioNormal;
+        float danioGolpe = danioNormal * ObtenerMultiplicadorChip();
 
         if (criticoActivo)
         {
@@ -332,6 +335,36 @@ public class AxeEnemy : MonoBehaviour, IEnemyWeaponState
         }
 
         hachaARotar.localRotation = rotacionDestino;
+    }
+
+    // Busca el chip de daño equipado por el enemigo.
+    // Se aplica el mismo multiplicador que en AxePlayer.
+    private float ObtenerMultiplicadorChip()
+    {
+        if (equiparChips == null)
+            return 1f;
+
+        ModificadorStats modificador =
+            equiparChips.ModificadorEquipado;
+
+        if (modificador == null || modificador.efectos == null)
+            return 1f;
+
+        float multiplicador = 1f;
+
+        foreach (EfectoModificador efecto in modificador.efectos)
+        {
+            if (efecto == null)
+                continue;
+
+            if (efecto.scriptObjetivo == TipoScript.Weapon &&
+                efecto.atributo == AtributoModificable.DañoPlus)
+            {
+                multiplicador *= efecto.cantidad;
+            }
+        }
+
+        return multiplicador;
     }
 
     private IEnumerator CicloCritico()

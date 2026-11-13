@@ -566,6 +566,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 340384554}
+  - component: {fileID: 340384560}
   - component: {fileID: 340384552}
   - component: {fileID: 340384553}
   - component: {fileID: 340384556}
@@ -809,6 +810,7 @@ MonoBehaviour:
   - {fileID: 0}
   autoEquipOnAwake: 1
   maxScanWeaponID: 64
+  chipsDisponibles: []
 --- !u!114 &340384558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -859,6 +861,19 @@ MonoBehaviour:
   - 120
   - -120
   - 180
+--- !u!114 &340384560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340384547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90007f2ed263b1d4dae9b2424f17b5ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EquiparChips
+  modificadorEquipado: {fileID: 0}
 --- !u!1 &440813430
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,6 +950,10 @@ MonoBehaviour:
   - {fileID: 0}
   autoEquipOnAwake: 1
   maxScanWeaponID: 64
+  chipsDisponibles:
+  - {fileID: 11400000, guid: 414b6a8ebb57119419473565edb776bb, type: 2}
+  - {fileID: 11400000, guid: 53129d22c8845a14292abe319d5de925, type: 2}
+  - {fileID: 11400000, guid: 19dd4e4f83d3a7c47844015654c0ad85, type: 2}
 --- !u!114 &440813435
 MonoBehaviour:
   m_ObjectHideFlags: 0

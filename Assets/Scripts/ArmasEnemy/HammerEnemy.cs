@@ -48,6 +48,7 @@ public class HammerEnemy : MonoBehaviour
     private Color colorOriginal;
     private Color colorCargaMaxima = new Color(1f, 0.5f, 0f);
 
+    private EquiparChips equiparChips;
     private Quaternion rotacionReposo;
 
     private void Start()
@@ -59,6 +60,8 @@ public class HammerEnemy : MonoBehaviour
 
         if (rend != null)
             colorOriginal = rend.material.color;
+
+        equiparChips = GetComponentInParent<EquiparChips>();
 
         if (martilloARotar != null)
             rotacionReposo = martilloARotar.localRotation;
@@ -324,11 +327,14 @@ public class HammerEnemy : MonoBehaviour
 
         danoAplicado = true;
 
+        float danioFinal =
+            danioGolpe * ObtenerMultiplicadorChip();
+
         Debug.Log(
-            "Martillazo enemigo: " + Mathf.RoundToInt(danioGolpe)
+            "Martillazo enemigo: " + Mathf.RoundToInt(danioFinal)
         );
 
-        stats.RecibirDanio(danioGolpe);
+        stats.RecibirDanio(danioFinal);
 
         ReiniciarCarga();
     }
@@ -369,6 +375,34 @@ public class HammerEnemy : MonoBehaviour
         }
 
         martilloARotar.localRotation = rotacionDestino;
+    }
+
+    private float ObtenerMultiplicadorChip()
+    {
+        if (equiparChips == null)
+            return 1f;
+
+        ModificadorStats modificador =
+            equiparChips.ModificadorEquipado;
+
+        if (modificador == null || modificador.efectos == null)
+            return 1f;
+
+        float multiplicador = 1f;
+
+        foreach (EfectoModificador efecto in modificador.efectos)
+        {
+            if (efecto == null)
+                continue;
+
+            if (efecto.scriptObjetivo == TipoScript.Weapon &&
+                efecto.atributo == AtributoModificable.DañoPlus)
+            {
+                multiplicador *= efecto.cantidad;
+            }
+        }
+
+        return multiplicador;
     }
 
     private void ReiniciarCarga()

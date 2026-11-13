@@ -33,13 +33,12 @@ public class SweeperPlayer : MonoBehaviour
         EnemyStats stats =
             other.GetComponent<EnemyStats>();
 
-        float multiplicadorChip = ObtenerMultiplicadorChip();
-
-        danioBase *= multiplicadorChip;
+        // No alterar danioBase: el chip se calcula para cada impacto.
+        float danioFinal = danioBase * ObtenerMultiplicadorChip();
 
         if (stats != null)
         {
-            stats.RecibirDanio(danioBase);
+            stats.RecibirDanio(danioFinal);
         }
 
         RoboMovEnemy enemigo =
