@@ -69,14 +69,7 @@ public class SawPlayer : MonoBehaviour
             }
         }
 
-        // Activar boost al pulsar E (una sola pulsación)
-        if (!isOnCooldown && !isBoostActive)
-        {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                ActivateBoost();
-            }
-        }
+        
 
         // Si el boost está activo, reducir su timer
         if (isBoostActive)
@@ -96,14 +89,18 @@ public class SawPlayer : MonoBehaviour
         }
     }
 
-    private void ActivateBoost()
+    public void HabilidadEspecial()
     {
+        // No se puede activar si ya está activa o está en cooldown
+        if (isBoostActive || isOnCooldown)
+            return;
+
         isBoostActive = true;
         boostTimer = boostDuration;
         danioPorTick = boostDamage;
         ApplySawBoostVisual();
         ApplyUIBoostVisual();
-        // Nota: cooldown se inicia al terminar el boost para cumplir "durará 5 segundos y tendrá un enfriamiento de 10"
+
         Debug.Log($"Boost activado: daño aumentado a {danioPorTick} durante {boostDuration} segundos.");
     }
 

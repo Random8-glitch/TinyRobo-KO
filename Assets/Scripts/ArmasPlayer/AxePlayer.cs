@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class AxePlayer : MonoBehaviour
 {
@@ -15,6 +15,7 @@ public class AxePlayer : MonoBehaviour
     [SerializeField] private float velocidadPreparacion = 180f;
     [SerializeField] private float velocidadGolpe = 360f;
     [SerializeField] private float velocidadRegreso = 240f;
+    [SerializeField, Min(0.01f)] private float velocidadRegresoHabilidadEspecial = 80f;
 
     [Header("Punto de Impacto")]
     [SerializeField] private Transform puntoImpacto;
@@ -26,11 +27,20 @@ public class AxePlayer : MonoBehaviour
     [SerializeField] private float tiempoMaxCritico = 10f;
     [SerializeField] private float duracionCritico = 3f;
 
+    [Header("Habilidad Especial")]
+    [SerializeField, Min(0f)] private float tiempoRecargaHabilidadEspecial = 5f;
+
+    [Header("Averia de la habilidad especial")]
+    [SerializeField, Min(0f)] private float danioAveria = 1f;
+    [SerializeField, Min(0f)] private float duracionAveria = 4f;
+    [SerializeField, Min(0.01f)] private float intervaloAveria = 1f;
+
     private int enemyLayer;
     private GameObject enemigoDentro;
     private bool criticoActivo = false;
     private bool atacando = false;
     private bool danoAplicado = false;
+    private bool habilidadEspecialEnRecarga = false;
 
     private Renderer rend;
     private Color colorOriginal;
@@ -88,7 +98,9 @@ public class AxePlayer : MonoBehaviour
 
         if (!atacando)
         {
-            rutinaAtaque = StartCoroutine(AnimacionAtaque(enemigoDentro));
+            rutinaAtaque = StartCoroutine(
+                AnimacionAtaque(enemigoDentro, false)
+            );
         }
     }
 
@@ -102,9 +114,12 @@ public class AxePlayer : MonoBehaviour
         }
     }
 
-    private IEnumerator AnimacionAtaque(GameObject enemigo)
+    private IEnumerator AnimacionAtaque(
+        GameObject enemigo,
+        bool esHabilidadEspecial)
     {
-        if (hachaARotar == null || puntoImpacto == null || enemigo == null)
+        if (hachaARotar == null ||
+            puntoImpacto == null)
         {
             yield break;
         }
@@ -112,6 +127,7 @@ public class AxePlayer : MonoBehaviour
         atacando = true;
         danoAplicado = false;
 
+        // Resto de la animación...
         // El daño se calcula una sola vez por golpe.
         float danioGolpe = danioNormal * ObtenerMultiplicadorChip();
 
@@ -134,16 +150,35 @@ public class AxePlayer : MonoBehaviour
             rotacionReposo * Quaternion.Euler(rotacionPuntoB);
 
         yield return StartCoroutine(
-            GolpearHastaContacto(rotacionB, enemigo, danioGolpe)
+            GolpearHastaContacto(
+                rotacionB,
+                enemigo,
+                danioGolpe,
+                esHabilidadEspecial
+            )
         );
 
         // 3. Regreso a la posicion de reposo.
+        float velocidadRegresoActual = esHabilidadEspecial
+            ? velocidadRegresoHabilidadEspecial
+            : velocidadRegreso;
+
         yield return StartCoroutine(
-            RotarHasta(rotacionReposo, velocidadRegreso)
+            RotarHasta(
+                rotacionReposo,
+                velocidadRegresoActual
+            )
         );
 
         atacando = false;
         rutinaAtaque = null;
+
+        if (esHabilidadEspecial)
+        {
+            StartCoroutine(
+                RecargarHabilidadEspecial()
+            );
+        }
 
         // Si el enemigo sigue dentro, espera antes del siguiente ataque.
         if (enemigoDentro != null)
@@ -153,7 +188,7 @@ public class AxePlayer : MonoBehaviour
             if (enemigoDentro != null && !atacando)
             {
                 rutinaAtaque = StartCoroutine(
-                    AnimacionAtaque(enemigoDentro)
+                    AnimacionAtaque(enemigoDentro, false)
                 );
             }
         }
@@ -162,7 +197,8 @@ public class AxePlayer : MonoBehaviour
     private IEnumerator GolpearHastaContacto(
         Quaternion rotacionDestino,
         GameObject enemigo,
-        float danioGolpe)
+        float danioGolpe,
+        bool esHabilidadEspecial)
     {
         Quaternion rotacionInicial = hachaARotar.localRotation;
         float distancia = Quaternion.Angle(
@@ -191,20 +227,30 @@ public class AxePlayer : MonoBehaviour
 
             Vector3 posicionActual = puntoImpacto.position;
 
-            // Detecta el contacto entre la posicion anterior y la actual.
+            // Detecta el contacto entre las posiciones anterior y actual.
             if (DetectarImpacto(
                 enemigo,
                 posicionAnterior,
                 posicionActual))
             {
-                AplicarDanio(enemigo, danioGolpe);
+                AplicarDanio(
+                    enemigo,
+                    danioGolpe,
+                    esHabilidadEspecial
+                );
+
                 yield break;
             }
 
             // Detecta si el punto ya esta dentro del enemigo.
             if (DetectarImpacto(enemigo, posicionActual))
             {
-                AplicarDanio(enemigo, danioGolpe);
+                AplicarDanio(
+                    enemigo,
+                    danioGolpe,
+                    esHabilidadEspecial
+                );
+
                 yield break;
             }
 
@@ -217,7 +263,11 @@ public class AxePlayer : MonoBehaviour
         // Ultima comprobacion al terminar el movimiento.
         if (DetectarImpacto(enemigo, puntoImpacto.position))
         {
-            AplicarDanio(enemigo, danioGolpe);
+            AplicarDanio(
+                enemigo,
+                danioGolpe,
+                esHabilidadEspecial
+            );
         }
     }
 
@@ -227,7 +277,9 @@ public class AxePlayer : MonoBehaviour
         Vector3 posicionActual)
     {
         if (enemigo == null || puntoImpacto == null)
+        {
             return false;
+        }
 
         // Comprueba si el punto de impacto ya esta dentro del objetivo.
         Collider[] cercanos = Physics.OverlapSphere(
@@ -299,7 +351,10 @@ public class AxePlayer : MonoBehaviour
         return stats != null && stats.gameObject == enemigo;
     }
 
-    private void AplicarDanio(GameObject enemigo, float danio)
+    private void AplicarDanio(
+        GameObject enemigo,
+        float danio,
+        bool aplicarAveria)
     {
         if (danoAplicado || enemigo == null)
             return;
@@ -311,6 +366,13 @@ public class AxePlayer : MonoBehaviour
 
         danoAplicado = true;
         stats.RecibirDanio(danio);
+
+        if (aplicarAveria)
+        {
+            StartCoroutine(
+                AplicarAveria(stats)
+            );
+        }
 
         Debug.Log(
             criticoActivo
@@ -409,5 +471,56 @@ public class AxePlayer : MonoBehaviour
             puntoImpacto.position,
             radioDeteccion
         );
+    }
+
+    public void HabilidadEspecial()
+    {
+        if (atacando || habilidadEspecialEnRecarga)
+        {
+            return;
+        }
+
+        rutinaAtaque = StartCoroutine(
+            AnimacionAtaque(
+                enemigoDentro,
+                true
+            )
+        );
+
+        habilidadEspecialEnRecarga = true;
+    }
+
+    private IEnumerator RecargarHabilidadEspecial()
+    {
+        yield return new WaitForSeconds(
+            tiempoRecargaHabilidadEspecial
+        );
+
+        habilidadEspecialEnRecarga = false;
+    }
+
+    private IEnumerator AplicarAveria(EnemyStats stats)
+    {
+        if (stats == null)
+        {
+            yield break;
+        }
+
+        float tiempoTranscurrido = 0f;
+
+        while (tiempoTranscurrido < duracionAveria)
+        {
+            yield return new WaitForSeconds(
+                intervaloAveria
+            );
+
+            if (stats == null)
+            {
+                yield break;
+            }
+
+            stats.RecibirDanio(danioAveria);
+            tiempoTranscurrido += intervaloAveria;
+        }
     }
 }

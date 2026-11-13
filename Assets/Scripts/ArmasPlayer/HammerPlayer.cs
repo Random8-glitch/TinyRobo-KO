@@ -18,6 +18,7 @@ public class HammerPlayer : MonoBehaviour
     [SerializeField, Min(1f)] private float velocidadPreparacion = 180f;
     [SerializeField, Min(1f)] private float velocidadGolpe = 360f;
     [SerializeField, Min(1f)] private float velocidadRegreso = 240f;
+    [SerializeField, Min(1f)] private float multiplicadorRegresoCombo = 2f;
 
     [SerializeField, Min(0f)] private float tiempoEspera = 0f;
 
@@ -32,6 +33,14 @@ public class HammerPlayer : MonoBehaviour
     [SerializeField] private float danioMinimo = 5f;
     [SerializeField] private float danioMaximo = 40f;
     [SerializeField] private float tiempoCargaCompleta = 20f;
+    [SerializeField, Min(0f)] private float danioPrimerosGolpesCombo = 10f;
+
+    [Header("Ataque manual")]
+    [SerializeField] private KeyCode teclaAtaque = KeyCode.E;
+
+    [Header("Recarga del combo")]
+    [SerializeField, Min(0f)]
+    private float tiempoRecargaCombo = 5f;
 
     private int enemyLayer;
     private GameObject enemigoDentro;
@@ -40,6 +49,9 @@ public class HammerPlayer : MonoBehaviour
     private bool cargaCompleta;
     private bool atacando;
     private bool danoAplicado;
+    private bool comboManualEnCurso;
+    private bool habilidadEspecialEnCurso;
+    private float tiempoRecargaComboRestante;
 
     private Renderer rend;
     private Color colorOriginal;
@@ -74,8 +86,20 @@ public class HammerPlayer : MonoBehaviour
 
     private void Update()
     {
+        if (tiempoRecargaComboRestante > 0f)
+        {
+            tiempoRecargaComboRestante -= Time.deltaTime;
+
+            if (tiempoRecargaComboRestante < 0f)
+            {
+                tiempoRecargaComboRestante = 0f;
+            }
+        }
+
         if (cargaCompleta)
+        {
             return;
+        }
 
         if (tiempoCargaCompleta <= 0f)
         {
@@ -101,15 +125,24 @@ public class HammerPlayer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        EnemyStats stats = other.GetComponentInParent<EnemyStats>();
+        EnemyStats stats =
+            other.GetComponentInParent<EnemyStats>();
 
-        if (stats == null || stats.gameObject.layer != enemyLayer)
+        if (stats == null ||
+            stats.gameObject.layer != enemyLayer)
+        {
             return;
+        }
 
         enemigoDentro = stats.gameObject;
 
-        if (!atacando)
-            StartCoroutine(AnimacionAtaque(enemigoDentro));
+        if (!atacando &&
+            !habilidadEspecialEnCurso)
+        {
+            StartCoroutine(
+                AnimacionAtaque(enemigoDentro)
+            );
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -120,11 +153,16 @@ public class HammerPlayer : MonoBehaviour
             enemigoDentro = null;
     }
 
-    private IEnumerator AnimacionAtaque(GameObject enemigo)
+    private IEnumerator AnimacionAtaque(
+        GameObject enemigo,
+        float velocidadRegresoAtaque = -1f,
+        float danioAtaque = -1f)
     {
-        if (martilloARotar == null || puntoImpacto == null ||
-            enemigo == null)
+        if (martilloARotar == null ||
+            puntoImpacto == null)
+        {
             yield break;
+        }
 
         atacando = true;
         danoAplicado = false;
@@ -133,7 +171,10 @@ public class HammerPlayer : MonoBehaviour
             yield return new WaitForSeconds(tiempoEspera);
 
         // Guarda el daño al comenzar el ataque.
-        float danioGolpe = danioActual;
+        float danioGolpe =
+            danioAtaque >= 0f
+                ? danioAtaque
+                : danioActual;
 
         Quaternion puntoA =
             rotacionReposo * Quaternion.Euler(rotacionPuntoA);
@@ -153,17 +194,29 @@ public class HammerPlayer : MonoBehaviour
         );
 
         // 3. Regresa al reposo.
+        float velocidadRegresoUsar =
+            velocidadRegresoAtaque > 0f
+                ? velocidadRegresoAtaque
+                : velocidadRegreso;
+
         yield return StartCoroutine(
-            RotarHasta(rotacionReposo, velocidadRegreso)
+            RotarHasta(
+                rotacionReposo,
+                velocidadRegresoUsar
+            )
         );
 
         atacando = false;
 
         // Repite el ataque si el enemigo sigue dentro.
-        if (enemigoDentro != null)
+        if (!habilidadEspecialEnCurso &&
+            enemigoDentro != null)
         {
             GameObject siguienteEnemigo = enemigoDentro;
-            StartCoroutine(AnimacionAtaque(siguienteEnemigo));
+
+            StartCoroutine(
+                AnimacionAtaque(siguienteEnemigo)
+            );
         }
     }
 
@@ -314,7 +367,7 @@ public class HammerPlayer : MonoBehaviour
         if (stats == null)
         {
             Debug.LogWarning(
-                "No se encontro EnemyStats en el enemigo.",
+                "No se encontrou EnemyStats en el enemigo.",
                 enemigo
             );
             return;
@@ -439,5 +492,62 @@ public class HammerPlayer : MonoBehaviour
             puntoImpacto.position,
             radioDeteccion
         );
+    }
+
+    private IEnumerator EjecutarComboManual()
+    {
+        comboManualEnCurso = true;
+
+        for (int indiceAtaque = 0;
+             indiceAtaque < 3;
+             indiceAtaque++)
+        {
+            float velocidadRegresoAtaque =
+                indiceAtaque < 2
+                    ? velocidadRegreso *
+                      multiplicadorRegresoCombo
+                    : velocidadRegreso;
+
+            float danioAtaque =
+                indiceAtaque < 2
+                    ? danioPrimerosGolpesCombo
+                    : danioMaximo;
+
+            yield return StartCoroutine(
+                AnimacionAtaque(
+                    enemigoDentro,
+                    velocidadRegresoAtaque,
+                    danioAtaque
+                )
+            );
+        }
+
+        tiempoRecargaComboRestante = tiempoRecargaCombo;
+        comboManualEnCurso = false;
+    }
+
+    public void HabilidadEspecial()
+    {
+        if (atacando ||
+            habilidadEspecialEnCurso ||
+            tiempoRecargaComboRestante > 0f)
+        {
+            return;
+        }
+
+        StartCoroutine(
+            EjecutarHabilidadEspecial()
+        );
+    }
+
+    private IEnumerator EjecutarHabilidadEspecial()
+    {
+        habilidadEspecialEnCurso = true;
+
+        // Implementar logica de la habilidad especial aqui.
+
+        yield return null;
+        tiempoRecargaComboRestante = tiempoRecargaCombo;
+        habilidadEspecialEnCurso = false;
     }
 }

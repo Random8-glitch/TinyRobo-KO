@@ -32,6 +32,11 @@ public class ManagerWeapon : MonoBehaviour
 
     public int WeaponSlotCount => MaxWeaponSlots;
 
+    [Header("UI Habilidades Especiales")]
+    [Tooltip("Las 3 imágenes de las habilidades especiales (slots 0, 1 y 2)")]
+    [SerializeField]
+    private Image[] uiHabilidadEspecialImages = new Image[MaxWeaponSlots];
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -82,6 +87,17 @@ public class ManagerWeapon : MonoBehaviour
         // Recuperar las armas solamente cuando
         // todos los puntos estén disponibles.
         RecuperarArmasEquipadas();
+    }
+
+    private void Update()
+    {
+        // Teclas 1, 2 y 3 ? slots 0, 1 y 2
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            ActivarHabilidadEspecial(0);
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+            ActivarHabilidadEspecial(1);
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+            ActivarHabilidadEspecial(2);
     }
 
     private bool BuscarWeaponHolders()
@@ -146,6 +162,8 @@ public class ManagerWeapon : MonoBehaviour
             weaponInstances[i] = null;
 
             ClearWeaponSlotUI(i);
+
+            ClearHabilidadEspecialUI(i);
         }
 
         ValidateConfiguration();
@@ -354,6 +372,8 @@ public class ManagerWeapon : MonoBehaviour
             weapon.WeaponIcon
         );
 
+        UpdateHabilidadEspecialUI(slotIndex, weapon);
+
         if (sincronizar)
         {
             SincronizarArmasEquipadas();
@@ -377,6 +397,8 @@ public class ManagerWeapon : MonoBehaviour
         equippedWeaponIDs[slotIndex] = -1;
 
         ClearWeaponSlotUI(slotIndex);
+
+        ClearHabilidadEspecialUI(slotIndex);
 
         SincronizarArmasEquipadas();
     }
@@ -546,6 +568,7 @@ public class ManagerWeapon : MonoBehaviour
             equippedWeaponIDs[i] = -1;
 
             ClearWeaponSlotUI(i);
+            ClearHabilidadEspecialUI(i);
         }
 
         // Localizar los puntos de la nueva carroza.
@@ -563,4 +586,92 @@ public class ManagerWeapon : MonoBehaviour
         RecuperarArmasEquipadas();
     }
 
+    private void ActivarHabilidadEspecial(int slotIndex)
+    {
+        if (!IsValidSlot(slotIndex))
+            return;
+
+        GameObject weapon = weaponInstances[slotIndex];
+        if (weapon == null)
+            return;
+
+        // DontRequireReceiver = no da error si el arma no implementa HabilidadEspecial
+        weapon.SendMessage(
+            "HabilidadEspecial",
+            SendMessageOptions.DontRequireReceiver
+        );
+    }
+    private void UpdateHabilidadEspecialUI(int slotIndex, WeaponManager.WeaponRuntimeData weapon)
+    {
+        if (!IsValidSlot(slotIndex) || weapon == null)
+            return;
+
+        Image img = GetHabilidadEspecialImage(slotIndex);
+        if (img == null)
+            return;
+
+        GameObject instance = weaponInstances[slotIndex];
+
+        // Solo activamos si el arma realmente tiene el método HabilidadEspecial
+        if (instance == null || !TieneHabilidadEspecial(instance))
+        {
+            ClearHabilidadEspecialUI(slotIndex);
+            return;
+        }
+
+        // Tiene habilidad especial ? activar y poner el icono del arma
+        img.sprite = weapon.WeaponIcon;
+        img.preserveAspect = true;
+        img.enabled = true;
+        img.gameObject.SetActive(true);
+    }
+
+    private void ClearHabilidadEspecialUI(int slotIndex)
+    {
+        Image img = GetHabilidadEspecialImage(slotIndex);
+        if (img == null)
+            return;
+
+        img.sprite = null;
+        img.enabled = false;
+        // img.gameObject.SetActive(false); // descomenta si prefieres desactivar el GameObject completo
+    }
+
+    private Image GetHabilidadEspecialImage(int slotIndex)
+    {
+        if (uiHabilidadEspecialImages == null ||
+            slotIndex < 0 ||
+            slotIndex >= uiHabilidadEspecialImages.Length)
+        {
+            return null;
+        }
+
+        return uiHabilidadEspecialImages[slotIndex];
+    }
+
+    private bool TieneHabilidadEspecial(GameObject weaponInstance)
+    {
+        if (weaponInstance == null)
+            return false;
+
+        MonoBehaviour[] components = weaponInstance.GetComponentsInChildren<MonoBehaviour>(true);
+
+        foreach (MonoBehaviour comp in components)
+        {
+            if (comp == null)
+                continue;
+
+            var method = comp.GetType().GetMethod(
+                "HabilidadEspecial",
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.NonPublic
+            );
+
+            if (method != null && method.GetParameters().Length == 0)
+                return true;
+        }
+
+        return false;
+    }
 }
