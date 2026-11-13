@@ -2601,6 +2601,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 1896228568465207090, guid: b7c51f8c7618f0d44942227dbd1a6b56, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3067248983946256615, guid: b7c51f8c7618f0d44942227dbd1a6b56, type: 3}
       propertyPath: m_LocalPosition.x
       value: -26.54397
@@ -3396,11 +3400,11 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 40197202}
   - {fileID: 1772865720}
   - {fileID: 11128212}
   - {fileID: 660935637}
   - {fileID: 398939580}
+  - {fileID: 40197202}
   - {fileID: 1608170997}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

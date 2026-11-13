@@ -35,9 +35,6 @@ public class HammerPlayer : MonoBehaviour
     [SerializeField] private float tiempoCargaCompleta = 20f;
     [SerializeField, Min(0f)] private float danioPrimerosGolpesCombo = 10f;
 
-    [Header("Ataque manual")]
-    [SerializeField] private KeyCode teclaAtaque = KeyCode.E;
-
     [Header("Recarga del combo")]
     [SerializeField, Min(0f)]
     private float tiempoRecargaCombo = 5f;
@@ -49,8 +46,8 @@ public class HammerPlayer : MonoBehaviour
     private bool cargaCompleta;
     private bool atacando;
     private bool danoAplicado;
-    private bool comboManualEnCurso;
     private bool habilidadEspecialEnCurso;
+
     private float tiempoRecargaComboRestante;
 
     private Renderer rend;
@@ -91,15 +88,11 @@ public class HammerPlayer : MonoBehaviour
             tiempoRecargaComboRestante -= Time.deltaTime;
 
             if (tiempoRecargaComboRestante < 0f)
-            {
                 tiempoRecargaComboRestante = 0f;
-            }
         }
 
         if (cargaCompleta)
-        {
             return;
-        }
 
         if (tiempoCargaCompleta <= 0f)
         {
@@ -147,7 +140,8 @@ public class HammerPlayer : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        EnemyStats stats = other.GetComponentInParent<EnemyStats>();
+        EnemyStats stats =
+            other.GetComponentInParent<EnemyStats>();
 
         if (stats != null && stats.gameObject == enemigoDentro)
             enemigoDentro = null;
@@ -188,7 +182,6 @@ public class HammerPlayer : MonoBehaviour
         );
 
         // 2. Punto A -> Punto B.
-        // Se detiene inmediatamente cuando detecta contacto.
         yield return StartCoroutine(
             GolpearHastaContacto(puntoB, enemigo, danioGolpe)
         );
@@ -494,18 +487,35 @@ public class HammerPlayer : MonoBehaviour
         );
     }
 
-    private IEnumerator EjecutarComboManual()
-    {
-        comboManualEnCurso = true;
+    // ==========================================
+    // HABILIDAD ESPECIAL
+    // ==========================================
 
+    // Este metodo es llamado por ManagerWeapon.
+    public void HabilidadEspecial()
+    {
+        if (atacando ||
+            habilidadEspecialEnCurso ||
+            tiempoRecargaComboRestante > 0f)
+        {
+            return;
+        }
+
+        StartCoroutine(EjecutarComboEspecial());
+    }
+
+    private IEnumerator EjecutarComboEspecial()
+    {
+        habilidadEspecialEnCurso = true;
+
+        // Ejecuta los tres golpes del combo.
         for (int indiceAtaque = 0;
              indiceAtaque < 3;
              indiceAtaque++)
         {
             float velocidadRegresoAtaque =
                 indiceAtaque < 2
-                    ? velocidadRegreso *
-                      multiplicadorRegresoCombo
+                    ? velocidadRegreso * multiplicadorRegresoCombo
                     : velocidadRegreso;
 
             float danioAtaque =
@@ -522,32 +532,9 @@ public class HammerPlayer : MonoBehaviour
             );
         }
 
+        // Inicia la recarga al terminar el combo.
         tiempoRecargaComboRestante = tiempoRecargaCombo;
-        comboManualEnCurso = false;
-    }
 
-    public void HabilidadEspecial()
-    {
-        if (atacando ||
-            habilidadEspecialEnCurso ||
-            tiempoRecargaComboRestante > 0f)
-        {
-            return;
-        }
-
-        StartCoroutine(
-            EjecutarHabilidadEspecial()
-        );
-    }
-
-    private IEnumerator EjecutarHabilidadEspecial()
-    {
-        habilidadEspecialEnCurso = true;
-
-        // Implementar logica de la habilidad especial aqui.
-
-        yield return null;
-        tiempoRecargaComboRestante = tiempoRecargaCombo;
         habilidadEspecialEnCurso = false;
     }
 }

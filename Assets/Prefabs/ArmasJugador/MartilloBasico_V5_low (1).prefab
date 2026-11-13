@@ -54,12 +54,15 @@ MonoBehaviour:
   velocidadPreparacion: 120
   velocidadGolpe: 1000
   velocidadRegreso: 40
+  multiplicadorRegresoCombo: 5
   tiempoEspera: 0.25
   puntoImpacto: {fileID: 1331823955320788720}
   radioDeteccion: 0.12
   danioMinimo: 5
   danioMaximo: 40
   tiempoCargaCompleta: 20
+  danioPrimerosGolpesCombo: 10
+  tiempoRecargaCombo: 15
 --- !u!33 &6778035152482470598
 MeshFilter:
   m_ObjectHideFlags: 0

@@ -54,15 +54,20 @@ MonoBehaviour:
   hachaARotar: {fileID: 7690845564150128405}
   rotacionPuntoA: {x: 45, y: 0, z: 0}
   rotacionPuntoB: {x: -100, y: 0, z: 0}
-  velocidadPreparacion: 100
-  velocidadGolpe: 500
+  velocidadPreparacion: 150
+  velocidadGolpe: 1000
   velocidadRegreso: 150
+  velocidadRegresoHabilidadEspecial: 20
   puntoImpacto: {fileID: 3481287501313104481}
   radioDeteccion: 0.12
   dibujarPuntoImpacto: 1
   tiempoMinCritico: 5
   tiempoMaxCritico: 10
   duracionCritico: 3
+  tiempoRecargaHabilidadEspecial: 10
+  danioAveria: 2
+  duracionAveria: 5
+  intervaloAveria: 1
 --- !u!33 &7952247375449244211
 MeshFilter:
   m_ObjectHideFlags: 0
