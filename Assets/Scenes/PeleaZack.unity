@@ -1038,7 +1038,6 @@ GameObject:
   - component: {fileID: 340384552}
   - component: {fileID: 340384553}
   - component: {fileID: 340384556}
-  - component: {fileID: 340384560}
   - component: {fileID: 340384559}
   - component: {fileID: 340384558}
   - component: {fileID: 340384551}
@@ -1172,6 +1171,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovEnemy
   velocidad: 7.5
+  velocidadMinima: 3
+  velocidadMaxima: 9
+  aceleracion: 0.5
+  velocidadImpactoMinima: 1
+  velocidadImpactoMaxima: 10
+  perdidaMaximaPared: 5
+  perdidaMaximaPlayer: 4
+  velocidadMinimaTrasImpacto: 1
+  multiplicadorImpactoFrontal: 1.25
+  multiplicadorImpactoLateral: 0.65
   tiempoDeGiro: 1
   velocidadGiroMinima: 70
   velocidadGiroMaxima: 95
@@ -1255,6 +1264,10 @@ MonoBehaviour:
   intensidadRetiradaDiagonal: 2
   tiempoCambioRodeo: 3
   intervaloDecision: 0.25
+  tiempoMaximoSinAvance: 1.5
+  distanciaMinimaAvance: 0.15
+  duracionRumboEscape: 1.2
+  fuerzaPersecucionEscape: 0.75
   estadoActual: 0
 --- !u!114 &340384557
 MonoBehaviour:
@@ -1330,22 +1343,6 @@ MonoBehaviour:
   - 120
   - -120
   - 180
---- !u!114 &340384560
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340384547}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef7e3ac5001b9c14fa60b97136c4709a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyNavigation
-  distanciaActualizacion: 2
-  intervaloActualizacion: 0.5
-  distanciaPuntoRuta: 1.5
-  distanciaBusquedaNavMesh: 5
 --- !u!114 &345462337 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2280437662045093600, guid: 3b225b364431ee245a71d42a06140709, type: 3}

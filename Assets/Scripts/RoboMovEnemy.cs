@@ -3,10 +3,32 @@ using System.Collections;
 
 public class RoboMovEnemy : MonoBehaviour
 {
+    [Header("Velocidad")]
     [SerializeField] public float velocidad = 5f;
+
+    [SerializeField] private float velocidadMinima = 3f;
+    [SerializeField] private float velocidadMaxima = 9f;
+    [SerializeField] private float aceleracion = 0.5f;
+
+    private float velocidadActual;
+
+    [Header("Impactos y pérdida de velocidad")]
+    [SerializeField] private float velocidadImpactoMinima = 1f;
+    [SerializeField] private float velocidadImpactoMaxima = 10f;
+
+    [SerializeField] private float perdidaMaximaPared = 5f;
+    [SerializeField] private float perdidaMaximaPlayer = 4f;
+
+    [SerializeField] private float velocidadMinimaTrasImpacto = 1f;
+
+    [SerializeField] private float multiplicadorImpactoFrontal = 1.25f;
+    [SerializeField] private float multiplicadorImpactoLateral = 0.65f;
+
+    [Header("Giro")]
     [SerializeField] public float tiempoDeGiro = 1f;
     [SerializeField] public float velocidadGiroMinima = 10f;
     [SerializeField] public float velocidadGiroMaxima = 30f;
+
     [SerializeField] public float distanciaRebote = 0.5f;
     [SerializeField] public float distanciaRebotePlayer = 1f;
 
@@ -31,6 +53,19 @@ public class RoboMovEnemy : MonoBehaviour
     private bool aturdido = false;
     private bool cancelarEmpuje = false;
 
+    [Header("Retroceso tras impacto")]
+    [SerializeField] private float fuerzaRetrocesoMinima = 1.5f;
+    [SerializeField] private float fuerzaRetrocesoMaxima = 8f;
+    [SerializeField] private float duracionRetroceso = 0.18f;
+
+    [SerializeField] private float velocidadReferenciaRebote = 5f;
+
+    private bool retrocesoActivo;
+
+    [SerializeField] private float duracionRebotePared = 0.25f;
+
+    private bool empujeParedActivo;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -44,11 +79,18 @@ public class RoboMovEnemy : MonoBehaviour
             velocidadGiroMinima,
             velocidadGiroMaxima
         );
+
+        // Inicializar velocidad dentro de los límites.
+        velocidadActual = Mathf.Clamp(
+            velocidad,
+            velocidadMinima,
+            velocidadMaxima
+        );
     }
 
     private void Update()
     {
-        if (girando || empujado || aturdido)
+        if (girando || empujado || aturdido || retrocesoActivo)
             return;
 
         Vector3 direccion;
@@ -82,6 +124,10 @@ public class RoboMovEnemy : MonoBehaviour
             );
     }
 
+    // ================================
+    // CONTROL DE DIRECCIÓN IA
+    // ================================
+
     public void SetDireccionIA(Vector3 direccion)
     {
         controlIA = true;
@@ -94,22 +140,105 @@ public class RoboMovEnemy : MonoBehaviour
         }
     }
 
+    // ================================
+    // MOVIMIENTO
+    // ================================
+
     private void FixedUpdate()
     {
-        if (girando || empujado || aturdido)
+        if (girando || empujado || aturdido || retrocesoActivo)
             return;
 
-        // El robot SIEMPRE avanza hacia delante.
+        // Aumentar velocidad progresivamente.
+        Acelerar();
+
+        // Avance automático.
         rb.MovePosition(
             rb.position +
             transform.forward *
-            velocidad *
+            velocidadActual *
             Time.fixedDeltaTime
         );
     }
 
+    // ================================
+    // SISTEMA DE ACELERACIÓN
+    // ================================
+
+    private void Acelerar()
+    {
+        velocidadActual = Mathf.MoveTowards(
+            velocidadActual,
+            velocidadMaxima,
+            aceleracion * Time.fixedDeltaTime
+        );
+    }
+
+    // ================================
+    // PÉRDIDA DE VELOCIDAD POR IMPACTO
+    // ================================
+
+    private void PerderVelocidadPorImpacto(
+        Collision collision,
+        float perdidaMaxima
+    )
+    {
+        if (collision.contactCount == 0)
+            return;
+
+        // Obtener fuerza relativa del impacto.
+        float fuerzaImpacto = collision.relativeVelocity.magnitude;
+
+        // Respaldo si Unity no proporciona velocidad suficiente.
+        if (fuerzaImpacto < 0.1f)
+            fuerzaImpacto = velocidadActual;
+
+        // Calcular intensidad del impacto.
+        float intensidad = Mathf.InverseLerp(
+            velocidadImpactoMinima,
+            velocidadImpactoMaxima, // Corregido aquí
+            fuerzaImpacto
+        );
+
+        // Obtener normal del contacto.
+        Vector3 normal = collision.contacts[0].normal;
+
+        // Determinar si fue frontal o lateral.
+        float frontalidad = Mathf.Abs(
+            Vector3.Dot(transform.forward, normal)
+        );
+
+        float multiplicador = Mathf.Lerp(
+            multiplicadorImpactoLateral,
+            multiplicadorImpactoFrontal,
+            frontalidad
+        );
+
+        // Calcular pérdida final.
+        float perdida = Mathf.Lerp(
+            0f,
+            perdidaMaxima,
+            intensidad
+        );
+
+        perdida *= multiplicador;
+
+        // Aplicar pérdida de velocidad.
+        velocidadActual -= perdida;
+
+        velocidadActual = Mathf.Max(
+            velocidadMinimaTrasImpacto,
+            velocidadActual
+        );
+    }
+
+    // ================================
+    // COLISIONES
+    // ================================
+
     private void OnCollisionEnter(Collision collision)
     {
+        // Si está siendo empujado y golpea una pared.
         if (
             empujado &&
             collision.gameObject.layer == wallLayer
@@ -117,21 +246,38 @@ public class RoboMovEnemy : MonoBehaviour
         {
             golpeoParedDuranteEmpuje = true;
             cancelarEmpuje = true;
+
+            // También pierde velocidad por el impacto.
+            PerderVelocidadPorImpacto(
+                collision,
+                perdidaMaximaPared
+            );
         }
 
         if (girando || empujado || aturdido)
             return;
 
+        // ================================
         // CHOQUE CON PARED
+        // ================================
+
         if (collision.gameObject.layer == wallLayer)
         {
+            PerderVelocidadPorImpacto(
+                collision,
+                perdidaMaximaPared
+            );
+
             Vector3 normalPared =
                 collision.contacts[0].normal;
 
             rb.MovePosition(
                 rb.position +
                 normalPared *
-                distanciaRebote
+                ObtenerDistanciaRebote(
+                    collision,
+                    distanciaRebote
+                )
             );
 
             velocidadGiroActual = Random.Range(
@@ -150,33 +296,29 @@ public class RoboMovEnemy : MonoBehaviour
 
             if (direccion.sqrMagnitude > 0.01f)
             {
-                // Si existe una pared entre el robot y el player, buscar una dirección alternativa
-                if (IsWallBetween(transform.position, player.transform.position))
+                if (IsWallBetween(
+                    transform.position,
+                    player.transform.position
+                ))
                 {
-                    Vector3 altDir = FindAlternateDirectionTowardsPlayer(direccion);
+                    Vector3 altDir =
+                        FindAlternateDirectionTowardsPlayer(direccion);
+
                     if (altDir != Vector3.zero)
                     {
                         Quaternion rotacionObjetivo =
-                            Quaternion.LookRotation(
-                                altDir.normalized
-                            );
+                            Quaternion.LookRotation(altDir.normalized);
 
                         StartCoroutine(
-                            GirarGradualmente(
-                                rotacionObjetivo
-                            )
+                            GirarGradualmente(rotacionObjetivo)
                         );
 
                         return;
                     }
                     else
                     {
-                        // Si no se encuentra ruta alternativa, usar rotación aleatoria (comportamiento previo)
                         float anguloAleatorio =
-                            Random.Range(
-                                90f,
-                                270f
-                            );
+                            Random.Range(90f, 270f);
 
                         Quaternion rotacionAleatoria =
                             Quaternion.AngleAxis(
@@ -185,15 +327,11 @@ public class RoboMovEnemy : MonoBehaviour
                             );
 
                         Vector3 nuevaDireccion =
-                            rotacionAleatoria *
-                            transform.forward;
+                            rotacionAleatoria * transform.forward;
 
                         nuevaDireccion.y = 0f;
 
-                        if (
-                            nuevaDireccion.sqrMagnitude >
-                            0.01f
-                        )
+                        if (nuevaDireccion.sqrMagnitude > 0.01f)
                         {
                             Quaternion rotacionObjetivo =
                                 Quaternion.LookRotation(
@@ -201,9 +339,7 @@ public class RoboMovEnemy : MonoBehaviour
                                 );
 
                             StartCoroutine(
-                                GirarGradualmente(
-                                    rotacionObjetivo
-                                )
+                                GirarGradualmente(rotacionObjetivo)
                             );
 
                             return;
@@ -211,40 +347,30 @@ public class RoboMovEnemy : MonoBehaviour
                     }
                 }
 
-                // Si no hay pared entre el robot y el player, girar directamente hacia el player (comportamiento original)
                 Quaternion rotacionObjetivoDirecto =
-                    Quaternion.LookRotation(
-                        direccion.normalized
-                    );
+                    Quaternion.LookRotation(direccion.normalized);
 
                 StartCoroutine(
-                    GirarGradualmente(
-                        rotacionObjetivoDirecto
-                    )
+                    GirarGradualmente(rotacionObjetivoDirecto)
                 );
             }
         }
 
+        // ================================
         // CHOQUE CON PLAYER
-        else if (
-            collision.gameObject.layer ==
-            playerLayer
-        )
-        {
-            Vector3 normalPlayer =
-                collision.contacts[0].normal;
+        // ================================
 
-            rb.MovePosition(
-                rb.position +
-                normalPlayer *
-                distanciaRebotePlayer
+        else if (collision.gameObject.layer == playerLayer)
+        {
+            PerderVelocidadPorImpacto(
+                collision,
+                perdidaMaximaPlayer
             );
 
+            AplicarRetrocesoPorImpacto(collision);
+
             float anguloAleatorio =
-                Random.Range(
-                    90f,
-                    270f
-                );
+                Random.Range(90f, 270f);
 
             Quaternion rotacionAleatoria =
                 Quaternion.AngleAxis(
@@ -253,15 +379,11 @@ public class RoboMovEnemy : MonoBehaviour
                 );
 
             Vector3 nuevaDireccion =
-                rotacionAleatoria *
-                transform.forward;
+                rotacionAleatoria * transform.forward;
 
             nuevaDireccion.y = 0f;
 
-            if (
-                nuevaDireccion.sqrMagnitude >
-                0.01f
-            )
+            if (nuevaDireccion.sqrMagnitude > 0.01f)
             {
                 Quaternion rotacionObjetivo =
                     Quaternion.LookRotation(
@@ -269,13 +391,15 @@ public class RoboMovEnemy : MonoBehaviour
                     );
 
                 StartCoroutine(
-                    GirarGradualmente(
-                        rotacionObjetivo
-                    )
+                    GirarGradualmente(rotacionObjetivo)
                 );
             }
         }
     }
+
+    // ================================
+    // BUSCAR PLAYER
+    // ================================
 
     private GameObject BuscarPlayer()
     {
@@ -292,6 +416,10 @@ public class RoboMovEnemy : MonoBehaviour
 
         return null;
     }
+
+    // ================================
+    // EMPUJE
+    // ================================
 
     public void Empujar(
         Vector3 direccion,
@@ -324,12 +452,10 @@ public class RoboMovEnemy : MonoBehaviour
         golpeoParedDuranteEmpuje = false;
         cancelarEmpuje = false;
 
-        Vector3 inicio =
-            transform.position;
+        Vector3 inicio = transform.position;
 
         Vector3 destino =
-            inicio +
-            direccion * distancia;
+            inicio + direccion * distancia;
 
         float tiempo = 0f;
 
@@ -340,8 +466,7 @@ public class RoboMovEnemy : MonoBehaviour
 
             tiempo += Time.deltaTime;
 
-            float t =
-                tiempo / duracion;
+            float t = tiempo / duracion;
 
             rb.MovePosition(
                 Vector3.Lerp(
@@ -366,11 +491,13 @@ public class RoboMovEnemy : MonoBehaviour
                 stats.RecibirDanio(5f);
             }
 
-            StartCoroutine(
-                Aturdir()
-            );
+            StartCoroutine(Aturdir());
         }
     }
+
+    // ================================
+    // ATURDIMIENTO
+    // ================================
 
     private IEnumerator Aturdir()
     {
@@ -383,6 +510,10 @@ public class RoboMovEnemy : MonoBehaviour
 
         aturdido = false;
     }
+
+    // ================================
+    // GIRO GRADUAL
+    // ================================
 
     private IEnumerator GirarGradualmente(
         Quaternion rotacionObjetivo
@@ -405,8 +536,7 @@ public class RoboMovEnemy : MonoBehaviour
 
             tiempo += Time.deltaTime;
 
-            float t =
-                tiempo / tiempoDeGiro;
+            float t = tiempo / tiempoDeGiro;
 
             transform.rotation =
                 Quaternion.Slerp(
@@ -418,25 +548,37 @@ public class RoboMovEnemy : MonoBehaviour
             yield return null;
         }
 
-        transform.rotation =
-            rotacionObjetivo;
+        transform.rotation = rotacionObjetivo;
 
         girando = false;
     }
 
-    // Comprueba si hay una pared (wall) entre dos posiciones usando raycast
+    // ================================
+    // DETECCIÓN DE PAREDES
+    // ================================
+
     private bool IsWallBetween(Vector3 from, Vector3 to)
     {
         if (player == null)
             return false;
 
         Vector3 origin = from + Vector3.up * 0.5f;
-        Vector3 dir = (to - origin);
+        Vector3 dir = to - origin;
+
         float dist = dir.magnitude;
-        if (dist <= 0.01f) return false;
+
+        if (dist <= 0.01f)
+            return false;
 
         int wallMask = 1 << wallLayer;
-        if (Physics.Raycast(origin, dir.normalized, out RaycastHit hit, dist, wallMask))
+
+        if (Physics.Raycast(
+            origin,
+            dir.normalized,
+            out RaycastHit hit,
+            dist,
+            wallMask
+        ))
         {
             return true;
         }
@@ -444,10 +586,13 @@ public class RoboMovEnemy : MonoBehaviour
         return false;
     }
 
-    // Busca una dirección alternativa que permita avanzar sin chocar inmediatamente con una pared.
-    // Intenta varios ángulos alrededor de la dirección hacia el player y devuelve el primer candidato
-    // que tenga espacio libre hacia adelante durante una distancia de comprobación.
-    private Vector3 FindAlternateDirectionTowardsPlayer(Vector3 direccionHaciaPlayer)
+    // ================================
+    // BUSCAR DIRECCIÓN ALTERNATIVA
+    // ================================
+
+    private Vector3 FindAlternateDirectionTowardsPlayer(
+        Vector3 direccionHaciaPlayer
+    )
     {
         if (direccionHaciaPlayer.sqrMagnitude < 0.01f)
             return Vector3.zero;
@@ -455,32 +600,172 @@ public class RoboMovEnemy : MonoBehaviour
         Vector3 dir = direccionHaciaPlayer.normalized;
         int wallMask = 1 << wallLayer;
 
-        // Distancia a comprobar que sea suficiente para 'salir' del muro; se usa min(distToPlayer, 3f)
-        float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
-        float checkDist = Mathf.Clamp(distToPlayer, 1.5f, 4f);
+        float distToPlayer = Vector3.Distance(
+            transform.position,
+            player.transform.position
+        );
 
-        // Ángulos a probar (priorizar giros pequeños para rodear)
-        float[] angles = new float[] { 30f, -30f, 60f, -60f, 90f, -90f, 135f, -135f, 180f };
+        float checkDist = Mathf.Clamp(
+            distToPlayer,
+            1.5f,
+            4f
+        );
+
+        float[] angles = new float[]
+        {
+            30f, -30f, 60f, -60f,
+            90f, -90f, 135f, -135f, 180f
+        };
 
         foreach (float angle in angles)
         {
-            Vector3 candidate = Quaternion.Euler(0f, angle, 0f) * dir;
-            Vector3 origin = transform.position + Vector3.up * 0.5f;
+            Vector3 candidate =
+                Quaternion.Euler(0f, angle, 0f) * dir;
 
-            // Comprobar si hay pared en dirección candidate en un rango corto (clearance check)
-            if (!Physics.Raycast(origin, candidate, checkDist, wallMask))
+            Vector3 origin =
+                transform.position + Vector3.up * 0.5f;
+
+            if (!Physics.Raycast(
+                origin,
+                candidate,
+                checkDist,
+                wallMask
+            ))
             {
-                // Además comprobar si desde un pequeño desplazamiento lateral se puede ver al player (mejora robustez)
-                Vector3 probeOrigin = origin + candidate * 0.5f;
-                Vector3 toPlayer = (player.transform.position - probeOrigin);
-                if (!Physics.Raycast(probeOrigin, toPlayer.normalized, toPlayer.magnitude, wallMask))
+                Vector3 probeOrigin =
+                    origin + candidate * 0.5f;
+
+                Vector3 toPlayer =
+                    player.transform.position - probeOrigin;
+
+                if (!Physics.Raycast(
+                    probeOrigin,
+                    toPlayer.normalized,
+                    toPlayer.magnitude,
+                    wallMask
+                ))
                 {
                     return candidate;
                 }
             }
         }
 
-        // No se encontró una dirección clara
         return Vector3.zero;
+    }
+
+    private void AplicarRetrocesoPorImpacto(Collision collision)
+    {
+        if (collision.contactCount == 0 || rb == null)
+            return;
+
+        Vector3 normal = collision.contacts[0].normal;
+        normal.y = 0f;
+
+        if (normal.sqrMagnitude < 0.01f)
+            return;
+
+        normal.Normalize();
+
+        float velocidadImpacto =
+            collision.relativeVelocity.magnitude;
+
+        if (velocidadImpacto < 0.1f)
+            velocidadImpacto = velocidadActual;
+
+        float intensidad = Mathf.InverseLerp(
+            velocidadImpactoMinima,
+            velocidadImpactoMaxima,
+            velocidadImpacto
+        );
+
+        float fuerza = Mathf.Lerp(
+            fuerzaRetrocesoMinima,
+            fuerzaRetrocesoMaxima,
+            intensidad
+        );
+
+        rb.AddForce(
+            normal * fuerza,
+            ForceMode.Impulse
+        );
+
+        StartCoroutine(DesactivarRetroceso());
+    }
+
+    private IEnumerator DesactivarRetroceso()
+    {
+        retrocesoActivo = true;
+
+        yield return new WaitForSeconds(
+            duracionRetroceso
+        );
+
+        retrocesoActivo = false;
+    }
+
+    private float ObtenerDistanciaRebote(
+        Collision collision,
+        float distanciaBase
+    )
+    {
+        float velocidadImpacto = collision.relativeVelocity.magnitude;
+
+        if (velocidadImpacto < 0.1f)
+            velocidadImpacto = velocidadActual;
+
+        float multiplicador =
+            velocidadImpacto / velocidadReferenciaRebote;
+
+        return distanciaBase * Mathf.Max(1f, multiplicador);
+    }
+
+    private IEnumerator RetrocesoGradualContraPared(
+        Vector3 normalPared,
+        float distancia
+    )
+    {
+        if (empujeParedActivo)
+            yield break;
+
+        empujeParedActivo = true;
+
+        normalPared.y = 0f;
+
+        if (normalPared.sqrMagnitude < 0.01f)
+        {
+            empujeParedActivo = false;
+            yield break;
+        }
+
+        normalPared.Normalize();
+
+        Vector3 inicio = rb.position;
+        Vector3 destino = inicio + normalPared * distancia;
+        float tiempo = 0f;
+
+        while (tiempo < duracionRebotePared)
+        {
+            tiempo += Time.fixedDeltaTime;
+
+            float progreso = Mathf.Clamp01(
+                tiempo / duracionRebotePared
+            );
+
+            float progresoSuavizado =
+                progreso * progreso * (3f - 2f * progreso);
+
+            rb.MovePosition(
+                Vector3.Lerp(
+                    inicio,
+                    destino,
+                    progresoSuavizado
+                )
+            );
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        rb.MovePosition(destino);
+        empujeParedActivo = false;
     }
 }

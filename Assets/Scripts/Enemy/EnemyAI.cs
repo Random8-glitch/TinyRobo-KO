@@ -1,4 +1,4 @@
-
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(RoboMovEnemy))]
@@ -19,7 +19,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private EnemyWeaponAnalysis analisisArmas;
 
     [Header("Objetivo")]
-    [SerializeField] private Transform jugador;
+    private Transform jugador;
 
     [Header("Retirada")]
     [Range(0f, 100f)]
@@ -37,20 +37,29 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float tiempoCambioRodeo = 3f;
 
     [Header("Decisiones")]
-    [SerializeField] private float intervaloDecision = 0.25f;
+    [SerializeField, Min(0.05f)] private float intervaloDecision = 0.25f;
+
+    [Header("Antibloqueo")]
+    [SerializeField, Min(0.1f)] private float tiempoMaximoSinAvance = 1.5f;
+    [SerializeField, Min(0.01f)] private float distanciaMinimaAvance = 0.15f;
+    [SerializeField, Min(0.1f)] private float duracionRumboEscape = 1.2f;
+    [SerializeField, Range(0f, 1f)] private float fuerzaPersecucionEscape = 0.75f;
 
     [Header("Estado actual")]
-    [SerializeField] private EstadoIA estadoActual;
+    [SerializeField] private EstadoIA estadoActual = EstadoIA.Perseguir;
 
     private RoboMovEnemy movimiento;
     private EnemyStats stats;
 
     private float temporizadorDecision;
     private float temporizadorRodeo;
+    private float temporizadorSinAvance;
+    private float temporizadorEscape;
 
     private int direccionRodeo = 1;
-
-    private EnemyNavigation navegacion;
+    private Vector3 ultimaPosicion;
+    private bool escapePorLaIzquierda = true;
+    private Coroutine rutinaBuscarJugador;
 
     private void Awake()
     {
@@ -62,36 +71,34 @@ public class EnemyAI : MonoBehaviour
 
         if (analisisArmas == null)
             analisisArmas = GetComponent<EnemyWeaponAnalysis>();
-
-        navegacion = GetComponent<EnemyNavigation>();
     }
 
     private void Start()
     {
-        if (jugador == null)
-        {
-            GameObject objetoJugador =
-                GameObject.FindGameObjectWithTag("Player");
-
-            if (objetoJugador != null)
-                jugador = objetoJugador.transform;
-        }
-
-        if (navegacion != null && jugador != null)
-        {
-            navegacion.EstablecerObjetivo(jugador);
-        }
-
+        ultimaPosicion = transform.position;
         CambiarDireccionRodeo();
+
+        rutinaBuscarJugador = StartCoroutine(
+            EsperarJugadorInstanciado()
+        );
     }
 
     private void Update()
     {
-        if (jugador == null || stats == null || movimiento == null)
+        ComprobarJugadorActual();
+
+        if (jugador == null ||
+            stats == null ||
+            movimiento == null)
+        {
             return;
+        }
+
+        ActualizarDeteccionDeBloqueo();
 
         temporizadorDecision -= Time.deltaTime;
         temporizadorRodeo -= Time.deltaTime;
+        temporizadorEscape -= Time.deltaTime;
 
         if (temporizadorRodeo <= 0f)
             CambiarDireccionRodeo();
@@ -105,22 +112,52 @@ public class EnemyAI : MonoBehaviour
         EjecutarEstado();
     }
 
-    // Decide qué comportamiento debe utilizar el enemigo.
+    private void ActualizarDeteccionDeBloqueo()
+    {
+        Vector3 desplazamiento =
+            transform.position - ultimaPosicion;
+
+        desplazamiento.y = 0f;
+
+        if (desplazamiento.sqrMagnitude <
+            distanciaMinimaAvance * distanciaMinimaAvance)
+        {
+            temporizadorSinAvance += Time.deltaTime;
+        }
+        else
+        {
+            temporizadorSinAvance = 0f;
+        }
+
+        ultimaPosicion = transform.position;
+
+        if (temporizadorSinAvance >= tiempoMaximoSinAvance &&
+            temporizadorEscape <= 0f)
+        {
+            ActivarRumboEscape();
+        }
+    }
+
+    private void ActivarRumboEscape()
+    {
+        temporizadorSinAvance = 0f;
+        temporizadorEscape = duracionRumboEscape;
+        escapePorLaIzquierda = !escapePorLaIzquierda;
+
+        direccionRodeo = escapePorLaIzquierda ? -1 : 1;
+    }
+
     private void EvaluarSituacion()
     {
         float distancia = DistanciaAlJugador();
         float porcentajeVida = ObtenerPorcentajeVida();
 
-        // Si está retirándose, continúa hasta alcanzar
-        // la distancia necesaria para volver a combatir.
-        if (estadoActual == EstadoIA.Retirarse)
+        if (estadoActual == EstadoIA.Retirarse &&
+            distancia < distanciaReanudarAtaque)
         {
-            if (distancia < distanciaReanudarAtaque)
-                return;
+            return;
         }
 
-        // Comienza a retirarse si tiene poca vida
-        // y se encuentra cerca del jugador.
         if (porcentajeVida <= porcentajeVidaRetirada &&
             distancia < distanciaReanudarAtaque)
         {
@@ -128,27 +165,25 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // Persecución si el jugador está lejos.
         if (distancia > distanciaPersecucion)
         {
             estadoActual = EstadoIA.Perseguir;
         }
-        // Reposicionamiento si el jugador está demasiado cerca.
         else if (distancia < distanciaIdeal * 0.6f)
         {
             estadoActual = EstadoIA.Reposicionarse;
         }
-        // Combate a distancia intermedia.
         else
         {
             estadoActual = EstadoIA.Combatir;
         }
     }
 
-    // Ejecuta el comportamiento correspondiente al estado actual.
     private void EjecutarEstado()
     {
-        Vector3 haciaJugador = jugador.position - transform.position;
+        Vector3 haciaJugador =
+            jugador.position - transform.position;
+
         haciaJugador.y = 0f;
 
         if (haciaJugador.sqrMagnitude < 0.01f)
@@ -156,53 +191,50 @@ public class EnemyAI : MonoBehaviour
 
         Vector3 rumboDeseado;
 
-        switch (estadoActual)
+        if (temporizadorEscape > 0f)
         {
-            case EstadoIA.Perseguir:
+            rumboDeseado =
+                CalcularRumboEscape(haciaJugador);
+        }
+        else
+        {
+            switch (estadoActual)
+            {
+                case EstadoIA.Perseguir:
+                    rumboDeseado =
+                        haciaJugador.normalized;
+                    break;
 
-                if (navegacion != null && navegacion.RutaValida)
-                {
-                    Vector3 direccionRuta =
-                        navegacion.ObtenerDireccionNavegacion();
+                case EstadoIA.Combatir:
+                    rumboDeseado =
+                        CalcularRumboCombate(haciaJugador);
+                    break;
 
-                    if (direccionRuta.sqrMagnitude > 0.001f)
-                        rumboDeseado = direccionRuta;
-                    else
-                        rumboDeseado = haciaJugador.normalized;
-                }
-                else
-                {
-                    // Si no existe una ruta válida,
-                    // utiliza la persecución convencional.
-                    rumboDeseado = haciaJugador.normalized;
-                }
+                case EstadoIA.Retirarse:
+                    rumboDeseado =
+                        CalcularRumboRetirada(haciaJugador);
+                    break;
 
-                break;
+                case EstadoIA.Rodear:
+                    rumboDeseado =
+                        CalcularRumboRodeo(haciaJugador);
+                    break;
 
-            case EstadoIA.Combatir:
-                rumboDeseado = CalcularRumboCombate(haciaJugador);
-                break;
+                case EstadoIA.Reposicionarse:
+                    rumboDeseado =
+                        CalcularRumboReposicion(haciaJugador);
+                    break;
 
-            case EstadoIA.Retirarse:
-                rumboDeseado = CalcularRumboRetirada(haciaJugador);
-                break;
-
-            case EstadoIA.Rodear:
-                rumboDeseado = CalcularRumboRodeo(haciaJugador);
-                break;
-
-            case EstadoIA.Reposicionarse:
-                rumboDeseado = CalcularRumboReposicion(haciaJugador);
-                break;
-
-            default:
-                rumboDeseado = haciaJugador.normalized;
-                break;
+                default:
+                    rumboDeseado =
+                        haciaJugador.normalized;
+                    break;
+            }
         }
 
-        // Ajusta la orientación según las armas disponibles.
         if (estadoActual == EstadoIA.Combatir &&
-            analisisArmas != null)
+            analisisArmas != null &&
+            temporizadorEscape <= 0f)
         {
             rumboDeseado = analisisArmas.ObtenerRumboDeAtaque(
                 jugador,
@@ -210,40 +242,62 @@ public class EnemyAI : MonoBehaviour
             );
         }
 
-        // Evita paredes y trampas.
         if (percepcion != null)
-            rumboDeseado = percepcion.AjustarRumbo(rumboDeseado);
+        {
+            rumboDeseado =
+                percepcion.AjustarRumbo(rumboDeseado);
+        }
 
         movimiento.SetDireccionIA(rumboDeseado);
     }
 
-    // Comportamiento de combate.
+    private Vector3 CalcularRumboEscape(
+        Vector3 haciaJugador)
+    {
+        Vector3 direccionJugador =
+            haciaJugador.normalized;
 
-    private Vector3 CalcularRumboCombate(Vector3 haciaJugador)
+        Vector3 lateral = Vector3.Cross(
+            Vector3.up,
+            direccionJugador
+        );
+
+        lateral *= escapePorLaIzquierda ? -1f : 1f;
+
+        Vector3 rumbo =
+            lateral +
+            direccionJugador * fuerzaPersecucionEscape;
+
+        rumbo.y = 0f;
+
+        if (rumbo.sqrMagnitude < 0.01f)
+            return direccionJugador;
+
+        return rumbo.normalized;
+    }
+
+    private Vector3 CalcularRumboCombate(
+        Vector3 haciaJugador)
     {
         float distancia = haciaJugador.magnitude;
-
         Vector3 direccionJugador = haciaJugador.normalized;
 
-        // Siempre conserva cierta intención de acercarse al jugador.
-        Vector3 rumbo = direccionJugador * 0.4f;
+        Vector3 rumbo = direccionJugador * 0.5f;
 
-        // Si está demasiado lejos, aumenta la persecución.
         if (distancia > distanciaIdeal + 1f)
         {
-            rumbo += direccionJugador * 0.8f;
+            rumbo += direccionJugador;
         }
-        // Si está demasiado cerca, intenta recuperar distancia.
         else if (distancia < distanciaIdeal - 1f)
         {
-            rumbo -= direccionJugador * 0.8f;
+            rumbo -= direccionJugador;
         }
 
-        // El rodeo es una maniobra secundaria, no la dirección principal.
-        if (rodearJugador && TieneArmasLaterales())
+        if (rodearJugador &&
+            TieneArmasLaterales())
         {
             rumbo += ObtenerDireccionLateral(haciaJugador)
-                * (intensidadRodeo * 0.5f);
+                * intensidadRodeo;
         }
 
         if (rumbo.sqrMagnitude < 0.01f)
@@ -252,14 +306,14 @@ public class EnemyAI : MonoBehaviour
         return rumbo.normalized;
     }
 
-
-    // Se aleja del jugador mientras conserva
-    // un pequeño componente diagonal.
-    private Vector3 CalcularRumboRetirada(Vector3 haciaJugador)
+    private Vector3 CalcularRumboRetirada(
+        Vector3 haciaJugador)
     {
-        Vector3 rumbo = -haciaJugador.normalized;
+        Vector3 rumbo =
+            -haciaJugador.normalized;
 
-        if (rodearJugador && TieneArmasLaterales())
+        if (rodearJugador &&
+            TieneArmasLaterales())
         {
             rumbo += ObtenerDireccionLateral(haciaJugador)
                 * intensidadRetiradaDiagonal;
@@ -268,10 +322,12 @@ public class EnemyAI : MonoBehaviour
         return rumbo.normalized;
     }
 
-    // Maniobra para rodear al jugador.
-    private Vector3 CalcularRumboRodeo(Vector3 haciaJugador)
+    private Vector3 CalcularRumboRodeo(
+        Vector3 haciaJugador)
     {
-        Vector3 rumbo = ObtenerDireccionLateral(haciaJugador);
+        Vector3 rumbo =
+            ObtenerDireccionLateral(haciaJugador);
+
         float distancia = haciaJugador.magnitude;
 
         if (distancia < distanciaIdeal)
@@ -280,16 +336,17 @@ public class EnemyAI : MonoBehaviour
         }
         else if (distancia > distanciaIdeal + 1f)
         {
-            rumbo += haciaJugador.normalized * 0.5f;
+            rumbo += haciaJugador.normalized         * 0.5f;
         }
 
         return rumbo.normalized;
     }
 
-    // Se aleja para recuperar una distancia de combate adecuada.
-    private Vector3 CalcularRumboReposicion(Vector3 haciaJugador)
+    private Vector3 CalcularRumboReposicion(
+        Vector3 haciaJugador)
     {
-        Vector3 rumbo = -haciaJugador.normalized;
+        Vector3 rumbo =
+            -haciaJugador.normalized;
 
         rumbo += ObtenerDireccionLateral(haciaJugador)
             * intensidadRodeo;
@@ -297,8 +354,8 @@ public class EnemyAI : MonoBehaviour
         return rumbo.normalized;
     }
 
-    // Calcula la dirección lateral según el sentido de rodeo.
-    private Vector3 ObtenerDireccionLateral(Vector3 haciaJugador)
+    private Vector3 ObtenerDireccionLateral(
+        Vector3 haciaJugador)
     {
         Vector3 lateral = Vector3.Cross(
             Vector3.up,
@@ -314,7 +371,6 @@ public class EnemyAI : MonoBehaviour
                analisisArmas.TieneArmasLaterales();
     }
 
-    // Obtiene la distancia horizontal al jugador.
     private float DistanciaAlJugador()
     {
         if (jugador == null)
@@ -323,8 +379,11 @@ public class EnemyAI : MonoBehaviour
         if (percepcion != null)
             return percepcion.ObtenerDistanciaJugador(jugador);
 
-        Vector3 posicionEnemigo = transform.position;
-        Vector3 posicionJugador = jugador.position;
+        Vector3 posicionEnemigo =
+            transform.position;
+
+        Vector3 posicionJugador =
+            jugador.position;
 
         posicionEnemigo.y = 0f;
         posicionJugador.y = 0f;
@@ -335,7 +394,6 @@ public class EnemyAI : MonoBehaviour
         );
     }
 
-    // Calcula el porcentaje de vida restante.
     private float ObtenerPorcentajeVida()
     {
         if (stats.vidaMax <= 0f)
@@ -344,15 +402,71 @@ public class EnemyAI : MonoBehaviour
         return stats.vida / stats.vidaMax * 100f;
     }
 
-    // Cambia aleatoriamente el sentido de rodeo.
     private void CambiarDireccionRodeo()
     {
-        direccionRodeo = Random.value < 0.5f ? -1 : 1;
-        temporizadorRodeo = tiempoCambioRodeo;
+        direccionRodeo =
+            Random.value < 0.5f ? -1 : 1;
+
+        temporizadorRodeo =
+            Mathf.Max(tiempoCambioRodeo, 0.1f);
     }
 
     public EstadoIA ObtenerEstadoActual()
     {
         return estadoActual;
+    }
+
+    private IEnumerator EsperarJugadorInstanciado()
+    {
+        while (jugador == null)
+        {
+            jugador = ObtenerJugadorActual();
+
+            if (jugador == null)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+
+        rutinaBuscarJugador = null;
+    }
+
+    private Transform ObtenerJugadorActual()
+    {
+        PlayerStats[] jugadores =
+            FindObjectsByType<PlayerStats>(
+                FindObjectsSortMode.None
+            );
+
+        foreach (PlayerStats jugadorEncontrado in jugadores)
+        {
+            if (jugadorEncontrado == null ||
+                !jugadorEncontrado.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            return jugadorEncontrado.transform.root;
+        }
+
+        return null;
+    }
+
+    private void ComprobarJugadorActual()
+    {
+        if (jugador != null &&
+            jugador.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        jugador = null;
+
+        if (rutinaBuscarJugador == null)
+        {
+            rutinaBuscarJugador = StartCoroutine(
+                EsperarJugadorInstanciado()
+            );
+        }
     }
 }

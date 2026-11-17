@@ -1,11 +1,35 @@
-using UnityEngine;
 using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class RoboMovPlayer : MonoBehaviour
 {
+    [Header("Velocidad automática")]
     [SerializeField] public float velocidad = 5f;
+
+    [SerializeField] private float velocidadMinima = 3f;
+    [SerializeField] private float velocidadMaxima = 9f;
+    [SerializeField] private float aceleracion = 0.5f;
+
+    private float velocidadActual;
+
+    [Header("Impactos y pérdida de velocidad")]
+    [SerializeField] private float velocidadImpactoMinima = 1f;
+    [SerializeField] private float velocidadImpactoMaxima = 10f;
+
+    [SerializeField] private float perdidaMaximaPared = 5f;
+    [SerializeField] private float perdidaMaximaEnemigo = 4f;
+
+    [SerializeField] private float velocidadMinimaTrasImpacto = 1f;
+
+    [SerializeField] private float multiplicadorImpactoFrontal = 1.25f;
+    [SerializeField] private float multiplicadorImpactoLateral = 0.65f;
+
+    [Header("Giro")]
     [SerializeField] public float tiempoDeGiro = 1f;
     [SerializeField] public float velocidadGiroManual = 30f;
+
     [SerializeField] public float distanciaRebote = 0.5f;
     [SerializeField] public float distanciaReboteEnemigo = 1f;
 
@@ -30,9 +54,57 @@ public class RoboMovPlayer : MonoBehaviour
     private bool cancelarEmpuje = false;
 
     [SerializeField] private float tiempoAturdido = 1f;
+    
+    [SerializeField] private float fuerzaRetrocesoMinima = 1.5f;
+    [SerializeField] private float fuerzaRetrocesoMaxima = 8f;
+    [SerializeField] private float duracionRetroceso = 0.18f;
+
+    private bool retrocesoActivo;
+
+    [SerializeField] private float velocidadReferenciaRebote = 5f;
+    [SerializeField] private float duracionRebotePared = 0.25f;
+
+    private bool empujeParedActivo;
+
+    [Header("Modificador de movimiento")]
+    [SerializeField] private float tiempoAceleracionModificador = 0.25f;
+    [SerializeField] private float tiempoDesaceleracionModificador = 0.5f;
+
+    private float modificadorMovimientoActual;
+
+    [Header("Interfaz")]
+    [SerializeField] private TMP_Text textoVelocidad;
+
+    [Header("Stamina del modificador")]
+    [SerializeField] private string nombreBarraStamina =
+        "BarraStamina";
+
+    private Slider barraStamina;
+    [SerializeField] private float staminaMaxima = 100f;
+    [SerializeField] private float consumoStamina = 25f;
+    [SerializeField] private float regeneracionStamina = 15f;
+
+    private float staminaActual;
 
     private void Start()
     {
+        GameObject objetoBarraStamina =
+            GameObject.Find(nombreBarraStamina);
+
+        if (objetoBarraStamina != null)
+        {
+            barraStamina =
+                objetoBarraStamina.GetComponent<Slider>();
+        }
+
+        if (barraStamina != null)
+        {
+            staminaActual = staminaMaxima;
+            barraStamina.maxValue = staminaMaxima;
+            barraStamina.value = staminaActual;
+            barraStamina.gameObject.SetActive(false);
+        }
+
         rb = GetComponent<Rigidbody>();
 
         equiparChips = GetComponent<EquiparChips>();
@@ -40,6 +112,21 @@ public class RoboMovPlayer : MonoBehaviour
 
         wallLayer = LayerMask.NameToLayer("Wall");
         enemyLayer = LayerMask.NameToLayer("Enemy");
+
+        velocidadActual = Mathf.Clamp(
+            velocidadMinima,
+            0f,
+            velocidadMaxima
+        );
+
+        staminaActual = staminaMaxima;
+
+        if (barraStamina != null)
+        {
+            barraStamina.maxValue = staminaMaxima;
+            barraStamina.value = staminaActual;
+            barraStamina.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
@@ -62,95 +149,141 @@ public class RoboMovPlayer : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Recuperar la referencia si el manager se inicializa después.
+        if (retrocesoActivo || empujeParedActivo)
+            return;
+
+        // Recuperar referencia si el manager se inicializa después.
         if (playerDataManager == null)
             playerDataManager = PlayerDataManager.Instance;
 
-        // ToggleMov activo: movimiento automático original.
-        // ToggleMov desactivado: movimiento manual con W y S.
+        // ToggleMov activo: movimiento automático.
+        // ToggleMov desactivado: movimiento manual.
         if (playerDataManager != null && !playerDataManager.ToggleMov)
             MovimientoManual();
         else
             MovimientoAutomatico();
     }
 
+    // ================================
+    // COLISIONES
+    // ================================
+
     private void OnCollisionEnter(Collision collision)
     {
-        //Debug.Log("Choqué con: " + collision.gameObject.name);
-
         if (girando)
             return;
 
         // CHOQUE CON PARED
         if (collision.gameObject.layer == wallLayer)
         {
+            if (playerDataManager == null)
+                playerDataManager = PlayerDataManager.Instance;
+
+            bool movimientoAutomatico =
+                playerDataManager == null ||
+                playerDataManager.ToggleMov;
+
+            PerderVelocidadPorImpacto(
+                collision,
+                perdidaMaximaPared
+            );
+
             Vector3 normalPared = collision.contacts[0].normal;
 
-            rb.MovePosition(
-                rb.position + normalPared * distanciaRebote
-            );
+            if (movimientoAutomatico)
+            {
+                StartCoroutine(
+                    RetrocesoGradualContraPared(
+                        normalPared,
+                        ObtenerDistanciaRebote(
+                            collision,
+                            distanciaRebote
+                        )
+                    )
+                );
+            }
+            else
+            {
+                // Movimiento manual original:
+                // rebote instantáneo y distancia fija.
+                rb.MovePosition(
+                    rb.position +
+                    normalPared * distanciaRebote
+                );
+            }
 
             GameObject enemigo = BuscarEnemigo();
 
             if (enemigo == null)
                 return;
 
-            Vector3 direccion = enemigo.transform.position - transform.position;
+            Vector3 direccion =
+                enemigo.transform.position -
+                transform.position;
+
             direccion.y = 0f;
 
             if (direccion.sqrMagnitude > 0.01f)
             {
-                // Declarar una única vez la rotación objetivo para evitar sombras de variables
                 Quaternion rotacionObjetivo;
 
-                // Si hay una pared entre el jugador y el enemigo, buscar dirección alternativa
-                if (IsWallBetween(transform.position, enemigo.transform.position))
+                if (IsWallBetween(
+                    transform.position,
+                    enemigo.transform.position
+                ))
                 {
-                    Vector3 altDir = FindAlternateDirectionTowardsEnemy(direccion);
+                    Vector3 altDir =
+                        FindAlternateDirectionTowardsEnemy(
+                            direccion
+                        );
+
                     if (altDir != Vector3.zero)
                     {
-                        rotacionObjetivo = Quaternion.LookRotation(altDir.normalized);
-                        StartCoroutine(GirarGradualmente(rotacionObjetivo));
-                        return;
-                    }
-                    else
-                    {
-                        // Si no se encuentra alternativa, girar en ángulo aleatorio para intentar liberarse
-                        float anguloAleatorio = Random.Range(60f, 180f);
-                        Quaternion rotacionAleatoria = Quaternion.AngleAxis(anguloAleatorio, Vector3.up);
-                        Vector3 nuevaDireccion = rotacionAleatoria * transform.forward;
-                        nuevaDireccion.y = 0f;
+                        rotacionObjetivo =
+                            Quaternion.LookRotation(
+                                altDir.normalized
+                            );
 
-                        if (nuevaDireccion.sqrMagnitude > 0.01f)
-                        {
-                            rotacionObjetivo = Quaternion.LookRotation(nuevaDireccion.normalized);
-                            StartCoroutine(GirarGradualmente(rotacionObjetivo));
-                            return;
-                        }
+                        StartCoroutine(
+                            GirarGradualmente(
+                                rotacionObjetivo
+                            )
+                        );
+
+                        return;
                     }
                 }
 
-                // Si no hay pared entre el jugador y el enemigo, girar directamente hacia el enemigo
-                rotacionObjetivo = Quaternion.LookRotation(direccion.normalized);
-                StartCoroutine(GirarGradualmente(rotacionObjetivo));
+                rotacionObjetivo =
+                    Quaternion.LookRotation(
+                        direccion.normalized
+                );
+
+                StartCoroutine(
+                    GirarGradualmente(
+                        rotacionObjetivo
+                )
+                );
             }
         }
 
         // CHOQUE CON ENEMIGO
         else if (collision.gameObject.layer == enemyLayer)
         {
-            //Debug.Log("CHOQUE CON ENEMIGO");
-
-            Vector3 normalEnemigo = collision.contacts[0].normal;
-
-            rb.MovePosition(
-                rb.position + normalEnemigo * distanciaReboteEnemigo
+            PerderVelocidadPorImpacto(
+                collision,
+                perdidaMaximaEnemigo
             );
+
+            AplicarRetrocesoPorImpacto(collision);
 
             float anguloAleatorio = Random.Range(90f, 270f);
 
             Quaternion rotacionAleatoria =
-                Quaternion.AngleAxis(anguloAleatorio, Vector3.up);
+                Quaternion.AngleAxis(
+                    anguloAleatorio,
+                    Vector3.up
+                );
 
             Vector3 nuevaDireccion =
                 rotacionAleatoria * transform.forward;
@@ -160,12 +293,147 @@ public class RoboMovPlayer : MonoBehaviour
             if (nuevaDireccion.sqrMagnitude > 0.01f)
             {
                 Quaternion rotacionObjetivo =
-                    Quaternion.LookRotation(nuevaDireccion.normalized);
+                    Quaternion.LookRotation(
+                        nuevaDireccion.normalized
+                    );
 
-                StartCoroutine(GirarGradualmente(rotacionObjetivo));
+                StartCoroutine(
+                    GirarGradualmente(rotacionObjetivo)
+                );
             }
         }
     }
+
+    // ================================
+    // PÉRDIDA DE VELOCIDAD POR IMPACTO
+    // ================================
+
+    private void PerderVelocidadPorImpacto(
+        Collision collision,
+        float perdidaMaxima
+    )
+    {
+        // No afectar el movimiento manual.
+        if (playerDataManager != null && !playerDataManager.ToggleMov)
+            return;
+
+        if (collision.contactCount == 0)
+            return;
+
+        // Velocidad relativa del impacto.
+        float fuerzaImpacto = collision.relativeVelocity.magnitude;
+
+        // Respaldo por si MovePosition no proporciona
+        // una velocidad relativa suficiente.
+        if (fuerzaImpacto < 0.1f)
+            fuerzaImpacto = velocidadActual;
+
+        // Normalizar intensidad del impacto.
+        float intensidad = Mathf.InverseLerp(
+            velocidadImpactoMinima,
+            velocidadImpactoMaxima,
+            fuerzaImpacto
+        );
+
+        // Dirección de la superficie de contacto.
+        Vector3 normal = collision.contacts[0].normal;
+
+        // Calcular si el impacto fue frontal o lateral.
+        float frontalidad = Mathf.Abs(
+            Vector3.Dot(transform.forward, normal)
+        );
+
+        // Interpolar entre impacto lateral y frontal.
+        float multiplicador = Mathf.Lerp(
+            multiplicadorImpactoLateral,
+            multiplicadorImpactoFrontal,
+            frontalidad
+        );
+
+        // Calcular pérdida de velocidad.
+        float perdida = Mathf.Lerp(
+            0f,
+            perdidaMaxima,
+            intensidad
+        );
+
+        perdida *= multiplicador;
+
+        // Aplicar pérdida.
+        velocidadActual -= perdida;
+
+        velocidadActual = Mathf.Max(
+            velocidadMinimaTrasImpacto,
+            velocidadActual
+        );
+    }
+
+    private void AplicarRetrocesoPorImpacto(Collision collision)
+    {
+        if (collision.contactCount == 0 || rb == null)
+            return;
+
+        Vector3 normal = collision.contacts[0].normal;
+        normal.y = 0f;
+
+        if (normal.sqrMagnitude < 0.01f)
+            return;
+
+        normal.Normalize();
+
+        float velocidadImpacto =
+            collision.relativeVelocity.magnitude;
+
+        if (velocidadImpacto < 0.1f)
+            velocidadImpacto = velocidadActual;
+
+        float intensidad = Mathf.InverseLerp(
+            velocidadImpactoMinima,
+            velocidadImpactoMaxima,
+            velocidadImpacto
+        );
+
+        float fuerza = Mathf.Lerp(
+            fuerzaRetrocesoMinima,
+            fuerzaRetrocesoMaxima,
+            intensidad
+        );
+
+        rb.AddForce(
+            normal * fuerza,
+            ForceMode.Impulse
+        );
+
+        StartCoroutine(DesactivarRetroceso());
+    }
+
+    private IEnumerator DesactivarRetroceso()
+    {
+        retrocesoActivo = true;
+
+        yield return new WaitForSeconds(
+            duracionRetroceso
+        );
+
+        retrocesoActivo = false;
+    }
+
+    // ================================
+    // ACELERACIÓN AUTOMÁTICA
+    // ================================
+
+    private void Acelerar()
+    {
+        velocidadActual = Mathf.MoveTowards(
+            velocidadActual,
+            velocidadMaxima,
+            aceleracion * Time.fixedDeltaTime
+        );
+    }
+
+    // ================================
+    // BUSCAR ENEMIGO
+    // ================================
 
     private GameObject BuscarEnemigo()
     {
@@ -180,6 +448,10 @@ public class RoboMovPlayer : MonoBehaviour
 
         return null;
     }
+
+    // ================================
+    // GIRO GRADUAL
+    // ================================
 
     private IEnumerator GirarGradualmente(Quaternion rotacionObjetivo)
     {
@@ -207,6 +479,10 @@ public class RoboMovPlayer : MonoBehaviour
         girando = false;
     }
 
+    // ================================
+    // EMPUJE
+    // ================================
+
     public void Empujar(
         Vector3 direccion,
         float distancia,
@@ -229,21 +505,18 @@ public class RoboMovPlayer : MonoBehaviour
     }
 
     private IEnumerator EmpujeCoroutine(
-       Vector3 direccion,
-       float distancia,
-       float duracion
-   )
+        Vector3 direccion,
+        float distancia,
+        float duracion
+    )
     {
         empujado = true;
         golpeoParedDuranteEmpuje = false;
         cancelarEmpuje = false;
 
-        Vector3 inicio =
-            transform.position;
+        Vector3 inicio = transform.position;
 
-        Vector3 destino =
-            inicio +
-            direccion * distancia;
+        Vector3 destino = inicio + direccion * distancia;
 
         float tiempo = 0f;
 
@@ -254,8 +527,7 @@ public class RoboMovPlayer : MonoBehaviour
 
             tiempo += Time.deltaTime;
 
-            float t =
-                tiempo / duracion;
+            float t = tiempo / duracion;
 
             rb.MovePosition(
                 Vector3.Lerp(
@@ -272,17 +544,12 @@ public class RoboMovPlayer : MonoBehaviour
 
         if (golpeoParedDuranteEmpuje)
         {
-            PlayerStats stats =
-                GetComponent<PlayerStats>();
+            PlayerStats stats = GetComponent<PlayerStats>();
 
             if (stats != null)
-            {
                 stats.RecibirDanio(5f);
-            }
 
-            StartCoroutine(
-                Aturdir()
-            );
+            StartCoroutine(Aturdir());
         }
     }
 
@@ -291,23 +558,34 @@ public class RoboMovPlayer : MonoBehaviour
         aturdido = true;
         girando = false;
 
-        yield return new WaitForSeconds(
-            tiempoAturdido
-        );
+        yield return new WaitForSeconds(tiempoAturdido);
 
         aturdido = false;
     }
 
-    // Comprueba si hay una pared (wall) entre dos posiciones usando raycast
+    // ================================
+    // DETECCIÓN DE PAREDES
+    // ================================
+
     private bool IsWallBetween(Vector3 from, Vector3 to)
     {
         Vector3 origin = from + Vector3.up * 0.5f;
-        Vector3 dir = (to - origin);
+        Vector3 dir = to - origin;
+
         float dist = dir.magnitude;
-        if (dist <= 0.01f) return false;
+
+        if (dist <= 0.01f)
+            return false;
 
         int wallMask = 1 << wallLayer;
-        if (Physics.Raycast(origin, dir.normalized, out RaycastHit hit, dist, wallMask))
+
+        if (Physics.Raycast(
+            origin,
+            dir.normalized,
+            out RaycastHit hit,
+            dist,
+            wallMask
+        ))
         {
             return true;
         }
@@ -315,10 +593,9 @@ public class RoboMovPlayer : MonoBehaviour
         return false;
     }
 
-    // Busca una dirección alternativa que permita avanzar sin chocar inmediatamente con una pared.
-    // Intenta varios ángulos alrededor de la dirección hacia el enemigo y devuelve el primer candidato
-    // que tenga espacio libre hacia adelante durante una distancia de comprobación.
-    private Vector3 FindAlternateDirectionTowardsEnemy(Vector3 direccionHaciaEnemy)
+    private Vector3 FindAlternateDirectionTowardsEnemy(
+        Vector3 direccionHaciaEnemy
+    )
     {
         if (direccionHaciaEnemy.sqrMagnitude < 0.01f)
             return Vector3.zero;
@@ -326,25 +603,46 @@ public class RoboMovPlayer : MonoBehaviour
         Vector3 dir = direccionHaciaEnemy.normalized;
         int wallMask = 1 << wallLayer;
 
-        float distToEnemy = Vector3.Distance(transform.position, BuscarEnemigo()?.transform.position ?? (transform.position + dir * 2f));
+        float distToEnemy = Vector3.Distance(
+            transform.position,
+            BuscarEnemigo()?.transform.position ??
+            (transform.position + dir * 2f)
+        );
+
         float checkDist = Mathf.Clamp(distToEnemy, 1.5f, 4f);
 
-        float[] angles = new float[] { 30f, -30f, 60f, -60f, 90f, -90f, 135f, -135f, 180f };
+        float[] angles = new float[]
+        {
+            30f, -30f, 60f, -60f,
+            90f, -90f, 135f, -135f, 180f
+        };
 
         foreach (float angle in angles)
         {
-            Vector3 candidate = Quaternion.Euler(0f, angle, 0f) * dir;
-            Vector3 origin = transform.position + Vector3.up * 0.5f;
+            Vector3 candidate =
+                Quaternion.Euler(0f, angle, 0f) * dir;
 
-            // Comprobar si hay pared en dirección candidate en un rango corto (clearance check)
+            Vector3 origin =
+                transform.position + Vector3.up * 0.5f;
+
             if (!Physics.Raycast(origin, candidate, checkDist, wallMask))
             {
-                // Además comprobar si desde un pequeño desplazamiento lateral se puede ver al enemy
                 Vector3 probeOrigin = origin + candidate * 0.5f;
-                GameObject enemigo = BuscarEnemigo();
-                Vector3 toEnemy = (enemigo != null) ? (enemigo.transform.position - probeOrigin) : Vector3.zero;
 
-                if (enemigo == null || (toEnemy.magnitude > 0.01f && !Physics.Raycast(probeOrigin, toEnemy.normalized, toEnemy.magnitude, wallMask)))
+                GameObject enemigo = BuscarEnemigo();
+
+                Vector3 toEnemy = (enemigo != null)
+                    ? enemigo.transform.position - probeOrigin
+                    : Vector3.zero;
+
+                if (enemigo == null ||
+                    (toEnemy.magnitude > 0.01f &&
+                    !Physics.Raycast(
+                        probeOrigin,
+                        toEnemy.normalized,
+                        toEnemy.magnitude,
+                        wallMask
+                    )))
                 {
                     return candidate;
                 }
@@ -360,87 +658,180 @@ public class RoboMovPlayer : MonoBehaviour
 
     private void MovimientoAutomatico()
     {
-        // Al volver al modo automático, reiniciar la aceleración manual.
         velocidadManualActual = 0f;
         direccionManualAnterior = 0;
 
-        if (girando)
+        if (girando || empujado || aturdido)
             return;
 
-        // Velocidad normal del robot.
-        float velocidadActual = velocidad;
+        Acelerar();
 
-        // Consultar el chip equipado.
+        float modificadorChip = 0f;
+
         ModificadorStats chip = equiparChips != null
             ? equiparChips.ModificadorEquipado
             : null;
 
         if (chip != null)
         {
-            float modificador = 0f;
-            bool permiteModificarMovimiento = false;
-
             foreach (EfectoModificador efecto in chip.efectos)
             {
-                // Comprobar que el chip permite modificar
-                // el movimiento del robot.
-                if (efecto.scriptObjetivo == TipoScript.RoboMov &&
-                    efecto.atributo == AtributoModificable.ModificadorMovimiento)
+                if (
+                    efecto.scriptObjetivo == TipoScript.RoboMov &&
+                    efecto.atributo ==
+                    AtributoModificable.ModificadorMovimiento
+                )
                 {
-                    modificador += efecto.cantidad;
-                    permiteModificarMovimiento = true;
-                }
-            }
-
-            // W y S solamente funcionan con el chip adecuado.
-            if (permiteModificarMovimiento)
-            {
-                // W: Aumentar velocidad.
-                if (Input.GetKey(KeyCode.W) &&
-                    !Input.GetKey(KeyCode.S))
-                {
-                    velocidadActual += modificador;
-                }
-
-                // S: Disminuir velocidad.
-                else if (Input.GetKey(KeyCode.S) &&
-                         !Input.GetKey(KeyCode.W))
-                {
-                    velocidadActual -= modificador;
+                    modificadorChip += efecto.cantidad;
                 }
             }
         }
 
-        // Evitar velocidades negativas.
-        velocidadActual = Mathf.Max(0f, velocidadActual);
+        bool tieneModificadorMovimiento =
+            modificadorChip > 0f;
 
-        // Movimiento original del robot.
+        if (barraStamina != null)
+        {
+            barraStamina.gameObject.SetActive(
+                tieneModificadorMovimiento
+            );
+        }
+
+        bool acelerando =
+            Input.GetKey(KeyCode.W) &&
+            !Input.GetKey(KeyCode.S);
+
+        bool desacelerando =
+            Input.GetKey(KeyCode.S) &&
+            !Input.GetKey(KeyCode.W);
+
+        if (tieneModificadorMovimiento)
+        {
+            if (acelerando)
+            {
+                staminaActual = Mathf.MoveTowards(
+                    staminaActual,
+                    0f,
+                    consumoStamina *
+                    Time.fixedDeltaTime
+                );
+            }
+            else
+            {
+                staminaActual = Mathf.MoveTowards(
+                    staminaActual,
+                    staminaMaxima,
+                    regeneracionStamina *
+                    Time.fixedDeltaTime
+                );
+            }
+        }
+        else
+        {
+            staminaActual = staminaMaxima;
+        }
+
+        if (barraStamina != null)
+        {
+            barraStamina.value = staminaActual;
+        }
+
+        float modificadorObjetivo = 0f;
+
+        if (acelerando &&
+            staminaActual > 0f &&
+            tieneModificadorMovimiento)
+        {
+            // Aumento temporal de velocidad.
+            modificadorObjetivo = modificadorChip;
+        }
+        else if (desacelerando &&
+                 tieneModificadorMovimiento)
+        {
+            // Disminución temporal de velocidad.
+            modificadorObjetivo = -modificadorChip;
+        }
+
+        float tiempoCambio;
+
+        if (
+            Mathf.Abs(modificadorObjetivo) >
+            Mathf.Abs(modificadorMovimientoActual)
+        )
+        {
+            tiempoCambio = tiempoAceleracionModificador;
+        }
+        else
+        {
+            tiempoCambio = tiempoDesaceleracionModificador;
+        }
+
+        tiempoCambio = Mathf.Max(
+            0.01f,
+            tiempoCambio
+        );
+
+        float diferenciaModificador =
+            Mathf.Abs(
+                modificadorObjetivo -
+                modificadorMovimientoActual
+            );
+
+        float velocidadCambio =
+            diferenciaModificador /
+            tiempoCambio *
+            Time.fixedDeltaTime;
+
+        modificadorMovimientoActual = Mathf.MoveTowards(
+            modificadorMovimientoActual,
+            modificadorObjetivo,
+            velocidadCambio
+        );
+
+        float velocidadFinal =
+            velocidadActual +
+            modificadorMovimientoActual;
+
+        // No se limita por arriba para permitir superar
+        // velocidadMaxima mientras haya stamina.
+        velocidadFinal = Mathf.Max(
+            velocidadMinimaTrasImpacto,
+            velocidadFinal
+        );
+
+        ActualizarTextoVelocidad(velocidadFinal);
+
         rb.MovePosition(
             rb.position +
-            transform.forward * velocidadActual * Time.fixedDeltaTime
+            transform.forward *
+            velocidadFinal *
+            Time.fixedDeltaTime
         );
     }
 
-    // Movimiento manual: W avanza, S retrocede, A y D giran en Update().
+    // ================================
+    // MOVIMIENTO MANUAL ORIGINAL
+    // ================================
+
     private void MovimientoManual()
     {
-        // Respetar los bloqueos por choque, empuje y aturdimiento.
         if (girando || empujado || aturdido)
         {
             velocidadManualActual = 0f;
             direccionManualAnterior = 0;
+            modificadorMovimientoActual = 0f;
             return;
         }
 
+        modificadorMovimientoActual = 0f;
+
         int direccion = 0;
 
-        // W tiene prioridad si W y S se pulsan simultáneamente.
         if (Input.GetKey(KeyCode.W))
             direccion = 1;
         else if (Input.GetKey(KeyCode.S))
             direccion = -1;
 
-        // Sin tecla de avance o retroceso, se detiene de inmediato.
         if (direccion == 0)
         {
             velocidadManualActual = 0f;
@@ -448,25 +839,101 @@ public class RoboMovPlayer : MonoBehaviour
             return;
         }
 
-        // Al invertir el sentido se vuelve a acelerar desde cero.
         if (direccion != direccionManualAnterior)
             velocidadManualActual = 0f;
 
         direccionManualAnterior = direccion;
 
-        float velocidadMaxima = Mathf.Max(0f, velocidad);
+        float velocidadMaximaManual = Mathf.Max(0f, velocidad);
         float duracion = Mathf.Max(0.01f, tiempoAceleracionManual);
 
-        // De 0 a velocidadMaxima en tiempoAceleracionManual segundos.
         velocidadManualActual = Mathf.MoveTowards(
             velocidadManualActual,
-            velocidadMaxima,
-            velocidadMaxima / duracion * Time.fixedDeltaTime
+            velocidadMaximaManual,
+            velocidadMaximaManual / duracion * Time.fixedDeltaTime
         );
 
         rb.MovePosition(
             rb.position +
-            transform.forward * (direccion * velocidadManualActual) * Time.fixedDeltaTime
+            transform.forward *
+            velocidadManualActual *
+            Time.fixedDeltaTime
         );
+    }
+
+    private float ObtenerDistanciaRebote(
+        Collision collision,
+        float distanciaBase
+    )
+    {
+        float velocidadImpacto = collision.relativeVelocity.magnitude;
+
+        if (velocidadImpacto < 0.1f)
+            velocidadImpacto = velocidadActual;
+
+        float multiplicador =
+            velocidadImpacto / velocidadReferenciaRebote;
+
+        return distanciaBase * Mathf.Max(1f, multiplicador);
+    }
+
+    private IEnumerator RetrocesoGradualContraPared(
+        Vector3 normalPared,
+        float distancia
+    )
+    {
+        if (empujeParedActivo)
+            yield break;
+
+        empujeParedActivo = true;
+
+        normalPared.y = 0f;
+
+        if (normalPared.sqrMagnitude < 0.01f)
+        {
+            empujeParedActivo = false;
+            yield break;
+        }
+
+        normalPared.Normalize();
+
+        Vector3 inicio = rb.position;
+        Vector3 destino = inicio + normalPared * distancia;
+        float tiempo = 0f;
+
+        while (tiempo < duracionRebotePared)
+        {
+            tiempo += Time.fixedDeltaTime;
+
+            float progreso = Mathf.Clamp01(
+                tiempo / duracionRebotePared
+            );
+
+            // Suaviza el inicio y el final del desplazamiento.
+            float progresoSuavizado =
+                progreso * progreso * (3f - 2f * progreso);
+
+            rb.MovePosition(
+                Vector3.Lerp(
+                    inicio,
+                    destino,
+                    progresoSuavizado
+                )
+            );
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        rb.MovePosition(destino);
+        empujeParedActivo = false;
+    }
+
+    private void ActualizarTextoVelocidad(float velocidadMostrada)
+    {
+        if (textoVelocidad == null)
+            return;
+
+        textoVelocidad.text =
+            $"Velocidad: {velocidadMostrada:0.00}";
     }
 }
