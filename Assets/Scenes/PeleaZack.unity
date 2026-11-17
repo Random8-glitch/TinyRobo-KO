@@ -300,7 +300,7 @@ MonoBehaviour:
   deadZone: {x: 1, y: 1}
   followSmoothTime: 0.5
   bounds: {x: -50, y: 50, z: -50, w: 50}
-  useBounds: 1
+  useBounds: 0
   showDeadZone: 1
   deadZoneColor: {r: 1, g: 0, b: 0, a: 0.15}
   debugLogs: 0
@@ -1187,6 +1187,11 @@ MonoBehaviour:
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 1
+  fuerzaRetrocesoMinima: 1.5
+  fuerzaRetrocesoMaxima: 8
+  duracionRetroceso: 0.18
+  velocidadReferenciaRebote: 5
+  duracionRebotePared: 0.25
 --- !u!114 &340384553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1254,7 +1259,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   percepcion: {fileID: 340384559}
   analisisArmas: {fileID: 340384558}
-  jugador: {fileID: 1873017252}
   porcentajeVidaRetirada: 30
   distanciaReanudarAtaque: 10
   distanciaIdeal: 7
