@@ -1,11 +1,11 @@
 
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(100)]
-
 public class ManagerWeaponEnemy : MonoBehaviour
 {
     public static ManagerWeaponEnemy Instance { get; private set; }
@@ -15,9 +15,9 @@ public class ManagerWeaponEnemy : MonoBehaviour
     [Header("Lista de armas")]
     [SerializeField] private WeaponList weaponList;
 
-    [Header("Weapon Holders del enemigo")]
-    [SerializeField]
-    private Transform[] weaponHolders =
+    // Se buscan automáticamente dentro del enemigo.
+    // Orden: Vacio Arma 1, Vacio Arma 2, Vacio Arma 3.
+    private readonly Transform[] weaponHolders =
         new Transform[MaxWeaponSlots];
 
     [Header("Ranuras visuales del enemigo")]
@@ -30,7 +30,7 @@ public class ManagerWeaponEnemy : MonoBehaviour
     [SerializeField] private int maxScanWeaponID = 64;
 
     [Header("Chips disponibles para este enemigo")]
-    [Tooltip("Se elige un chip al azar de esta lista en el 50% de las apariciones. El otro 50% queda sin chip.")]
+    [Tooltip("50% de probabilidad de equipar un chip aleatorio.")]
     [SerializeField]
     private List<ModificadorStats> chipsDisponibles =
         new List<ModificadorStats>();
@@ -61,16 +61,36 @@ public class ManagerWeaponEnemy : MonoBehaviour
         }
     }
 
+    // ==========================================
+    // INICIALIZACIÓN
+    // ==========================================
+
     private void Awake()
     {
-        // Cada enemigo mantiene su propio administrador.
-        // No se utiliza el Singleton para evitar compartir referencias.
         InitializeWeaponSlots();
 
-        equiparChips = GetComponent<EquiparChips>();
+        // Buscar los puntos de armas dentro del enemigo.
+        bool holdersEncontrados = BuscarWeaponHolders();
 
+        // Buscar el componente de chips del propio enemigo.
+        equiparChips = BuscarEquiparChipsEnemy();
+
+        // Equipar armas solamente si existen los holders.
         if (autoEquipOnAwake)
-            RandomizeAndEquipWeapons();
+        {
+            if (holdersEncontrados)
+            {
+                RandomizeAndEquipWeapons();
+            }
+            else
+            {
+                Debug.LogError(
+                    "ManagerWeaponEnemy: no se encontraron " +
+                    "los tres puntos de armas.",
+                    this
+                );
+            }
+        }
     }
 
     private IEnumerator Start()
@@ -78,20 +98,99 @@ public class ManagerWeaponEnemy : MonoBehaviour
         // Esperar a que EquiparChips termine su Start.
         yield return null;
 
-        // Buscar EquiparChips en otro objeto con Layer Enemy.
-        equiparChips = BuscarEquiparChipsEnemy();
+        // Volver a buscar por si aún no estaba disponible.
+        if (equiparChips == null)
+        {
+            equiparChips = BuscarEquiparChipsEnemy();
+        }
 
         RandomizeAndEquipChip();
     }
+
+    // ==========================================
+    // BÚSQUEDA AUTOMÁTICA DE WEAPON HOLDERS
+    // ==========================================
+
+    private bool BuscarWeaponHolders()
+    {
+        // Buscar únicamente dentro del enemigo
+        // que contiene este administrador.
+        Transform enemigo = transform;
+
+        Transform[] hijos =
+            enemigo.GetComponentsInChildren<Transform>(true);
+
+        // Limpiar referencias anteriores.
+        for (int i = 0; i < MaxWeaponSlots; i++)
+        {
+            weaponHolders[i] = null;
+        }
+
+        foreach (Transform hijo in hijos)
+        {
+            if (hijo.name == "Vacio Arma 1")
+            {
+                weaponHolders[0] = hijo;
+            }
+            else if (hijo.name == "Vacio Arma 2")
+            {
+                weaponHolders[1] = hijo;
+            }
+            else if (hijo.name == "Vacio Arma 3")
+            {
+                weaponHolders[2] = hijo;
+            }
+        }
+
+        // Comprobar que encontramos los tres puntos.
+        return weaponHolders[0] != null &&
+               weaponHolders[1] != null &&
+               weaponHolders[2] != null;
+    }
+
+    // ==========================================
+    // BÚSQUEDA DEL COMPONENTE EQUIPARCHIPS
+    // ==========================================
+
+    private EquiparChips BuscarEquiparChipsEnemy()
+    {
+        // Primero buscar en el mismo GameObject.
+        EquiparChips encontrado =
+            GetComponent<EquiparChips>();
+
+        if (encontrado != null)
+            return encontrado;
+
+        // Después buscar dentro de los hijos del enemigo.
+        encontrado =
+            GetComponentInChildren<EquiparChips>(true);
+
+        if (encontrado == null)
+        {
+            Debug.LogWarning(
+                "ManagerWeaponEnemy: no se encontró " +
+                "EquiparChips dentro de este enemigo.",
+                this
+            );
+        }
+
+        return encontrado;
+    }
+
+    // ==========================================
+    // EQUIPAMIENTO ALEATORIO DE CHIPS
+    // ==========================================
 
     private void RandomizeAndEquipChip()
     {
         if (equiparChips == null)
         {
             Debug.LogWarning(
-                "ManagerWeaponEnemy: no se encontró EquiparChips en este mismo GameObject.",
+                "ManagerWeaponEnemy: no hay " +
+                "EquiparChips disponible.",
                 this
             );
+
             return;
         }
 
@@ -99,12 +198,17 @@ public class ManagerWeaponEnemy : MonoBehaviour
         if (Random.value < 0.5f)
         {
             equiparChips.Desequipar();
-            Debug.Log("ManagerWeaponEnemy: enemigo sin chip.", this);
+
+            Debug.Log(
+                "ManagerWeaponEnemy: enemigo sin chip.",
+                this
+            );
+
             return;
         }
 
-        // Ignorar referencias vacías que puedan existir en el Inspector.
-        List<ModificadorStats> chipsValidos = new List<ModificadorStats>();
+        List<ModificadorStats> chipsValidos =
+            new List<ModificadorStats>();
 
         if (chipsDisponibles != null)
         {
@@ -118,25 +222,32 @@ public class ManagerWeaponEnemy : MonoBehaviour
         if (chipsValidos.Count == 0)
         {
             equiparChips.Desequipar();
+
             Debug.LogWarning(
-                "ManagerWeaponEnemy: no hay chips válidos disponibles para equipar.",
+                "ManagerWeaponEnemy: no hay chips válidos.",
                 this
             );
+
             return;
         }
 
-        // Dentro del 50% restante, todos los elementos de la lista
-        // tienen la misma probabilidad de ser seleccionados.
         int indice = Random.Range(0, chipsValidos.Count);
-        ModificadorStats chipElegido = chipsValidos[indice];
+
+        ModificadorStats chipElegido =
+            chipsValidos[indice];
 
         equiparChips.Equipar(chipElegido);
 
         Debug.Log(
-            $"ManagerWeaponEnemy: chip equipado: {chipElegido.name}.",
+            $"ManagerWeaponEnemy: chip equipado: " +
+            $"{chipElegido.name}.",
             this
         );
     }
+
+    // ==========================================
+    // INICIALIZACIÓN DE RANURAS
+    // ==========================================
 
     private void InitializeWeaponSlots()
     {
@@ -144,6 +255,7 @@ public class ManagerWeaponEnemy : MonoBehaviour
         {
             equippedWeaponIDs[i] = -1;
             weaponInstances[i] = null;
+
             ClearWeaponSlotUI(i);
         }
 
@@ -153,26 +265,36 @@ public class ManagerWeaponEnemy : MonoBehaviour
     private void ValidateConfiguration()
     {
         if (weaponList == null)
-            Debug.LogError("ManagerWeaponEnemy necesita una WeaponList.", this);
-
-        if (weaponHolders == null ||
-            weaponHolders.Length != MaxWeaponSlots)
         {
-            Debug.LogError("Se necesitan exactamente 3 Weapon Holders.", this);
+            Debug.LogError(
+                "ManagerWeaponEnemy necesita una WeaponList.",
+                this
+            );
         }
 
         if (weaponSlotImages == null ||
             weaponSlotImages.Length != MaxWeaponSlots)
         {
-            Debug.LogError("Se necesitan exactamente 3 imágenes de UI.", this);
+            Debug.LogError(
+                "Se necesitan exactamente 3 imágenes de UI.",
+                this
+            );
         }
     }
+
+    // ==========================================
+    // EQUIPAR Y DESEQUIPAR ARMAS
+    // ==========================================
 
     public void ToggleWeapon(int weaponID)
     {
         if (!IsValidWeaponID(weaponID))
         {
-            Debug.LogWarning($"El arma con ID {weaponID} no existe.", this);
+            Debug.LogWarning(
+                $"El arma con ID {weaponID} no existe.",
+                this
+            );
+
             return;
         }
 
@@ -188,31 +310,52 @@ public class ManagerWeaponEnemy : MonoBehaviour
 
         if (emptySlot == -1)
         {
-            Debug.Log("Los tres slots están ocupados.", this);
+            Debug.Log(
+                "Los tres slots están ocupados.",
+                this
+            );
+
             return;
         }
 
         EquipWeaponInSlot(weaponID, emptySlot);
     }
 
-    private void EquipWeaponInSlot(int weaponID, int slotIndex)
+    private void EquipWeaponInSlot(
+        int weaponID,
+        int slotIndex)
     {
         if (!IsValidSlot(slotIndex))
+            return;
+
+        if (!IsSlotEmpty(slotIndex))
             return;
 
         Transform holder = GetWeaponHolder(slotIndex);
 
         if (holder == null)
         {
-            Debug.LogError($"No hay Weapon Holder en el slot {slotIndex}.", this);
+            Debug.LogError(
+                $"No hay Weapon Holder en el slot {slotIndex}.",
+                this
+            );
+
             return;
         }
 
-        GameObject weaponPrefab = weaponList.GetWeaponPrefab(weaponID);
+        if (weaponList == null)
+            return;
+
+        GameObject weaponPrefab =
+            weaponList.GetWeaponPrefab(weaponID);
 
         if (weaponPrefab == null)
         {
-            Debug.LogError($"El arma {weaponID} no tiene prefab.", this);
+            Debug.LogError(
+                $"El arma {weaponID} no tiene prefab.",
+                this
+            );
+
             return;
         }
 
@@ -223,7 +366,19 @@ public class ManagerWeaponEnemy : MonoBehaviour
         );
 
         newWeapon.transform.localPosition = Vector3.zero;
-        newWeapon.transform.localRotation = Quaternion.identity;
+
+        // Igual que ManagerWeapon:
+        // rotación especial para las armas ID 4 y 5.
+        if (weaponID == 4 || weaponID == 5)
+        {
+            newWeapon.transform.localRotation =
+                Quaternion.Euler(0f, 180f, 0f);
+        }
+        else
+        {
+            newWeapon.transform.localRotation =
+                Quaternion.identity;
+        }
 
         weaponInstances[slotIndex] = newWeapon;
         equippedWeaponIDs[slotIndex] = weaponID;
@@ -239,16 +394,11 @@ public class ManagerWeaponEnemy : MonoBehaviour
         return weaponInstances[slot];
     }
 
-    // ÚNICO método GetWeaponHolder.
-    // Es público para que EnemyWeaponAnalysis pueda consultarlo.
+    // Público para EnemyWeaponAnalysis.
     public Transform GetWeaponHolder(int slotIndex)
     {
-        if (weaponHolders == null ||
-            slotIndex < 0 ||
-            slotIndex >= weaponHolders.Length)
-        {
+        if (!IsValidSlot(slotIndex))
             return null;
-        }
 
         return weaponHolders[slotIndex];
     }
@@ -262,7 +412,9 @@ public class ManagerWeaponEnemy : MonoBehaviour
             return;
 
         if (weaponInstances[slotIndex] != null)
+        {
             Destroy(weaponInstances[slotIndex]);
+        }
 
         weaponInstances[slotIndex] = null;
         equippedWeaponIDs[slotIndex] = -1;
@@ -273,8 +425,14 @@ public class ManagerWeaponEnemy : MonoBehaviour
     public void ClearAllWeapons()
     {
         for (int i = 0; i < MaxWeaponSlots; i++)
+        {
             RemoveWeaponFromSlot(i);
+        }
     }
+
+    // ==========================================
+    // CONSULTAS DE ARMAS
+    // ==========================================
 
     public int GetWeaponSlot(int weaponID)
     {
@@ -324,6 +482,10 @@ public class ManagerWeaponEnemy : MonoBehaviour
         return -1;
     }
 
+    // ==========================================
+    // INTERFAZ DE USUARIO
+    // ==========================================
+
     private Image GetWeaponSlotImage(int slotIndex)
     {
         if (weaponSlotImages == null ||
@@ -336,14 +498,17 @@ public class ManagerWeaponEnemy : MonoBehaviour
         return weaponSlotImages[slotIndex];
     }
 
-    private void UpdateWeaponSlotUI(int slotIndex, int weaponID)
+    private void UpdateWeaponSlotUI(
+        int slotIndex,
+        int weaponID)
     {
         Image slotImage = GetWeaponSlotImage(slotIndex);
 
         if (slotImage == null)
             return;
 
-        Sprite weaponIcon = weaponList.GetWeaponIcon(weaponID);
+        Sprite weaponIcon =
+            weaponList.GetWeaponIcon(weaponID);
 
         if (weaponIcon == null)
         {
@@ -367,6 +532,10 @@ public class ManagerWeaponEnemy : MonoBehaviour
         slotImage.enabled = false;
     }
 
+    // ==========================================
+    // VALIDACIONES
+    // ==========================================
+
     private bool IsValidWeaponID(int weaponID)
     {
         return weaponList != null &&
@@ -379,6 +548,10 @@ public class ManagerWeaponEnemy : MonoBehaviour
                slotIndex < MaxWeaponSlots;
     }
 
+    // ==========================================
+    // OBTENER ARMAS DISPONIBLES
+    // ==========================================
+
     private List<int> GetAvailableWeaponIDs()
     {
         List<int> result = new List<int>();
@@ -386,7 +559,9 @@ public class ManagerWeaponEnemy : MonoBehaviour
         if (weaponList == null)
             return result;
 
-        var method = weaponList.GetType().GetMethod("GetAllWeaponIDs");
+        var method = weaponList.GetType().GetMethod(
+            "GetAllWeaponIDs"
+        );
 
         if (method != null)
         {
@@ -396,8 +571,11 @@ public class ManagerWeaponEnemy : MonoBehaviour
             {
                 foreach (int id in ids)
                 {
-                    if (IsValidWeaponID(id) && !result.Contains(id))
+                    if (IsValidWeaponID(id) &&
+                        !result.Contains(id))
+                    {
                         result.Add(id);
+                    }
                 }
 
                 return result;
@@ -407,11 +585,17 @@ public class ManagerWeaponEnemy : MonoBehaviour
         for (int id = 0; id < maxScanWeaponID; id++)
         {
             if (IsValidWeaponID(id))
+            {
                 result.Add(id);
+            }
         }
 
         return result;
     }
+
+    // ==========================================
+    // EQUIPAMIENTO ALEATORIO DE ARMAS
+    // ==========================================
 
     private void RandomizeAndEquipWeapons()
     {
@@ -421,98 +605,42 @@ public class ManagerWeaponEnemy : MonoBehaviour
 
         if (available.Count == 0)
         {
-            Debug.LogWarning("No hay armas disponibles en WeaponList.", this);
+            Debug.LogWarning(
+                "No hay armas disponibles en WeaponList.",
+                this
+            );
+
             return;
         }
 
-        int cantidad = Random.Range(1, MaxWeaponSlots + 1);
+        // Seleccionar entre 1 y 3 armas.
+        int cantidad = Random.Range(
+            1,
+            MaxWeaponSlots + 1
+        );
 
-        // Elegir tipos de armas sin repetir.
-        for (int i = 0; i < cantidad && available.Count > 0; i++)
+        // Elegir armas sin repetir IDs.
+        for (int i = 0;
+             i < cantidad && available.Count > 0;
+             i++)
         {
-            int indice = Random.Range(0, available.Count);
+            int indice = Random.Range(
+                0,
+                available.Count
+            );
+
             int weaponID = available[indice];
 
             available.RemoveAt(indice);
 
-            // Equipar en el siguiente holder fijo.
-            // Nunca se aleatoriza la posición del holder.
+            // Los holders mantienen su orden fijo.
             EquipWeaponInSlot(weaponID, i);
         }
 
         Debug.Log(
-            $"ManagerWeaponEnemy: equipado con {EquippedWeaponCount} arma(s).",
+            $"ManagerWeaponEnemy: equipado con " +
+            $"{EquippedWeaponCount} arma(s).",
             this
         );
-    }
-
-    private EquiparChips BuscarEquiparChipsEnemy()
-    {
-        int enemyLayer = LayerMask.NameToLayer("Enemy");
-
-        if (enemyLayer == -1)
-        {
-            Debug.LogWarning("ManagerWeaponEnemy: no existe la Layer Enemy.", this);
-            return null;
-        }
-
-        // Versión moderna (Unity 2023+)
-        EquiparChips[] todosLosChips = FindObjectsByType<EquiparChips>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None
-        );
-
-        EquiparChips masCercano = null;
-        float distanciaMinima = float.MaxValue;
-
-        foreach (EquiparChips chip in todosLosChips)
-        {
-            if (chip == null) continue;
-            if (chip.gameObject.layer != enemyLayer) continue;
-
-            float distancia = Vector3.Distance(transform.position, chip.transform.position);
-
-            if (distancia < distanciaMinima)
-            {
-                distanciaMinima = distancia;
-                masCercano = chip;
-            }
-        }
-
-        if (masCercano == null)
-        {
-            Debug.LogWarning("ManagerWeaponEnemy: no se encontró ningún EquiparChips en Layer Enemy.", this);
-        }
-
-        return masCercano;
-    }
-
-    private EquiparChips BuscarChipUnico(
-        Transform raiz,
-        int enemyLayer)
-    {
-        EquiparChips encontrado = null;
-
-        foreach (EquiparChips candidato in
-            raiz.GetComponentsInChildren<EquiparChips>(true))
-        {
-            if (candidato.gameObject.layer != enemyLayer)
-                continue;
-
-            if (encontrado != null && encontrado != candidato)
-            {
-                Debug.LogWarning(
-                    "ManagerWeaponEnemy: hay varios EquiparChips " +
-                    "en objetos con Layer Enemy.",
-                    this
-                );
-
-                return null;
-            }
-
-            encontrado = candidato;
-        }
-
-        return encontrado;
     }
 }
