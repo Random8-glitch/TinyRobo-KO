@@ -396,6 +396,56 @@ MonoBehaviour:
   randomRotation: 180
   widthRange: {x: 9, y: 9}
   heightRange: {x: 9, y: 9}
+--- !u!1 &601994631932077873
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6330525284842930409}
+  - component: {fileID: 7025936805851463202}
+  m_Layer: 0
+  m_Name: SpawnTrampa (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6330525284842930409
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 601994631932077873}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
+  m_LocalPosition: {x: -91, y: 0, z: -917}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4924123967153418638}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7025936805851463202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 601994631932077873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8a61580b7c80d94baab07c191a1a596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
+  prefabs:
+  - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
+  puntoDeSpawn: {fileID: 6330525284842930409}
+  aparecerAlIniciar: 1
+  usarRotacionDelPunto: 1
 --- !u!1 &894882728304189412
 GameObject:
   m_ObjectHideFlags: 0
@@ -705,7 +755,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   puntoDeSpawn: {fileID: 5521207957518497134}
   aparecerAlIniciar: 1
@@ -755,7 +804,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   puntoDeSpawn: {fileID: 6233175911331935074}
   aparecerAlIniciar: 1
@@ -1069,9 +1117,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   puntoDeSpawn: {fileID: 7574865107370750109}
+  aparecerAlIniciar: 1
+  usarRotacionDelPunto: 1
+--- !u!1 &5999573829132542103
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4776360501613953908}
+  - component: {fileID: 3191746951117613495}
+  m_Layer: 0
+  m_Name: SpawnTrampa (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4776360501613953908
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5999573829132542103}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
+  m_LocalPosition: {x: -91, y: 0, z: 1049}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4924123967153418638}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3191746951117613495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5999573829132542103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8a61580b7c80d94baab07c191a1a596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
+  prefabs:
+  - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
+  puntoDeSpawn: {fileID: 4776360501613953908}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 1
 --- !u!1 &6346318160547526424
@@ -1119,7 +1216,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   puntoDeSpawn: {fileID: 3788487234090891897}
   aparecerAlIniciar: 1
@@ -1246,15 +1342,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -8.606862
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.34275013
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 12.809681
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1322,6 +1418,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3788487234090891897}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4776360501613953908}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6330525284842930409}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 772ec308490bf254d903b0ca8916b55d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5521207957518497134}

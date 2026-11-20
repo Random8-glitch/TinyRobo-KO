@@ -175,13 +175,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40934816646c8c44ba1b908787256b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovPlayer
-  velocidad: 5
+  velocidad: 7
+  velocidadMinima: 2
+  velocidadMaxima: 7
+  aceleracion: 0.5
+  velocidadImpactoMinima: 1
+  velocidadImpactoMaxima: 10
+  perdidaMaximaPared: 5
+  perdidaMaximaEnemigo: 4
+  velocidadMinimaTrasImpacto: 1
+  multiplicadorImpactoFrontal: 1.25
+  multiplicadorImpactoLateral: 0.65
   tiempoDeGiro: 0.8
   velocidadGiroManual: 95
   distanciaRebote: 1
   distanciaReboteEnemigo: 2
   tiempoAceleracionManual: 1
   tiempoAturdido: 1
+  fuerzaRetrocesoMinima: 1.5
+  fuerzaRetrocesoMaxima: 8
+  duracionRetroceso: 0.18
+  velocidadReferenciaRebote: 5
+  duracionRebotePared: 0.25
+  tiempoAceleracionModificador: 0.25
+  tiempoDesaceleracionModificador: 0.5
+  textoVelocidad: {fileID: 0}
+  nombreBarraStamina: BarraStamina
+  staminaMaxima: 100
+  consumoStamina: 25
+  regeneracionStamina: 15
 --- !u!33 &2798861536700104132
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -285,7 +307,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 84
+  m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!114 &5678549693786827573
 MonoBehaviour:

@@ -1013,8 +1013,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BotonSigPelea
   escenas:
   - RoboTeam
-  - RoboTeam_002
-  - RoboTeam_003
   escenaPorDefecto: RoboTeam
 --- !u!1 &584220019
 GameObject:

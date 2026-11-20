@@ -177,8 +177,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
+  - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 8557414980501421617}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 0
@@ -491,8 +492,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
+  - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 6810244812973014767}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 0
@@ -805,8 +807,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 3917010618600706614}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 0
@@ -987,8 +989,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
   - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 1050520639504186476}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 0
@@ -1002,15 +1004,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 7ea16542ed6511142b6eb89b9fe75a41, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.367398
+      value: -13.056362
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7ea16542ed6511142b6eb89b9fe75a41, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.237752
+      value: 1.2377539
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7ea16542ed6511142b6eb89b9fe75a41, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 19.354322
+      value: 24.411541
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7ea16542ed6511142b6eb89b9fe75a41, type: 3}
       propertyPath: m_LocalRotation.w

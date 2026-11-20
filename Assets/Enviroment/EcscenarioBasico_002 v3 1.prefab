@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
+  - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 8707017982209554780}
@@ -472,10 +472,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
-  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 8976202796048906813}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 1
@@ -788,10 +787,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
+  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
-  - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 7062495114349281992}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 1
@@ -840,7 +838,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabSpawner
   prefabs:
-  - {fileID: 1084940286942139565, guid: 36eb29ffeadf98743bb4aa7548711e1b, type: 3}
+  - {fileID: 6711940482446352379, guid: 63a17b06fed45f54caab78556022ec22, type: 3}
   - {fileID: 3886439086373466327, guid: e70f52b43ac2dbd46bca72abe53bec0c, type: 3}
   - {fileID: 6711940482446352379, guid: bd389cf6479097f4586691ef473f4827, type: 3}
   puntoDeSpawn: {fileID: 2508933610983604972}
@@ -1252,15 +1250,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2359870f78c6bf74da66c3515a1f9e90, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -9.375361
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2359870f78c6bf74da66c3515a1f9e90, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.4278245
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2359870f78c6bf74da66c3515a1f9e90, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 24.84434
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2359870f78c6bf74da66c3515a1f9e90, type: 3}
       propertyPath: m_LocalRotation.w
