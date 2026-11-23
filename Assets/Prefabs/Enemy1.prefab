@@ -151,7 +151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovEnemy
   velocidad: 10
   velocidadMinima: 1
-  velocidadMaxima: 9
+  velocidadMaxima: 10
   aceleracion: 6
   velocidadImpactoMinima: 1
   velocidadImpactoMaxima: 10
@@ -166,8 +166,8 @@ MonoBehaviour:
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 2
-  fuerzaRetrocesoMinima: 1.5
-  fuerzaRetrocesoMaxima: 8
+  fuerzaRetrocesoMinima: 5
+  fuerzaRetrocesoMaxima: 16
   duracionRetroceso: 0.18
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25
@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b7342cf6acdad5448ddc8cc2c4bbd42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyPerception
-  distanciaDeteccion: 5
+  distanciaDeteccion: 7
   radioDeteccion: 0.4
   alturaDeteccion: 0.5
   capasObstaculos:
@@ -220,7 +220,7 @@ MonoBehaviour:
   nombreCapaTrampa: Trap
   nombreCapaPared: Wall
   penalizacionPared: 3
-  penalizacionTrampa: 6
+  penalizacionTrampa: 8
   penalizacionOtros: 4
   angulosBusqueda:
   - 0
@@ -325,8 +325,8 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.3429337, y: 1, z: 3.4513402}
-  m_Center: {x: -0.0053949356, y: -8.558479e-17, z: 0.1474011}
+  m_Size: {x: 2.78, y: 1, z: 3.159363}
+  m_Center: {x: -0.0053949356, y: 0, z: 0.0014126897}
 --- !u!54 &4404540034220525881
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -352,7 +352,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 84
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!114 &8275088995845587890
 MonoBehaviour:

@@ -190,10 +190,10 @@ MonoBehaviour:
   velocidadGiroManual: 95
   distanciaRebote: 1
   distanciaReboteEnemigo: 2
-  tiempoAceleracionManual: 1
-  tiempoAturdido: 1
-  fuerzaRetrocesoMinima: 1.5
-  fuerzaRetrocesoMaxima: 8
+  tiempoAceleracionManual: 2
+  tiempoAturdido: 0.5
+  fuerzaRetrocesoMinima: 5
+  fuerzaRetrocesoMaxima: 16
   duracionRetroceso: 0.18
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25

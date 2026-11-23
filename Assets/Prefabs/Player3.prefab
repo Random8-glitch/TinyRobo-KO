@@ -161,9 +161,9 @@ MonoBehaviour:
   distanciaReboteEnemigo: 1
   tiempoAceleracionManual: 0.5
   tiempoAturdido: 1
-  fuerzaRetrocesoMinima: 1.5
-  fuerzaRetrocesoMaxima: 8
-  duracionRetroceso: 0.18
+  fuerzaRetrocesoMinima: 8
+  fuerzaRetrocesoMaxima: 20
+  duracionRetroceso: 0.5
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25
   tiempoAceleracionModificador: 0.25

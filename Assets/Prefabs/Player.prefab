@@ -1861,14 +1861,18 @@ MonoBehaviour:
   distanciaReboteEnemigo: 2
   tiempoAceleracionManual: 1
   tiempoAturdido: 1
-  fuerzaRetrocesoMinima: 1.5
-  fuerzaRetrocesoMaxima: 8
+  fuerzaRetrocesoMinima: 5
+  fuerzaRetrocesoMaxima: 16
   duracionRetroceso: 0.18
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25
   tiempoAceleracionModificador: 1
   tiempoDesaceleracionModificador: 1
   textoVelocidad: {fileID: 0}
+  nombreBarraStamina: BarraStamina
+  staminaMaxima: 100
+  consumoStamina: 25
+  regeneracionStamina: 15
 --- !u!33 &6248861747064425131
 MeshFilter:
   m_ObjectHideFlags: 0
