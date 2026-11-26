@@ -66,6 +66,14 @@ public class RoboMovEnemy : MonoBehaviour
 
     private bool empujeParedActivo;
 
+    [Header("Control de velocidad por IA")]
+    [SerializeField] private bool permitirControlVelocidadIA = true;
+
+    [SerializeField, Min(0.01f)]
+    private float desaceleracion = 4f;
+
+    private float velocidadObjetivo;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -81,11 +89,24 @@ public class RoboMovEnemy : MonoBehaviour
         );
 
         // Inicializar velocidad dentro de los límites.
+        velocidadMinima = Mathf.Max(0.01f, velocidadMinima);
+        velocidadMinimaTrasImpacto = Mathf.Max(
+            velocidadMinima,
+            velocidadMinimaTrasImpacto
+        );
+
+        velocidadMaxima = Mathf.Max(
+            velocidadMinima,
+            velocidadMaxima
+        );
+
         velocidadActual = Mathf.Clamp(
             velocidad,
             velocidadMinima,
             velocidadMaxima
         );
+
+        velocidadObjetivo = velocidadActual;
     }
 
     private void Update()
@@ -227,6 +248,7 @@ public class RoboMovEnemy : MonoBehaviour
         velocidadActual -= perdida;
 
         velocidadActual = Mathf.Max(
+            velocidadMinima,
             velocidadMinimaTrasImpacto,
             velocidadActual
         );
@@ -767,5 +789,60 @@ public class RoboMovEnemy : MonoBehaviour
 
         rb.MovePosition(destino);
         empujeParedActivo = false;
+    }
+
+    private void AjustarVelocidad()
+    {
+        float velocidadCambio;
+
+        if (velocidadObjetivo > velocidadActual)
+        {
+            velocidadCambio = aceleracion;
+        }
+        else
+        {
+            velocidadCambio = desaceleracion;
+        }
+
+        velocidadActual = Mathf.MoveTowards(
+            velocidadActual,
+            velocidadObjetivo,
+            velocidadCambio * Time.fixedDeltaTime
+        );
+
+        velocidadActual = Mathf.Max(
+            velocidadMinima,
+            velocidadActual
+        );
+    }
+
+    public void AcelerarPorIA()
+    {
+        if (!permitirControlVelocidadIA)
+            return;
+
+        velocidadObjetivo = velocidadMaxima;
+    }
+
+    public void DesacelerarPorIA()
+    {
+        if (!permitirControlVelocidadIA)
+            return;
+
+        velocidadObjetivo = velocidadMinima;
+    }
+
+    public void EstablecerVelocidadObjetivoIA(
+        float nuevaVelocidadObjetivo
+    )
+    {
+        if (!permitirControlVelocidadIA)
+            return;
+
+        velocidadObjetivo = Mathf.Clamp(
+            nuevaVelocidadObjetivo,
+            velocidadMinima,
+            velocidadMaxima
+        );
     }
 }
