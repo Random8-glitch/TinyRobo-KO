@@ -1,5 +1,5 @@
-
 using UnityEngine;
+using Unity.AI.Navigation;
 
 public class PrefabSpawner : MonoBehaviour
 {
@@ -12,6 +12,9 @@ public class PrefabSpawner : MonoBehaviour
     [Header("Opciones")]
     [SerializeField] private bool aparecerAlIniciar = true;
     [SerializeField] private bool usarRotacionDelPunto = true;
+
+    [Header("Navegación del escenario")]
+    [SerializeField] private NavMeshSurface superficieNavegacion;
 
     private void Start()
     {
@@ -35,7 +38,6 @@ public class PrefabSpawner : MonoBehaviour
             return;
         }
 
-        // Escoger un prefab aleatorio
         int indice = Random.Range(0, prefabs.Length);
         GameObject prefabElegido = prefabs[indice];
 
@@ -46,18 +48,21 @@ public class PrefabSpawner : MonoBehaviour
             return;
         }
 
-        // Determinar la rotación
         Quaternion rotacion = usarRotacionDelPunto
             ? puntoDeSpawn.rotation
             : prefabElegido.transform.rotation;
 
-        // Crear el prefab en la posición indicada
-        Instantiate(
-            prefabElegido,
-            puntoDeSpawn.position,
-            rotacion
-        );
+        Instantiate(prefabElegido, puntoDeSpawn.position, rotacion);
+        Debug.Log("Prefab generado: " + prefabElegido.name, this);
 
-        Debug.Log("Prefab generado: " + prefabElegido.name);
+        if (superficieNavegacion == null)
+        {
+            Debug.LogWarning(
+                "El escenario se generó, pero falta asignar la superficie de navegación.",
+                this);
+            return;
+        }
+
+        superficieNavegacion.BuildNavMesh();
     }
 }

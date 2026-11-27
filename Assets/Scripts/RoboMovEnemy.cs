@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.AI;
 
 public class RoboMovEnemy : MonoBehaviour
 {
@@ -37,6 +38,34 @@ public class RoboMovEnemy : MonoBehaviour
     // Control de rumbo por IA
     private bool controlIA = false;
     private Vector3 direccionIA;
+
+    [SerializeField, Min(1f)] private float giroPersecucion = 120f;
+    private bool conducir;
+    private bool seguirMalla;
+    private float distanciaTramo = float.PositiveInfinity;
+    private float alturaBase;
+    private float radioBase;
+    private bool ordenAvance;
+
+    public bool IntentandoAvanzar => ordenAvance && !girando && !empujado && !aturdido && !retrocesoActivo;
+    public void AsignarObjetivoIA(Transform objetivo) => player = objetivo != null ? objetivo.gameObject : null;
+
+    public void DetenerIA()
+    {
+        controlIA = true;
+        conducir = false;
+        direccionIA = Vector3.zero;
+        ordenAvance = false;
+    }
+
+    public void ConducirIA(Vector3 rumbo, float distancia, bool sobreMalla, float altura, float radio)
+    {
+        SetDireccionIA(rumbo);
+        distanciaTramo = distancia;
+        seguirMalla = sobreMalla;
+        alturaBase = altura;
+        radioBase = radio;
+    }
 
     private Rigidbody rb;
     private bool girando = false;
@@ -81,7 +110,7 @@ public class RoboMovEnemy : MonoBehaviour
         wallLayer = LayerMask.NameToLayer("Wall");
         playerLayer = LayerMask.NameToLayer("Player");
 
-        player = BuscarPlayer();
+        if (!controlIA) player = BuscarPlayer();
 
         velocidadGiroActual = Random.Range(
             velocidadGiroMinima,
@@ -141,7 +170,7 @@ public class RoboMovEnemy : MonoBehaviour
             Quaternion.RotateTowards(
                 transform.rotation,
                 rotacionObjetivo,
-                velocidadGiroActual * Time.deltaTime
+                (controlIA && !float.IsPositiveInfinity(distanciaTramo) ? giroPersecucion : velocidadGiroActual) * Time.deltaTime
             );
     }
 
@@ -153,6 +182,9 @@ public class RoboMovEnemy : MonoBehaviour
     {
         controlIA = true;
 
+        conducir = true;
+        seguirMalla = false;
+        distanciaTramo = float.PositiveInfinity;
         direccion.y = 0f;
 
         if (direccion.sqrMagnitude > 0.01f)
@@ -170,16 +202,33 @@ public class RoboMovEnemy : MonoBehaviour
         if (girando || empujado || aturdido || retrocesoActivo)
             return;
 
-        // Aumentar velocidad progresivamente.
+        ordenAvance = false;
+        if (controlIA && !conducir) return;
         Acelerar();
-
-        // Avance automático.
-        rb.MovePosition(
-            rb.position +
-            transform.forward *
-            velocidadActual *
-            Time.fixedDeltaTime
-        );
+        float paso = velocidadActual * Time.fixedDeltaTime;
+        if (controlIA)
+        {
+            float alineacion = Vector3.Dot(transform.forward, direccionIA);
+            paso *= Mathf.InverseLerp(0.5f, 0.97f, alineacion);
+            paso = Mathf.Min(paso, distanciaTramo);
+        }
+        if (paso <= 0.00001f) return;
+        ordenAvance = true;
+        Vector3 delta = transform.forward * paso;
+        if (controlIA && seguirMalla)
+        {
+            Vector3 baseActual = rb.position - Vector3.up * alturaBase;
+            if (!NavMesh.SamplePosition(baseActual, out NavMeshHit inicio, radioBase, NavMesh.AllAreas))
+                return;
+            Vector3 destino = inicio.position + delta;
+            if (!NavMesh.SamplePosition(destino, out NavMeshHit fin, radioBase, NavMesh.AllAreas) ||
+                NavMesh.Raycast(inicio.position, fin.position, out _, NavMesh.AllAreas))
+                return;
+            delta = fin.position - inicio.position;
+            // Evita saltar a una isla o a un piso vecino al proyectar un paso corto.
+            if (delta.sqrMagnitude > paso * paso * 4f) return;
+        }
+        rb.MovePosition(rb.position + delta);
     }
 
     // ================================
@@ -307,7 +356,7 @@ public class RoboMovEnemy : MonoBehaviour
                 velocidadGiroMaxima
             );
 
-            if (player == null)
+            if ((controlIA && seguirMalla) || player == null)
                 return;
 
             Vector3 direccion =

@@ -166,11 +166,14 @@ MonoBehaviour:
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 2
+  giroPersecucion: 120
   fuerzaRetrocesoMinima: 5
   fuerzaRetrocesoMaxima: 16
   duracionRetroceso: 0.18
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25
+  permitirControlVelocidadIA: 1
+  desaceleracion: 4
 --- !u!114 &7436925424040527760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,6 +202,13 @@ MonoBehaviour:
   duracionRumboEscape: 1.2
   fuerzaPersecucionEscape: 0.75
   estadoActual: 0
+  usarNavMesh: 1
+  toleranciaAltura: 1.25
+  alturaPivoteRobot: 0
+  alturaPivoteJugador: 0
+  radioMuestreo: 0.8
+  intervaloRuta: 0.45
+  desnivelJugador: 0
 --- !u!114 &7941162102525721780
 MonoBehaviour:
   m_ObjectHideFlags: 0

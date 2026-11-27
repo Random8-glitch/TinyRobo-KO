@@ -1,4 +1,4 @@
-using System.Collections;
+using UnityEngine.AI;
 using UnityEngine;
 
 [RequireComponent(typeof(RoboMovEnemy))]
@@ -59,12 +59,31 @@ public class EnemyAI : MonoBehaviour
     private int direccionRodeo = 1;
     private Vector3 ultimaPosicion;
     private bool escapePorLaIzquierda = true;
-    private Coroutine rutinaBuscarJugador;
+    [Header("Persecución entre pisos")]
+    [SerializeField] private bool usarNavMesh;
+    [SerializeField, Min(0.05f)] private float toleranciaAltura = 1.25f;
+    [Tooltip("Distancia vertical desde cada pivote hasta sus ruedas o pies.")]
+    [SerializeField] private float alturaPivoteRobot;
+    [SerializeField] private float alturaPivoteJugador;
+    [SerializeField, Min(0.05f)] private float radioMuestreo = 0.8f;
+    [SerializeField, Min(0.1f)] private float intervaloRuta = 0.45f;
+    [SerializeField] private float desnivelJugador;
+    private float proximaBusqueda;
+    private float proximaRuta;
+    private NavMeshPath ruta;
+    private Vector3[] esquinas = new Vector3[0];
+    private int esquina;
+    private bool caminoDirecto;
+    private bool rutaCompleta;
+
+    private Vector3 BaseRobot => transform.position - Vector3.up * alturaPivoteRobot;
+    private Vector3 BaseJugador => jugador.position - Vector3.up * alturaPivoteJugador;
 
     private void Awake()
     {
         movimiento = GetComponent<RoboMovEnemy>();
         stats = GetComponent<EnemyStats>();
+        ruta = new NavMeshPath();
 
         if (percepcion == null)
             percepcion = GetComponent<EnemyPerception>();
@@ -78,9 +97,7 @@ public class EnemyAI : MonoBehaviour
         ultimaPosicion = transform.position;
         CambiarDireccionRodeo();
 
-        rutinaBuscarJugador = StartCoroutine(
-            EsperarJugadorInstanciado()
-        );
+        movimiento.DetenerIA();
     }
 
     private void Update()
@@ -91,7 +108,16 @@ public class EnemyAI : MonoBehaviour
             stats == null ||
             movimiento == null)
         {
+            if (movimiento != null) movimiento.DetenerIA();
             return;
+        }
+
+        desnivelJugador = BaseJugador.y - BaseRobot.y;
+        if (usarNavMesh && Time.time >= proximaRuta)
+        {
+            ActualizarRuta();
+            proximaRuta = Time.time + intervaloRuta;
+            temporizadorDecision = 0f;
         }
 
         ActualizarDeteccionDeBloqueo();
@@ -119,23 +145,56 @@ public class EnemyAI : MonoBehaviour
 
         desplazamiento.y = 0f;
 
-        if (desplazamiento.sqrMagnitude <
-            distanciaMinimaAvance * distanciaMinimaAvance)
+        if (!movimiento.IntentandoAvanzar || temporizadorEscape > 0f ||
+            desplazamiento.sqrMagnitude >= distanciaMinimaAvance * distanciaMinimaAvance)
         {
-            temporizadorSinAvance += Time.deltaTime;
-        }
-        else
-        {
+            ultimaPosicion = transform.position;
             temporizadorSinAvance = 0f;
+            return;
         }
 
-        ultimaPosicion = transform.position;
-
-        if (temporizadorSinAvance >= tiempoMaximoSinAvance &&
-            temporizadorEscape <= 0f)
+        temporizadorSinAvance += Time.deltaTime;
+        if (temporizadorSinAvance >= tiempoMaximoSinAvance)
         {
-            ActivarRumboEscape();
+            ultimaPosicion = transform.position;
+            if (usarNavMesh)
+            {
+                proximaRuta = 0f;
+                temporizadorSinAvance = 0f;
+            }
+            else if (estadoActual != EstadoIA.Retirarse)
+                ActivarRumboEscape();
         }
+    }
+
+    private void ActualizarRuta()
+    {
+        esquina = 1;
+        caminoDirecto = false;
+        rutaCompleta = false;
+        if (!NavMesh.SamplePosition(BaseRobot, out NavMeshHit inicio, radioMuestreo, NavMesh.AllAreas) ||
+            !NavMesh.SamplePosition(BaseJugador, out NavMeshHit fin, radioMuestreo, NavMesh.AllAreas))
+            return;
+
+        rutaCompleta = NavMesh.CalculatePath(inicio.position, fin.position, NavMesh.AllAreas, ruta)
+            && ruta.status == NavMeshPathStatus.PathComplete;
+        if (!rutaCompleta) return;
+        esquinas = ruta.corners;
+        caminoDirecto = !NavMesh.Raycast(inicio.position, fin.position, out _, NavMesh.AllAreas);
+    }
+
+    private Vector3 SiguienteTramo()
+    {
+        if (!rutaCompleta || esquinas.Length < 2) return Vector3.zero;
+        // Solo adelantar una esquina si el siguiente tramo es transitable desde aquí.
+        if (!NavMesh.SamplePosition(BaseRobot, out NavMeshHit inicio, radioMuestreo, NavMesh.AllAreas))
+            return Vector3.zero;
+        while (esquina + 1 < esquinas.Length &&
+               !NavMesh.Raycast(inicio.position, esquinas[esquina + 1], out _, NavMesh.AllAreas))
+            esquina++;
+        Vector3 tramo = esquinas[esquina] - inicio.position;
+        tramo.y = 0f;
+        return tramo;
     }
 
     private void ActivarRumboEscape()
@@ -149,6 +208,11 @@ public class EnemyAI : MonoBehaviour
 
     private void EvaluarSituacion()
     {
+        if (Mathf.Abs(desnivelJugador) > toleranciaAltura || (usarNavMesh && !caminoDirecto))
+        {
+            estadoActual = EstadoIA.Perseguir;
+            return;
+        }
         float distancia = DistanciaAlJugador();
         float porcentajeVida = ObtenerPorcentajeVida();
 
@@ -186,8 +250,14 @@ public class EnemyAI : MonoBehaviour
 
         haciaJugador.y = 0f;
 
-        if (haciaJugador.sqrMagnitude < 0.01f)
+        bool seguirRuta = usarNavMesh && estadoActual == EstadoIA.Perseguir;
+        Vector3 tramo = seguirRuta ? SiguienteTramo() : haciaJugador;
+        if ((usarNavMesh && !rutaCompleta) || tramo.sqrMagnitude < 0.0001f ||
+            (!usarNavMesh && Mathf.Abs(desnivelJugador) > toleranciaAltura && haciaJugador.sqrMagnitude < 1f))
+        {
+            movimiento.DetenerIA();
             return;
+        }
 
         Vector3 rumboDeseado;
 
@@ -201,8 +271,7 @@ public class EnemyAI : MonoBehaviour
             switch (estadoActual)
             {
                 case EstadoIA.Perseguir:
-                    rumboDeseado =
-                        haciaJugador.normalized;
+                    rumboDeseado = tramo.normalized;
                     break;
 
                 case EstadoIA.Combatir:
@@ -242,13 +311,23 @@ public class EnemyAI : MonoBehaviour
             );
         }
 
+        bool persiguiendo = estadoActual == EstadoIA.Perseguir;
+        float alcance = persiguiendo ? tramo.magnitude : float.PositiveInfinity;
         if (percepcion != null)
         {
-            rumboDeseado =
-                percepcion.AjustarRumbo(rumboDeseado);
+            Vector3 baseSensor = BaseRobot;
+            if (usarNavMesh && NavMesh.SamplePosition(baseSensor, out NavMeshHit apoyo, radioMuestreo, NavMesh.AllAreas))
+                baseSensor = apoyo.position;
+            rumboDeseado = percepcion.AjustarRumbo(rumboDeseado, alcance, usarNavMesh, baseSensor);
+        }
+        if (rumboDeseado.sqrMagnitude < 0.001f)
+        {
+            movimiento.DetenerIA();
+            return;
         }
 
-        movimiento.SetDireccionIA(rumboDeseado);
+        movimiento.ConducirIA(rumboDeseado, alcance,
+            usarNavMesh, alturaPivoteRobot, radioMuestreo);
     }
 
     private Vector3 CalcularRumboEscape(
@@ -336,7 +415,7 @@ public class EnemyAI : MonoBehaviour
         }
         else if (distancia > distanciaIdeal + 1f)
         {
-            rumbo += haciaJugador.normalized         * 0.5f;
+            rumbo += haciaJugador.normalized * 0.5f;
         }
 
         return rumbo.normalized;
@@ -416,21 +495,6 @@ public class EnemyAI : MonoBehaviour
         return estadoActual;
     }
 
-    private IEnumerator EsperarJugadorInstanciado()
-    {
-        while (jugador == null)
-        {
-            jugador = ObtenerJugadorActual();
-
-            if (jugador == null)
-            {
-                yield return new WaitForSeconds(0.1f);
-            }
-        }
-
-        rutinaBuscarJugador = null;
-    }
-
     private Transform ObtenerJugadorActual()
     {
         PlayerStats[] jugadores =
@@ -446,7 +510,7 @@ public class EnemyAI : MonoBehaviour
                 continue;
             }
 
-            return jugadorEncontrado.transform.root;
+            return jugadorEncontrado.transform;
         }
 
         return null;
@@ -461,12 +525,14 @@ public class EnemyAI : MonoBehaviour
         }
 
         jugador = null;
-
-        if (rutinaBuscarJugador == null)
-        {
-            rutinaBuscarJugador = StartCoroutine(
-                EsperarJugadorInstanciado()
-            );
-        }
+        if (Time.time < proximaBusqueda) return;
+        proximaBusqueda = Time.time + 0.1f;
+        jugador = ObtenerJugadorActual();
+        movimiento.AsignarObjetivoIA(jugador);
+        proximaRuta = 0f;
+        temporizadorDecision = 0f;
+        temporizadorSinAvance = 0f;
+        temporizadorEscape = 0f;
+        ultimaPosicion = transform.position;
     }
 }

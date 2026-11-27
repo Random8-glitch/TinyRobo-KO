@@ -1,5 +1,5 @@
-
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyPerception : MonoBehaviour
 {
@@ -9,188 +9,105 @@ public class EnemyPerception : MonoBehaviour
     [SerializeField] private float alturaDeteccion = 0.5f;
 
     [Header("Capas")]
-    [Tooltip("Agrega aquí todas las capas que el enemigo debe evitar.")]
     [SerializeField] private LayerMask capasObstaculos;
-
-    [Tooltip("Capa que identifica las trampas.")]
     [SerializeField] private string nombreCapaTrampa = "Trap";
-
-    [Tooltip("Capa que identifica las paredes.")]
     [SerializeField] private string nombreCapaPared = "Wall";
 
     [Header("Penalizaciones")]
     [SerializeField] private float penalizacionPared = 4f;
     [SerializeField] private float penalizacionTrampa = 6f;
     [SerializeField] private float penalizacionOtros = 4f;
-
     [Header("Direcciones de búsqueda")]
     [SerializeField]
     private float[] angulosBusqueda =
-    {
-        0f, 30f, -30f, 60f, -60f,
-        90f, -90f, 120f, -120f, 180f
-    };
+        { 0f, 30f, -30f, 60f, -60f, 90f, -90f, 120f, -120f, 180f };
 
-    private int layerTrampa = -1;
-    private int layerPared = -1;
+    private int layerTrampa;
+    private int layerPared;
 
     private void Awake()
     {
         layerTrampa = LayerMask.NameToLayer(nombreCapaTrampa);
         layerPared = LayerMask.NameToLayer(nombreCapaPared);
-
-        // Si no se asignaron capas manualmente,
-        // agrega automáticamente Wall y Trap.
-        if (capasObstaculos.value == 0)
-        {
-            if (layerPared != -1)
-                capasObstaculos |= 1 << layerPared;
-
-            if (layerTrampa != -1)
-                capasObstaculos |= 1 << layerTrampa;
-        }
+        if (capasObstaculos.value != 0) return;
+        if (layerPared >= 0) capasObstaculos |= 1 << layerPared;
+        if (layerTrampa >= 0) capasObstaculos |= 1 << layerTrampa;
     }
 
     public float ObtenerDistanciaJugador(Transform jugador)
     {
-        if (jugador == null)
-            return Mathf.Infinity;
-
-        Vector3 posicionEnemigo = transform.position;
-        Vector3 posicionJugador = jugador.position;
-
-        posicionEnemigo.y = 0f;
-        posicionJugador.y = 0f;
-
-        return Vector3.Distance(
-            posicionEnemigo,
-            posicionJugador
-        );
+        if (jugador == null) return Mathf.Infinity;
+        Vector3 distancia = jugador.position - transform.position;
+        distancia.y = 0f;
+        return distancia.magnitude;
     }
 
     public bool HayObstaculoDelante()
     {
-        return HayObstaculoEnDireccion(
-            transform.forward,
-            out _
-        );
+        return BuscarImpacto(transform.forward, distanciaDeteccion, out _);
     }
 
     public Vector3 AjustarRumbo(Vector3 rumboDeseado)
     {
+        return AjustarRumbo(rumboDeseado, distanciaDeteccion, false, transform.position);
+    }
+
+    public Vector3 AjustarRumbo(Vector3 rumboDeseado, float tramo, bool sobreMalla, Vector3 baseRobot)
+    {
         rumboDeseado.y = 0f;
-
-        if (rumboDeseado.sqrMagnitude < 0.001f)
-            return transform.forward;
-
+        if (rumboDeseado.sqrMagnitude < 0.001f) return transform.forward;
         rumboDeseado.Normalize();
-
-        Vector3 mejorDireccion = rumboDeseado;
-        float mejorPuntuacion = float.NegativeInfinity;
-
+        float alcance = Mathf.Min(distanciaDeteccion, tramo);
+        float mejor = float.NegativeInfinity;
+        Vector3 resultado = sobreMalla ? Vector3.zero : rumboDeseado;
         foreach (float angulo in angulosBusqueda)
         {
-            Vector3 direccion =
-                Quaternion.Euler(0f, angulo, 0f) * rumboDeseado;
+            Vector3 direccion = Quaternion.AngleAxis(angulo, Vector3.up) * rumboDeseado;
+            if (sobreMalla && NavMesh.Raycast(baseRobot, baseRobot + direccion * alcance,
+                                              out NavMeshHit borde, NavMesh.AllAreas) &&
+                borde.distance + 0.02f < alcance)
+                continue;
 
-            direccion.y = 0f;
-            direccion.Normalize();
-
-            bool bloqueado = HayObstaculoEnDireccion(
-                direccion,
-                out RaycastHit obstaculo
-            );
-
-            float alineacion = Vector3.Dot(
-                rumboDeseado,
-                direccion
-            );
-
-            float puntuacion = alineacion * 3f;
-
+            bool bloqueado = BuscarImpacto(direccion, alcance, out RaycastHit impacto);
+            float puntos = 3f * Vector3.Dot(rumboDeseado, direccion);
             if (bloqueado)
             {
-                int layer = obstaculo.collider.gameObject.layer;
-
-                if (layer == layerTrampa)
-                {
-                    puntuacion -= penalizacionTrampa;
-                }
-                else if (layer == layerPared)
-                {
-                    puntuacion -= penalizacionPared;
-                }
-                else
-                {
-                    puntuacion -= penalizacionOtros;
-                }
-
-                // Penaliza más los obstáculos cercanos.
-                puntuacion -=
-                    (distanciaDeteccion - obstaculo.distance) * 0.5f;
+                int capa = impacto.collider.gameObject.layer;
+                if (capa == layerTrampa) puntos -= penalizacionTrampa;
+                else if (capa == layerPared) puntos -= penalizacionPared;
+                else puntos -= penalizacionOtros;
+                puntos -= (alcance - impacto.distance) * 0.5f;
             }
             else
             {
-                // Favorece las direcciones despejadas.
-                puntuacion += 3f;
+                puntos += 3f;
+                if (angulo == 0f) return direccion;
             }
 
-            if (puntuacion > mejorPuntuacion)
+            if (puntos > mejor)
             {
-                mejorPuntuacion = puntuacion;
-                mejorDireccion = direccion;
+                resultado = direccion;
+                mejor = puntos;
             }
-
-            Debug.DrawRay(
-                transform.position + Vector3.up * alturaDeteccion,
-                direccion * distanciaDeteccion,
-                bloqueado ? Color.red : Color.green
-            );
         }
-
-        return mejorDireccion.normalized;
+        return resultado;
     }
 
-    private bool HayObstaculoEnDireccion(
-        Vector3 direccion,
-        out RaycastHit mejorImpacto
-    )
+    private bool BuscarImpacto(Vector3 direccion, float alcance, out RaycastHit masCercano)
     {
-        mejorImpacto = default;
-
-        Vector3 origen =
-            transform.position + Vector3.up * alturaDeteccion;
-
-        RaycastHit[] impactos = Physics.SphereCastAll(
-            origen,
-            radioDeteccion,
-            direccion,
-            distanciaDeteccion,
-            capasObstaculos,
-            QueryTriggerInteraction.Collide
-        );
-
-        float distanciaMasCercana = Mathf.Infinity;
-        bool encontrado = false;
-
-        foreach (RaycastHit impacto in impactos)
+        masCercano = default;
+        Vector3 origen = transform.position + Vector3.up * alturaDeteccion;
+        float distancia = float.PositiveInfinity;
+        foreach (RaycastHit hit in Physics.SphereCastAll(origen, radioDeteccion, direccion,
+                 alcance, capasObstaculos, QueryTriggerInteraction.Collide))
         {
-            if (impacto.collider == null)
-                continue;
-
-            // Ignorar colliders del propio robot.
-            if (impacto.transform == transform ||
-                impacto.transform.IsChildOf(transform))
-                continue;
-
-            if (impacto.distance < distanciaMasCercana)
-            {
-                distanciaMasCercana = impacto.distance;
-                mejorImpacto = impacto;
-                encontrado = true;
-            }
+            if (hit.collider == null || hit.collider.transform.IsChildOf(transform) ||
+                hit.distance >= distancia) continue;
+            distancia = hit.distance;
+            masCercano = hit;
         }
-
-        return encontrado;
+        bool bloqueado = masCercano.collider != null;
+        Debug.DrawRay(origen, direccion * alcance, bloqueado ? Color.red : Color.green);
+        return bloqueado;
     }
 }
