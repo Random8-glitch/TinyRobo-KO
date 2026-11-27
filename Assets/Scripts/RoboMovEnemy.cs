@@ -53,18 +53,30 @@ public class RoboMovEnemy : MonoBehaviour
     public void DetenerIA()
     {
         controlIA = true;
-        conducir = false;
-        direccionIA = Vector3.zero;
-        ordenAvance = false;
+        conducir = true;
+        seguirMalla = false;
+        distanciaTramo = float.PositiveInfinity;
+        direccionIA = transform.forward;
+        ordenAvance = true;
     }
 
-    public void ConducirIA(Vector3 rumbo, float distancia, bool sobreMalla, float altura, float radio)
+    public void ConducirIA(
+        Vector3 rumbo,
+        float distancia,
+        bool sobreMalla,
+        float altura,
+        float radio
+    )
     {
         SetDireccionIA(rumbo);
-        distanciaTramo = distancia;
+
+        distanciaTramo = distancia > 0.05f
+            ? distancia
+            : float.PositiveInfinity;
+
         seguirMalla = sobreMalla;
         alturaBase = altura;
-        radioBase = radio;
+        radioBase = Mathf.Max(radio, 0.05f);
     }
 
     private Rigidbody rb;
@@ -103,14 +115,24 @@ public class RoboMovEnemy : MonoBehaviour
 
     private float velocidadObjetivo;
 
+    [Header("Evitación de trampas")]
+    [SerializeField] private EnemyPerception enemyPerception;
+    [SerializeField, Min(0.1f)] private float distanciaEvitacionTrampa = 3f;
+
+    private bool evitandoTrampa;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
 
+        if (enemyPerception == null)
+            enemyPerception = GetComponent<EnemyPerception>();
+
         wallLayer = LayerMask.NameToLayer("Wall");
         playerLayer = LayerMask.NameToLayer("Player");
 
-        if (!controlIA) player = BuscarPlayer();
+        if (!controlIA)
+            player = BuscarPlayer();
 
         velocidadGiroActual = Random.Range(
             velocidadGiroMinima,
@@ -143,35 +165,87 @@ public class RoboMovEnemy : MonoBehaviour
         if (girando || empujado || aturdido || retrocesoActivo)
             return;
 
-        Vector3 direccion;
+        Vector3 rumboDeseado;
 
         if (controlIA)
         {
-            direccion = direccionIA;
+            rumboDeseado = direccionIA;
         }
         else
         {
             if (player == null)
                 return;
 
-            direccion =
+            rumboDeseado =
                 player.transform.position - transform.position;
+        }
+
+        rumboDeseado.y = 0f;
+
+        if (rumboDeseado.sqrMagnitude < 0.01f)
+            rumboDeseado = transform.forward;
+
+        rumboDeseado.Normalize();
+
+        Vector3 direccion = rumboDeseado;
+
+        bool hayTrampa = enemyPerception != null &&
+            enemyPerception.HayTrampaCerca(
+                rumboDeseado,
+                distanciaEvitacionTrampa
+            );
+
+        if (hayTrampa)
+        {
+            evitandoTrampa = true;
+
+            // Deja de perseguir directamente al jugador y busca
+            // una dirección lateral segura.
+            direccion = enemyPerception.AjustarRumbo(
+                rumboDeseado,
+                distanciaEvitacionTrampa,
+                seguirMalla,
+                transform.position
+            );
+
+            DesacelerarPorIA();
+        }
+        else
+        {
+            if (evitandoTrampa)
+            {
+                evitandoTrampa = false;
+                AcelerarPorIA();
+            }
+
+            // Al desaparecer la trampa, vuelve a perseguir al jugador.
+            direccion = rumboDeseado;
         }
 
         direccion.y = 0f;
 
         if (direccion.sqrMagnitude < 0.01f)
-            return;
+            direccion = transform.forward;
+
+        direccion.Normalize();
+
+        if (controlIA)
+            direccionIA = direccion;
 
         Quaternion rotacionObjetivo =
-            Quaternion.LookRotation(direccion.normalized);
+            Quaternion.LookRotation(direccion);
 
-        transform.rotation =
-            Quaternion.RotateTowards(
-                transform.rotation,
-                rotacionObjetivo,
-                (controlIA && !float.IsPositiveInfinity(distanciaTramo) ? giroPersecucion : velocidadGiroActual) * Time.deltaTime
-            );
+        float velocidadGiro =
+            controlIA &&
+            !float.IsPositiveInfinity(distanciaTramo)
+                ? giroPersecucion
+                : velocidadGiroActual;
+
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            rotacionObjetivo,
+            velocidadGiro * Time.deltaTime
+        );
     }
 
     // ================================
@@ -202,33 +276,112 @@ public class RoboMovEnemy : MonoBehaviour
         if (girando || empujado || aturdido || retrocesoActivo)
             return;
 
-        ordenAvance = false;
-        if (controlIA && !conducir) return;
-        Acelerar();
-        float paso = velocidadActual * Time.fixedDeltaTime;
+        AjustarVelocidad();
+
+        Vector3 direccionMovimiento = direccionIA;
+
+        if (!controlIA ||
+            direccionMovimiento.sqrMagnitude < 0.01f)
+        {
+            direccionMovimiento = transform.forward;
+        }
+
+        direccionMovimiento.y = 0f;
+
+        if (direccionMovimiento.sqrMagnitude < 0.01f)
+        {
+            direccionMovimiento = Vector3.forward;
+        }
+
+        direccionMovimiento.Normalize();
+
+        float paso =
+            Mathf.Max(
+                velocidadActual,
+                velocidadMinima
+            ) * Time.fixedDeltaTime;
+
         if (controlIA)
         {
-            float alineacion = Vector3.Dot(transform.forward, direccionIA);
-            paso *= Mathf.InverseLerp(0.5f, 0.97f, alineacion);
-            paso = Mathf.Min(paso, distanciaTramo);
+            float alineacion = Vector3.Dot(
+                transform.forward,
+                direccionMovimiento
+            );
+
+            float factorAlineacion = Mathf.InverseLerp(
+                0.5f,
+                0.97f,
+                alineacion
+            );
+
+            // Nunca se detiene completamente al girar.
+            factorAlineacion = Mathf.Clamp(
+                factorAlineacion,
+                0.35f,
+                1f
+            );
+
+            paso *= factorAlineacion;
         }
-        if (paso <= 0.00001f) return;
-        ordenAvance = true;
+
         Vector3 delta = transform.forward * paso;
+
         if (controlIA && seguirMalla)
         {
-            Vector3 baseActual = rb.position - Vector3.up * alturaBase;
-            if (!NavMesh.SamplePosition(baseActual, out NavMeshHit inicio, radioBase, NavMesh.AllAreas))
-                return;
-            Vector3 destino = inicio.position + delta;
-            if (!NavMesh.SamplePosition(destino, out NavMeshHit fin, radioBase, NavMesh.AllAreas) ||
-                NavMesh.Raycast(inicio.position, fin.position, out _, NavMesh.AllAreas))
-                return;
-            delta = fin.position - inicio.position;
-            // Evita saltar a una isla o a un piso vecino al proyectar un paso corto.
-            if (delta.sqrMagnitude > paso * paso * 4f) return;
+            Vector3 baseActual =
+                rb.position - Vector3.up * alturaBase;
+
+            bool posicionValida = NavMesh.SamplePosition(
+                baseActual,
+                out NavMeshHit inicio,
+                radioBase,
+                NavMesh.AllAreas
+            );
+
+            if (posicionValida)
+            {
+                Vector3 destino = inicio.position + delta;
+
+                bool destinoValido = NavMesh.SamplePosition(
+                    destino,
+                    out NavMeshHit fin,
+                    radioBase,
+                    NavMesh.AllAreas
+                );
+
+                if (destinoValido &&
+                    !NavMesh.Raycast(
+                        inicio.position,
+                        fin.position,
+                        out _,
+                        NavMesh.AllAreas
+                    ))
+                {
+                    Vector3 deltaMalla =
+                        fin.position - inicio.position;
+
+                    if (deltaMalla.sqrMagnitude <= paso * paso * 4f)
+                    {
+                        delta = deltaMalla;
+                    }
+                }
+            }
         }
-        rb.MovePosition(rb.position + delta);
+
+        // Movimiento de emergencia: aunque la comprobación del
+        // NavMesh falle, el enemigo continúa avanzando.
+        if (delta.sqrMagnitude < 0.000001f)
+        {
+            delta = transform.forward *
+                Mathf.Max(velocidadMinima, 0.01f) *
+                Time.fixedDeltaTime;
+        }
+
+        ordenAvance = true;
+
+        rb.MovePosition(
+            rb.position + delta
+        );
     }
 
     // ================================

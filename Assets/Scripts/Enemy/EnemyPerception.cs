@@ -29,9 +29,14 @@ public class EnemyPerception : MonoBehaviour
     {
         layerTrampa = LayerMask.NameToLayer(nombreCapaTrampa);
         layerPared = LayerMask.NameToLayer(nombreCapaPared);
-        if (capasObstaculos.value != 0) return;
-        if (layerPared >= 0) capasObstaculos |= 1 << layerPared;
-        if (layerTrampa >= 0) capasObstaculos |= 1 << layerTrampa;
+
+        // Se añaden las capas aunque capasObstaculos tenga
+        // alguna capa configurada desde el Inspector.
+        if (layerPared >= 0)
+            capasObstaculos |= 1 << layerPared;
+
+        if (layerTrampa >= 0)
+            capasObstaculos |= 1 << layerTrampa;
     }
 
     public float ObtenerDistanciaJugador(Transform jugador)
@@ -109,5 +114,56 @@ public class EnemyPerception : MonoBehaviour
         bool bloqueado = masCercano.collider != null;
         Debug.DrawRay(origen, direccion * alcance, bloqueado ? Color.red : Color.green);
         return bloqueado;
+    }
+
+    public bool HayTrampaCerca(Vector3 rumbo, float alcance)
+    {
+        if (layerTrampa < 0)
+            return false;
+
+        rumbo.y = 0f;
+
+        if (rumbo.sqrMagnitude < 0.001f)
+            rumbo = transform.forward;
+
+        rumbo.Normalize();
+
+        float distancia = Mathf.Min(distanciaDeteccion, alcance);
+
+        Vector3 origen =
+            transform.position + Vector3.up * alturaDeteccion;
+
+        int mascaraTrampa = 1 << layerTrampa;
+
+        foreach (RaycastHit hit in Physics.SphereCastAll(
+            origen,
+            radioDeteccion,
+            rumbo,
+            distancia,
+            mascaraTrampa,
+            QueryTriggerInteraction.Collide))
+        {
+            if (hit.collider == null ||
+                hit.collider.transform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            Debug.DrawRay(
+                origen,
+                rumbo * hit.distance,
+                Color.yellow
+            );
+
+            return true;
+        }
+
+        Debug.DrawRay(
+            origen,
+            rumbo * distancia,
+            Color.green
+        );
+
+        return false;
     }
 }

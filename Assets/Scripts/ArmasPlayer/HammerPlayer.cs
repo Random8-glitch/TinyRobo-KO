@@ -39,6 +39,9 @@ public class HammerPlayer : MonoBehaviour
     [SerializeField, Min(0f)]
     private float tiempoRecargaCombo = 5f;
 
+    [Header("Efecto de impacto")]
+    [SerializeField] private ParticleSystem particulasImpacto;
+
     private int enemyLayer;
     private GameObject enemigoDentro;
 
@@ -368,6 +371,8 @@ public class HammerPlayer : MonoBehaviour
 
         danoAplicado = true;
 
+        ActivarParticulasImpacto();
+
         float danioFinal =
             danioGolpe * ObtenerMultiplicadorChip();
 
@@ -377,6 +382,13 @@ public class HammerPlayer : MonoBehaviour
         );
 
         stats.RecibirDanio(danioFinal);
+
+        // Efecto de impacto visual y sonido.
+        if (particulasImpacto != null)
+        {
+            particulasImpacto.transform.position = puntoImpacto.position;
+            particulasImpacto.Play();
+        }
 
         ReiniciarCarga();
     }
@@ -536,5 +548,21 @@ public class HammerPlayer : MonoBehaviour
         tiempoRecargaComboRestante = tiempoRecargaCombo;
 
         habilidadEspecialEnCurso = false;
+    }
+
+    private void ActivarParticulasImpacto()
+    {
+        if (particulasImpacto == null)
+            return;
+
+        particulasImpacto.transform.position =
+            puntoImpacto.position;
+
+        particulasImpacto.Stop(
+            true,
+            ParticleSystemStopBehavior.StopEmittingAndClear
+        );
+
+        particulasImpacto.Play();
     }
 }
