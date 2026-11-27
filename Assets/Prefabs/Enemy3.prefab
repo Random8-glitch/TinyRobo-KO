@@ -130,8 +130,8 @@ MonoBehaviour:
   multiplicadorImpactoFrontal: 1.25
   multiplicadorImpactoLateral: 0.65
   tiempoDeGiro: 0.8
-  velocidadGiroMinima: 70
-  velocidadGiroMaxima: 125
+  velocidadGiroMinima: 20
+  velocidadGiroMaxima: 50
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 1
@@ -142,7 +142,9 @@ MonoBehaviour:
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25
   permitirControlVelocidadIA: 1
-  desaceleracion: 4
+  desaceleracion: 0.5
+  enemyPerception: {fileID: 0}
+  distanciaEvitacionTrampa: 3
 --- !u!114 &3975194450005319162
 MonoBehaviour:
   m_ObjectHideFlags: 0

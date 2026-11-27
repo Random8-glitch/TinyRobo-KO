@@ -1332,6 +1332,7 @@ MonoBehaviour:
   puntoDeSpawn: {fileID: 336466222}
   aparecerAlIniciar: 1
   usarRotacionDelPunto: 1
+  superficieNavegacion: {fileID: 0}
 --- !u!4 &336466222
 Transform:
   m_ObjectHideFlags: 0
@@ -1508,6 +1509,7 @@ MonoBehaviour:
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 1
+  giroPersecucion: 120
   fuerzaRetrocesoMinima: 1.5
   fuerzaRetrocesoMaxima: 8
   duracionRetroceso: 0.18
@@ -1515,6 +1517,8 @@ MonoBehaviour:
   duracionRebotePared: 0.25
   permitirControlVelocidadIA: 1
   desaceleracion: 4
+  enemyPerception: {fileID: 0}
+  distanciaEvitacionTrampa: 3
 --- !u!114 &340384553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1596,6 +1600,13 @@ MonoBehaviour:
   duracionRumboEscape: 1.2
   fuerzaPersecucionEscape: 0.75
   estadoActual: 0
+  usarNavMesh: 1
+  toleranciaAltura: 1.25
+  alturaPivoteRobot: 0
+  alturaPivoteJugador: 0
+  radioMuestreo: 0.8
+  intervaloRuta: 0.45
+  desnivelJugador: 0
 --- !u!114 &340384557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8803,7 +8814,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8815226836013115687, guid: fc6fe6e9c144365439540abc9cd25247, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

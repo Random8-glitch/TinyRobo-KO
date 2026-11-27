@@ -180,8 +180,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8f6850ec50fc544951d23451d5117e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboMovEnemy
-  velocidad: 5
-  velocidadMinima: 3
+  velocidad: 7
+  velocidadMinima: 5
   velocidadMaxima: 9
   aceleracion: 0.5
   velocidadImpactoMinima: 1
@@ -192,8 +192,8 @@ MonoBehaviour:
   multiplicadorImpactoFrontal: 1.25
   multiplicadorImpactoLateral: 0.65
   tiempoDeGiro: 0.8
-  velocidadGiroMinima: 70
-  velocidadGiroMaxima: 95
+  velocidadGiroMinima: 50
+  velocidadGiroMaxima: 70
   distanciaRebote: 0.5
   distanciaRebotePlayer: 1
   tiempoAturdido: 2
@@ -204,7 +204,9 @@ MonoBehaviour:
   velocidadReferenciaRebote: 5
   duracionRebotePared: 0.25
   permitirControlVelocidadIA: 1
-  desaceleracion: 4
+  desaceleracion: 0.5
+  enemyPerception: {fileID: 0}
+  distanciaEvitacionTrampa: 3
 --- !u!114 &4651408558936306911
 MonoBehaviour:
   m_ObjectHideFlags: 0
